@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>좌석 배치 에디터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .main-editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toolbar {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .restaurant-canvas {
+            width: 100%;
+            height: 100%;
+            background: white;
+            position: relative;
+            cursor: crosshair;
+        }
+        
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        /* 도구 */
+        .tool-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #212529;
+        }
+        
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .tool-item {
+            padding: 15px 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .tool-item:hover {
+            border-color: #ff6b35;
+            background: #fff5f2;
+        }
+        
+        .tool-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .tool-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .tool-name {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        /* 배치된 요소들 */
+        .placed-element {
+            position: absolute;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            user-select: none;
+        }
+        
+        .placed-element:hover {
+            border-color: #ff6b35;
+        }
+        
+        .placed-element.selected {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.1);
+        }
+        
+        .table-2 { width: 80px; height: 60px; background: #8B4513; color: white; }
+        .table-4 { width: 100px; height: 100px; background: #8B4513; color: white; border-radius: 50%; }
+        .counter { width: 200px; height: 40px; background: #6f4e37; color: white; border-radius: 20px; }
+        .seat { width: 30px; height: 30px; background: #007bff; color: white; border-radius: 4px; }
+        .wall { background: #6c757d; }
+        .door { width: 60px; height: 20px; background: #28a745; color: white; }
+        .window { width: 100px; height: 20px; background: #17a2b8; color: white; }
+        
+        /* 속성 패널 */
+        .properties {
+            background: #f8f9fa;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .property-group {
+            margin-bottom: 15px;
+        }
+        
+        .property-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* JSON 출력 */
+        .json-output {
+            background: #212529;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="tool-section">
+            <div class="section-title">테이블 & 좌석</div>
+            <div class="tool-grid">
+                <div class="tool-item" draggable="true" data-type="table-2">
+                    <div class="tool-icon">🪑</div>
+                    <div class="tool-name">2인 테이블</div>
+                </div>
+                <div class="tool-item" draggable="true" data-type="table-4">
+                    <div class="tool-icon">🍽️</div>
+                    <div class="tool-name">4인 테이블</div>
+                </div>
+                <div class="tool-item" draggable="true" data-type="counter">
+                    <div class="tool-icon">🍣</div>
+                    <div class="tool-name">카운터</div>
+                </div>
+                <div class="tool-item" draggable="true" data-type="seat">
+                    <div class="tool-icon">💺</div>
+                    <div class="tool-name">개별 좌석</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tool-section">
+            <div class="section-title">구조물</div>
+            <div class="tool-grid">
+                <div class="tool-item" draggable="true" data-type="wall">
+                    <div class="tool-icon">🧱</div>
+                    <div class="tool-name">벽</div>
+                </div>
+                <div class="tool-item" draggable="true" data-type="door">
+                    <div class="tool-icon">🚪</div>
+                    <div class="tool-name">문</div>
+                </div>
+                <div class="tool-item" draggable="true" data-type="window">
+                    <div class="tool-icon">🪟</div>
+                    <div class="tool-name">창문</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="properties">
+            <div class="section-title">속성</div>
+            <div id="properties-content">
+                <p style="color: #6c757d; text-align: center;">요소를 선택하세요</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="btn btn-danger" onclick="clearCanvas()">전체 삭제</button>
+            <button class="btn btn-success" onclick="exportLayout()" style="margin-left: 10px;">JSON 출력</button>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <div class="section-title">JSON 출력</div>
+            <div class="json-output" id="json-output">배치를 완료한 후 "JSON 출력"을 클릭하세요</div>
+        </div>
+    </div>
+    
+    <div class="main-editor">
+        <div class="toolbar">
+            <span style="font-weight: 600;">레스토랑 좌석 배치 에디터</span>
+            <div style="margin-left: auto;">
+                <button class="btn btn-primary" onclick="toggleGrid()">격자 표시</button>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <div class="restaurant-canvas" id="canvas">
+                <!-- SVG 격자 -->
+                <svg class="grid" id="grid">
+                    <defs>
+                        <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#000" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let elements = [];
+        let selectedElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let elementCounter = 0;
+
+        // 드래그 시작
+        document.querySelectorAll('.tool-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', item.dataset.type);
+                item.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+        });
+
+        // 캔버스 드롭
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('dragover', (e) => e.preventDefault());
+        
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const type = e.dataTransfer.getData('text/plain');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            createElement(type, x, y);
+        });
+
+        // 요소 생성
+        function createElement(type, x, y) {
+            elementCounter++;
+            const element = {
+                id: `${type}-${elementCounter}`,
+                type: type,
+                x: x,
+                y: y,
+                width: getDefaultSize(type).width,
+                height: getDefaultSize(type).height,
+                name: `${getTypeName(type)} ${elementCounter}`,
+                capacity: getDefaultCapacity(type),
+                price: 0
+            };
+            
+            elements.push(element);
+            renderElement(element);
+        }
+
+        // 기본 크기
+        function getDefaultSize(type) {
+            const sizes = {
+                'table-2': { width: 80, height: 60 },
+                'table-4': { width: 100, height: 100 },
+                'counter': { width: 200, height: 40 },
+                'seat': { width: 30, height: 30 },
+                'wall': { width: 100, height: 20 },
+                'door': { width: 60, height: 20 },
+                'window': { width: 100, height: 20 }
+            };
+            return sizes[type] || { width: 50, height: 50 };
+        }
+
+        function getTypeName(type) {
+            const names = {
+                'table-2': '2인테이블',
+                'table-4': '4인테이블',
+                'counter': '카운터',
+                'seat': '좌석',
+                'wall': '벽',
+                'door': '문',
+                'window': '창문'
+            };
+            return names[type] || type;
+        }
+
+        function getDefaultCapacity(type) {
+            const capacities = {
+                'table-2': 2,
+                'table-4': 4,
+                'counter': 1,
+                'seat': 1,
+                'wall': 0,
+                'door': 0,
+                'window': 0
+            };
+            return capacities[type] || 0;
+        }
+
+        // 요소 렌더링
+        function renderElement(element) {
+            const div = document.createElement('div');
+            div.className = `placed-element ${element.type}`;
+            div.style.left = element.x + 'px';
+            div.style.top = element.y + 'px';
+            div.style.width = element.width + 'px';
+            div.style.height = element.height + 'px';
+            div.textContent = element.name;
+            div.dataset.id = element.id;
+            
+            // 클릭 이벤트
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(element);
+            });
+            
+            // 드래그 이벤트
+            div.addEventListener('mousedown', startDrag);
+            
+            canvas.appendChild(div);
+        }
+
+        // 요소 선택
+        function selectElement(element) {
+            // 이전 선택 해제
+            document.querySelectorAll('.placed-element.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // 새 요소 선택
+            selectedElement = element;
+            document.querySelector(`[data-id="${element.id}"]`).classList.add('selected');
+            
+            updatePropertiesPanel();
+        }
+
+        // 속성 패널 업데이트
+        function updatePropertiesPanel() {
+            const panel = document.getElementById('properties-content');
+            if (!selectedElement) {
+                panel.innerHTML = '<p style="color: #6c757d; text-align: center;">요소를 선택하세요</p>';
+                return;
+            }
+            
+            panel.innerHTML = `
+                <div class="property-group">
+                    <label class="property-label">이름</label>
+                    <input class="property-input" type="text" value="${selectedElement.name}" onchange="updateProperty('name', this.value)">
+                </div>
+                <div class="property-group">
+                    <label class="property-label">수용인원</label>
+                    <input class="property-input" type="number" value="${selectedElement.capacity}" onchange="updateProperty('capacity', parseInt(this.value))">
+                </div>
+                <div class="property-group">
+                    <label class="property-label">추가요금</label>
+                    <input class="property-input" type="number" value="${selectedElement.price}" onchange="updateProperty('price', parseInt(this.value))">
+                </div>
+                <div class="property-group">
+                    <label class="property-label">위치 X</label>
+                    <input class="property-input" type="number" value="${selectedElement.x}" onchange="updateProperty('x', parseInt(this.value))">
+                </div>
+                <div class="property-group">
+                    <label class="property-label">위치 Y</label>
+                    <input class="property-input" type="number" value="${selectedElement.y}" onchange="updateProperty('y', parseInt(this.value))">
+                </div>
+                <button class="btn btn-danger" onclick="deleteSelected()">삭제</button>
+            `;
+        }
+
+        // 속성 업데이트
+        function updateProperty(property, value) {
+            if (selectedElement) {
+                selectedElement[property] = value;
+                
+                if (property === 'x' || property === 'y') {
+                    const div = document.querySelector(`[data-id="${selectedElement.id}"]`);
+                    div.style.left = selectedElement.x + 'px';
+                    div.style.top = selectedElement.y + 'px';
+                } else if (property === 'name') {
+                    const div = document.querySelector(`[data-id="${selectedElement.id}"]`);
+                    div.textContent = value;
+                }
+            }
+        }
+
+        // 드래그 시작
+        function startDrag(e) {
+            if (!selectedElement) return;
+            
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left - selectedElement.x;
+            dragOffset.y = e.clientY - rect.top - selectedElement.y;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function drag(e) {
+            if (!selectedElement) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            selectedElement.x = e.clientX - rect.left - dragOffset.x;
+            selectedElement.y = e.clientY - rect.top - dragOffset.y;
+            
+            const div = document.querySelector(`[data-id="${selectedElement.id}"]`);
+            div.style.left = selectedElement.x + 'px';
+            div.style.top = selectedElement.y + 'px';
+            
+            updatePropertiesPanel();
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // 선택된 요소 삭제
+        function deleteSelected() {
+            if (selectedElement) {
+                elements = elements.filter(el => el.id !== selectedElement.id);
+                document.querySelector(`[data-id="${selectedElement.id}"]`).remove();
+                selectedElement = null;
+                updatePropertiesPanel();
+            }
+        }
+
+        // 전체 삭제
+        function clearCanvas() {
+            if (confirm('모든 요소를 삭제하시겠습니까?')) {
+                elements = [];
+                document.querySelectorAll('.placed-element').forEach(el => el.remove());
+                selectedElement = null;
+                updatePropertiesPanel();
+            }
+        }
+
+        // 격자 토글
+        function toggleGrid() {
+            const grid = document.getElementById('grid');
+            grid.style.display = grid.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // JSON 출력
+        function exportLayout() {
+            const layout = {
+                restaurant: "정미스시",
+                elements: elements.map(el => ({
+                    id: el.id,
+                    type: el.type,
+                    name: el.name,
+                    position: { x: el.x, y: el.y },
+                    size: { width: el.width, height: el.height },
+                    capacity: el.capacity,
+                    priceModifier: el.price
+                }))
+            };
+            
+            document.getElementById('json-output').textContent = JSON.stringify(layout, null, 2);
+        }
+
+        // 캔버스 클릭시 선택 해제
+        canvas.addEventListener('click', (e) => {
+            if (e.target === canvas) {
+                document.querySelectorAll('.placed-element.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                selectedElement = null;
+                updatePropertiesPanel();
+            }
+        });
+    </script>
+</body>
+</html>

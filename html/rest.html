@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정미스시 - 캐치테이블</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            height: 80px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-right: 40px;
+        }
+        
+        .breadcrumb {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .breadcrumb a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: #ff6b35;
+        }
+        
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        .btn-outline:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+        
+        /* Left Column - Main Content */
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Image Gallery */
+        .image-gallery {
+            position: relative;
+            height: 400px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .image-thumbs {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .thumb {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .thumb:hover, .thumb.active {
+            background: rgba(255,255,255,0.4);
+        }
+        
+        /* Restaurant Info */
+        .restaurant-header {
+            padding: 32px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .restaurant-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 16px;
+        }
+        
+        .restaurant-meta {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+        }
+        
+        .stars {
+            color: #ffd700;
+            font-size: 20px;
+        }
+        
+        .rating-score {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .review-count {
+            color: #6c757d;
+        }
+        
+        .cuisine-type, .price-range {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .restaurant-badges {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .badge.featured {
+            background: #fff5f2;
+            color: #ff6b35;
+        }
+        
+        .restaurant-address {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+        
+        .address-icon {
+            margin-top: 2px;
+        }
+        
+        .operating-hours {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            border-bottom: 1px solid #f1f3f4;
+            background: #f8f9fa;
+        }
+        
+        .nav-tab {
+            padding: 20px 32px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab:hover, .nav-tab.active {
+            color: #ff6b35;
+            border-bottom-color: #ff6b35;
+            background: white;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            padding: 32px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #212529;
+        }
+        
+        .description {
+            color: #495057;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+        
+        /* Menu Items */
+        .menu-items {
+            margin-top: 32px;
+        }
+        
+        .menu-item {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            border: 1px solid #f1f3f4;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+        
+        .menu-item:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .menu-image {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .menu-info {
+            flex: 1;
+        }
+        
+        .menu-name {
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+        
+        .menu-description {
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .menu-price {
+            font-weight: 700;
+            color: #ff6b35;
+            font-size: 22px;
+        }
+        
+        /* Map Section */
+        .map-container {
+            background: #e9ecef;
+            height: 300px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+        
+        .location-details {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 12px;
+        }
+        
+        .location-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .location-item:last-child {
+            border-bottom: none;
+        }
+        
+        .location-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .location-value {
+            color: #6c757d;
+        }
+        
+        /* Reviews Section */
+        .review-summary {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .review-score {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 8px;
+        }
+        
+        .review-total {
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+        
+        .review-breakdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .breakdown-item {
+            text-align: center;
+        }
+        
+        .breakdown-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .breakdown-score {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .individual-review {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #f1f3f4;
+            margin-bottom: 16px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            background: #ff6b35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .review-date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .review-rating {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .review-text {
+            color: #495057;
+            line-height: 1.6;
+        }
+        
+        /* Facilities */
+        .facilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .facility-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .facility-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .facility-name {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+        
+        .facility-description {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* Operating Info */
+        .operating-info {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 12px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .info-value {
+            color: #495057;
+        }
+        
+        /* Right Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Reservation Card */
+        .reservation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 120px;
+        }
+        
+        .reservation-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #212529;
+            text-align: center;
+        }
+        
+        .date-time-selector {
+            margin-bottom: 24px;
+        }
+        
+        .selector-group {
+            margin-bottom: 16px;
+        }
+        
+        .selector-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .selector-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .selector-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .guest-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .counter-btn:hover {
+            background: #f8f9fa;
+            border-color: #ff6b35;
+        }
+        
+        .guest-count {
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .available-times {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .time-slot {
+            padding: 12px 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .time-slot:hover, .time-slot.selected {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+        
+        .time-slot.disabled {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .reservation-btn {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .reservation-btn:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .quick-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            color: #495057;
+        }
+        
+        .quick-btn:hover {
+            background: #f8f9fa;
+            border-color: #ff6b35;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+            
+            .reservation-card {
+                position: static;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .restaurant-header {
+                padding: 24px 20px;
+            }
+            
+            .restaurant-title {
+                font-size: 28px;
+            }
+            
+            .restaurant-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .nav-tabs {
+                overflow-x: auto;
+            }
+            
+            .nav-tab {
+                padding: 16px 24px;
+                white-space: nowrap;
+            }
+            
+            .tab-content {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">캐치테이블</div>
+            <div class="breadcrumb">
+                <a href="#">홈</a> > <a href="#">강남</a> > <a href="#">일식</a> > 정미스시
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn-outline">📞 전화</a>
+                <a href="#" class="btn btn-outline">🔗 공유</a>
+                <a href="#" class="btn btn-outline">❤️ 찜</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Image Gallery -->
+            <div class="image-gallery">
+                🍣 레스토랑 이미지
+                <div class="gallery-nav">1/5</div>
+                <div class="image-thumbs">
+                    <div class="thumb active"></div>
+                    <div class="thumb"></div>
+                    <div class="thumb"></div>
+                    <div class="thumb"></div>
+                    <div class="thumb"></div>
+                </div>
+            </div>
+
+            <!-- Restaurant Info -->
+            <div class="restaurant-header">
+                <h1 class="restaurant-title">정미스시</h1>
+                <div class="restaurant-meta">
+                    <div class="rating">
+                        <span class="stars">⭐⭐⭐⭐</span>
+                        <span class="rating-score">4.8</span>
+                        <span class="review-count">리뷰 386개</span>
+                    </div>
+                    <span class="cuisine-type">일식 • 스시/사시미</span>
+                    <!-- <span class="price-range">8만원~12만원</span> -->
+                </div>
+                <!-- <div class="restaurant-badges">
+                    <span class="badge featured">이달의 맛집</span>
+                    <span class="badge">데이트 코스</span>
+                    <span class="badge">오마카세</span>
+                    <span class="badge">특별한 날</span>
+                </div> -->
+                <div class="restaurant-address">
+                    <span class="address-icon">📍</span>
+                    <div>
+                        <div>서울 강남구 압구정로 464-41</div>
+                        <!-- <div style="font-size: 14px; color: #adb5bd; margin-top: 4px;">압구정역 6번출구에서 도보 1분</div> -->
+                    </div>
+                </div>
+                <div class="operating-hours">
+                    <span>🕐</span>
+                    <span>영업 중 (오늘 오후 11:00에 영업종료)</span>
+                </div>
+            </div>
+
+            <!-- 웨이팅 -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="menu">현재 웨이팅 n팀</div>
+            </div>
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="menu">메뉴소개</div>
+                <div class="nav-tab" data-tab="location">위치</div>
+                <div class="nav-tab" data-tab="facilities">편의시설</div>
+                <div class="nav-tab" data-tab="info">운영정보</div>
+                <div class="nav-tab" data-tab="reviews">리뷰</div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Menu Tab -->
+                <div class="tab-panel active" id="menu">
+                    <div class="section-title">메뉴 소개</div>
+                    <div class="description">
+                        정통적인 일식을 기본으로 독창적인 스타일의 오마카세입니다.<br>
+                        명장님의 다년간의 노하우를 통해 최상의 식재료로 표현되는 <br>
+                        일식 요리로 재료 본래의 진정한 맛을 느껴보실 수 있습니다.
+                    </div>
+
+                    <div class="menu-items">
+                        <div class="menu-item">
+                            <div class="menu-image">🍣</div>
+                            <div class="menu-info">
+                                <div class="menu-name">산삼녹용달인 간장왕갑계치킨식</div>
+                                <div class="menu-description">산삼과 녹용이 들어간 특별한 간장왕갑계치킨식</div>
+                                <div class="menu-price">33,000원</div>
+                            </div>
+                        </div>
+
+                        <div class="menu-item">
+                            <div class="menu-image">🦀</div>
+                            <div class="menu-info">
+                                <div class="menu-name">국내산 암넘 꽃게장정식</div>
+                                <div class="menu-description">국내산 암넘 꽃게장정식</div>
+                                <div class="menu-price">33,000원</div>
+                            </div>
+                        </div>
+
+                        <div class="menu-item">
+                            <div class="menu-image">🥘</div>
+                            <div class="menu-info">
+                                <div class="menu-name">어수꽃게탕</div>
+                                <div class="menu-description">신선한 꽃게가 들어간 시원한 국물 요리</div>
+                                <div class="menu-price">23,000원</div>
+                            </div>
+                        </div>
+
+                        <div class="menu-item">
+                            <div class="menu-image">🦐</div>
+                            <div class="menu-info">
+                                <div class="menu-name">어수 갈치조림100%국산+계장정식1인</div>
+                                <div class="menu-description">국산 먹갈치와 간장계란, 양념계란이 함께 나오는 먹성비 정식!</div>
+                                <div class="menu-price">22,000원</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Tab -->
+                <div class="tab-panel" id="location">
+                    <div class="section-title">위치</div>
+                    <div class="map-container">
+                        🗺️ 지도가 여기에 표시됩니다
+                    </div>
+                    <div class="location-details">
+                        <div class="location-item">
+                            <span class="location-label">주소</span>
+                            <span class="location-value">서울 강남구 압구정로 464-41</span>
+                        </div>
+                        <!-- <div class="location-item">
+                            <span class="location-label">지하철</span>
+                            <span class="location-value">압구정역 6번출구 도보 1분</span>
+                        </div>
+                        <div class="location-item">
+                            <span class="location-label">주차</span>
+                            <span class="location-value">발렛파킹 가능</span>
+                        </div>
+                        <div class="location-item">
+                            <span class="location-label">버스</span>
+                            <span class="location-value">압구정역 정류장 하차</span>
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- Facilities Tab -->
+                <div class="tab-panel" id="facilities">
+                    <div class="section-title">편의시설</div>
+                    <div class="facilities-grid">
+                        <div class="facility-item">
+                            <div class="facility-icon">🚗</div>
+                            <div class="facility-name">발렛파킹</div>
+                            <div class="facility-description">무료 발렛파킹 서비스 제공</div>
+                        </div>
+                        <div class="facility-item">
+                            <div class="facility-icon">♿</div>
+                            <div class="facility-name">휠체어 접근</div>
+                            <div class="facility-description">휠체어 이용 가능</div>
+                        </div>
+                        <div class="facility-item">
+                            <div class="facility-icon">🍷</div>
+                            <div class="facility-name">주류 판매</div>
+                            <div class="facility-description">다양한 주류 판매</div>
+                        </div>
+                        <div class="facility-item">
+                            <div class="facility-icon">📶</div>
+                            <div class="facility-name">무료 WiFi</div>
+                            <div class="facility-description">고속 무료 인터넷</div>
+                        </div>
+                        <div class="facility-item">
+                            <div class="facility-icon">🎂</div>
+                            <div class="facility-name">기념일 서비스</div>
+                            <div class="facility-description">생일, 기념일 케이크 서비스</div>
+                        </div>
+                        <div class="facility-item">
+                            <div class="facility-icon">👥</div>
+                            <div class="facility-name">단체석</div>
+                            <div class="facility-description">10인 이상 단체 이용 가능</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operating Info Tab -->
+                <div class="tab-panel" id="info">
+                    <div class="section-title">운영정보</div>
+                    <div class="operating-info">
+                        <div class="info-item">
+                            <span class="info-label">영업시간</span>
+                            <span class="info-value">매일 17:30 - 23:00 (라스트오더 22:00)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">휴무일</span>
+                            <span class="info-value">연중무휴</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">전화번호</span>
+                            <span class="info-value">02-3446-8822</span>
+                        </div>
+                        <!-- <div class="info-item">
+                            <span class="info-label">예약</span>
+                            <span class="info-value">필수 (당일 예약 불가)</span>
+                        </div> -->
+                        <!-- <div class="info-item">
+                            <span class="info-label">결제수단</span>
+                            <span class="info-value">현금, 카드, 계좌이체</span>
+                        </div> -->
+                        <!-- <div class="info-item">
+                            <span class="info-label">취소/변경</span>
+                            <span class="info-value">예약 2시간 전까지 가능</span>
+                        </div> -->
+                        <!-- <div class="info-item">
+                            <span class="info-label">최소 주문</span>
+                            <span class="info-value">1인당 30,000원</span>
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-panel" id="reviews">
+                    <div class="section-title">리뷰</div>
+                    <div class="review-summary">
+                        <div class="review-score">4.8</div>
+                        <div class="review-total">총 386개의 리뷰</div>
+                        <div class="review-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">5점</div>
+                                <div class="breakdown-score">45명</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">4점</div>
+                                <div class="breakdown-score">4명</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">3점</div>
+                                <div class="breakdown-score">42명</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">2점</div>
+                                <div class="breakdown-score">4234명</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">1점</div>
+                                <div class="breakdown-score">4234명</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="individual-review">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">김</div>
+                                <div>
+                                    <div class="reviewer-name">김**님</div>
+                                    <div class="review-date">2025.08.28</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <img src="" alt="이미지">
+                        <div class="review-text">
+                            정말 최고의 오마카세였습니다! 셰프님의 정성이 느껴지는 요리 하나하나가 예술 작품 같았어요. 
+                            특히 참치 뱃살은 입에서 녹는 느낌이었고, 성게도 정말 신선했습니다. 
+                            분위기도 조용하고 고급스러워서 특별한 날에 가기 딱 좋은 곳이에요. 다음에도 꼭 방문하겠습니다!
+                        </div>
+                    </div>
+
+                    <div class="individual-review">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">이</div>
+                                <div>
+                                    <div class="reviewer-name">이**님</div>
+                                    <div class="review-date">2025.08.25</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <div class="review-text">
+                            생일 기념으로 방문했는데 정말 만족스러웠어요. 
+                            스시 하나하나가 완벽했고, 셰프님께서 직접 설명해주시는 것도 좋았습니다. 
+                            가격대가 있지만 그만한 가치가 충분한 곳입니다. 예약은 필수예요!
+                        </div>
+                    </div>
+
+                    <div class="individual-review">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">박</div>
+                                <div>
+                                    <div class="reviewer-name">박**님</div>
+                                    <div class="review-date">2025.08.22</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐</div>
+                        </div>
+                        <div class="review-text">
+                            음식은 정말 훌륭했지만 조금 비싸다는 느낌이 들었어요. 
+                            그래도 신선한 재료와 섬세한 손길이 느껴지는 요리였습니다. 
+                            서비스도 친절했고, 압구정역에서 가깝다는 것도 장점이네요.
+                        </div>
+                    </div>
+
+                    <div class="individual-review">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">최</div>
+                                <div>
+                                    <div class="reviewer-name">최**님</div>
+                                    <div class="review-date">2025.08.20</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <div class="review-text">
+                            회사 회식으로 방문했는데 모든 직원들이 만족했어요. 
+                            특히 갈치조림이 정말 맛있었고, 꽃게장도 짜지 않고 딱 좋았습니다. 
+                            단체 예약도 가능해서 좋았어요. 추천합니다!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Reservation Card -->
+            <div class="reservation-card">
+                <h3 class="reservation-title">예약하기</h3>
+                
+                <div class="date-time-selector">
+                    <div class="selector-group">
+                        <label class="selector-label">날짜</label>
+                        <input type="date" class="selector-input" value="2025-09-03">
+                    </div>
+                    
+                    <div class="selector-group">
+                        <label class="selector-label">인원</label>
+                        <div class="guest-counter">
+                            <span>성인</span>
+                            <div class="counter-controls">
+                                <button class="counter-btn">-</button>
+                                <span class="guest-count">2</span>
+                                <button class="counter-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="available-times">
+                    <div class="time-slot disabled">17:30</div>
+                    <div class="time-slot">18:00</div>
+                    <div class="time-slot selected">19:00</div>
+                    <div class="time-slot">19:30</div>
+                    <div class="time-slot">20:00</div>
+                    <div class="time-slot disabled">20:30</div>
+                </div>
+
+                <button class="reservation-btn">예약하기</button>
+                
+                <div class="quick-actions">
+                    <button class="quick-btn">💬 문의</button>
+                    <button class="quick-btn">📞 전화</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 웨이팅 -->
+         <div class="reservation-card">
+                <h3 class="reservation-title">웨이팅하기</h3>
+                 <div class="available-times">
+                    <div class="time-slot disabled">2인석 (n팀)</div>
+                    <div class="time-slot">4인석 (웨이팅이 없어요)</div>
+                </div>
+                
+                <div class="date-time-selector">                    
+                    <div class="selector-group">
+                        <label class="selector-label">인원</label>
+                        <div class="guest-counter">
+                            <span>성인</span>
+                            <div class="counter-controls">
+                                <button class="counter-btn">-</button>
+                                <span class="guest-count">2</span>
+                                <button class="counter-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            
+
+                <button class="reservation-btn">예약하기</button>
+                
+                <div class="quick-actions">
+                    <button class="quick-btn">💬 문의</button>
+                    <button class="quick-btn">📞 전화</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and panels
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding panel
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Guest counter
+        document.querySelectorAll('.counter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const isIncrement = btn.textContent === '+';
+                const counter = btn.parentElement.querySelector('.guest-count');
+                let count = parseInt(counter.textContent);
+                
+                if (isIncrement) {
+                    count = Math.min(count + 1, 10);
+                } else {
+                    count = Math.max(count - 1, 1);
+                }
+                
+                counter.textContent = count;
+            });
+        });
+
+        // Time slot selection
+        document.querySelectorAll('.time-slot:not(.disabled)').forEach(slot => {
+            slot.addEventListener('click', () => {
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                slot.classList.add('selected');
+            });
+        });
+
+        // Image gallery thumbs
+        document.querySelectorAll('.thumb').forEach((thumb, index) => {
+            thumb.addEventListener('click', () => {
+                document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+                document.querySelector('.gallery-nav').textContent = `${index + 1}/5`;
+            });
+        });
+
+        // Reservation button
+        document.querySelector('.reservation-btn').addEventListener('click', () => {
+            alert('예약 페이지로 이동합니다!');
+        });
+    </script>
+</body>
+</html>
