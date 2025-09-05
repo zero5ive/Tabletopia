@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - 개선된 PC 버전</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            padding: 0 40px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f1f3f4;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .icon-btn:hover {
+            background: #e8eaed;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            min-height: calc(100vh - 64px);
+        }
+
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            background: #e9ecef;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #adb5bd;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .sidebar-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .menu-list {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 8px 0;
+        }
+
+        .menu-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease;
+        }
+
+        .menu-link:hover {
+            color: #007bff;
+        }
+
+        .notification-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .banner-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .view-all {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .view-all:hover {
+            text-decoration: underline;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .restaurant-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 160px;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .rating-score {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .rating-count {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .card-meta {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 14px;
+        }
+
+        .add-collection-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .add-collection-btn:hover {
+            border-color: #007bff;
+            background: #f0f8ff;
+            color: #007bff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            color: #333;
+            border-bottom-color: #007bff;
+        }
+
+        .tab:hover:not(.active) {
+            color: #007bff;
+        }
+
+        .feature-banner {
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+            border-radius: 12px; 
+            color: white;
+        }
+
+        .feature-banner-icon {
+            font-size: 36px;
+        }
+
+        .feature-banner-content {
+            flex: 1;
+        }
+
+        .feature-banner-title {
+            font-size: 16px; 
+            font-weight: 600; 
+            margin-bottom: 4px;
+        }
+
+        .feature-banner-subtitle {
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .feature-banner-link {
+            color: white;
+            text-decoration: none;
+        }
+
+        .feature-banner-link:hover {
+            text-decoration: underline;
+        }
+
+          .individual-review {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #f1f3f4;
+            margin-bottom: 16px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            background: #ff6b35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .review-date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .review-rating {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .review-text {
+            color: #495057;
+            line-height: 1.6;
+        }
+        
+
+        /* 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 240px 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .left-sidebar {
+                order: 1;
+            }
+
+            .main-content {
+                order: 0;
+            }
+
+            .card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+
+            .header {
+                padding: 0 20px;
+                height: 56px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">마이페이지</div>
+        <div class="header-actions">
+            <button class="icon-btn">🔔</button>
+            <button class="icon-btn">⚙️</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar">👤</div>
+                <h2 class="profile-name">김김예진진</h2>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">팔로워</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">팔로잉</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn">프로필 수정</button>
+                    <button class="btn">공유함</button>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">마이메뉴</h3>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">💾 나의 저장</a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">📝 리뷰</a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">📅 예약 내역</a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">🏷️ 컬렉션</a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">🎁 쿠폰</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="notification-banner">
+                <div class="banner-icon">🎉</div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 2px;">특별한 날 알림</div>
+                    <div>생일/기념일 등록하기</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">예약 내역</h3>
+                </div>
+                <div class="feature-banner">
+                    <div class="feature-banner-icon">🎁</div>
+                    <div class="feature-banner-content">
+                        <div class="feature-banner-title">
+                            <a href="/html/mywaiting.html" class="feature-banner-link">예약 내역 이동</a>
+                        </div>
+                        <div class="feature-banner-subtitle">최신 예약 정보를 확인하세요</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">리뷰 내역</h3>
+                </div>
+                <div class="individual-review">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">김</div>
+                                <div>
+                                    <div class="reviewer-name">김**님</div>
+                                    <div class="review-date">2025.08.28</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <img src="" alt="이미지">
+                        <div class="review-text">
+                            정말 최고의 오마카세였습니다! 셰프님의 정성이 느껴지는 요리 하나하나가 예술 작품 같았어요. 
+                            특히 참치 뱃살은 입에서 녹는 느낌이었고, 성게도 정말 신선했습니다. 
+                            분위기도 조용하고 고급스러워서 특별한 날에 가기 딱 좋은 곳이에요. 다음에도 꼭 방문하겠습니다!
+                        </div>
+                    </div>
+            </section>
+
+            <section class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">북마크</h3>
+                </div>
+                <!-- <div class="add-collection-btn">
+                    <span>➕</span>
+                    <span>새 컬렉션 만들기</span>
+                </div> -->
+                <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가로형 리스트 카드</title>
+    <style>
+        .card-image {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 120px;
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .image-section {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .content-section {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .bookmark-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .bookmark-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+        }
+
+        .bookmark-btn svg {
+            color: #333;
+        }
+
+        .quick-info {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .info-badge {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .info-badge:first-child {
+            background: #22c55e;
+        }
+
+        .info-badge:last-child {
+            background: #3b82f6;
+        }
+
+        .restaurant-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .restaurant-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .pagination-btn {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination-btn:hover:not(.disabled):not(.active) {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .pagination-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .pagination-btn.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.arrow {
+            padding: 8px;
+        }
+
+        .pagination-btn.arrow svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .pagination-dots {
+            color: #94a3b8;
+            padding: 0 4px;
+            font-weight: 600;
+        }
+
+        /* 다른 스타일 버전들 */
+        .pagination-simple {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pagination-simple .page-info {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0 16px;
+        }
+
+        .pagination-simple .nav-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination-simple .nav-btn:hover:not(.disabled) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .pagination-simple .nav-btn.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            border-color: #f1f5f9;
+        }
+
+        .demo-section {
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .demo-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-image">
+        <div class="image-section">
+            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=120&h=120&fit=crop" alt="소시센몬">
+        </div>
+        <div class="content-section">
+            <button class="bookmark-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </button>
+            <div>
+                <div class="restaurant-title">소시센몬</div>
+                <div class="restaurant-desc">소시지 전문점 • 강남구</div>
+            </div>
+            <div class="quick-info">
+                <span class="info-badge">영업중</span>
+                <span class="info-badge">예약가능</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+ <div class="demo-section">
+        <div class="pagination-container">
+            <div class="pagination">
+                <button class="pagination-btn arrow disabled">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">4</button>
+                <button class="pagination-btn">5</button>
+                <span class="pagination-dots">...</span>
+                <button class="pagination-btn">15</button>
+                <button class="pagination-btn arrow">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+                
+            </section>
+           
+            <section class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">오늘 많이 저장하는 레스토랑</h3>
+                </div>
+                <div class="card-grid">
+                    <div class="restaurant-card">
+                        <div class="card-image" style="background: linear-gradient(135deg, #8B4513 0%, #D2B48C 100%);">
+                        </div>
+                        <div class="card-content">
+                            <h4 class="card-title">BISTROT de...</h4>
+                            <p class="card-description">프랑스요리 • 청담</p>
+                            <div class="rating">
+                                <span class="stars">★</span>
+                                <span class="rating-score">4.7</span>
+                                <span class="rating-count">(2488)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="restaurant-card">
+                        <div class="card-image" style="background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);">
+                        </div>
+                        <div class="card-content">
+                            <h4 class="card-title">LAB 24 by K...</h4>
+                            <p class="card-description">프랑스요리 • 부산 송정</p>
+                            <div class="rating">
+                                <span class="stars">★</span>
+                                <span class="rating-score">4.7</span>
+                                <span class="rating-count">(3183)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="restaurant-card">
+                        <div class="card-image" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);">
+                        </div>
+                        <div class="card-content">
+                            <h4 class="card-title">MAISON HAM</h4>
+                            <p class="card-description">이탈리아요리 • 한남</p>
+                            <div class="rating">
+                                <span class="stars">★</span>
+                                <span class="rating-score">4.4</span>
+                                <span class="rating-count">(2222)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="restaurant-card">
+                        <div class="card-image" style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);">
+                        </div>
+                        <div class="card-content">
+                            <h4 class="card-title">SUSHI YOSHII</h4>
+                            <p class="card-description">일식 • 압구정</p>
+                            <div class="rating">
+                                <span class="stars">★</span>
+                                <span class="rating-score">4.8</span>
+                                <span class="rating-count">(892)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

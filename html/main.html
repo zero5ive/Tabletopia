@@ -210,37 +210,6 @@
             color: #6c757d;
         }
         
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 60px;
-            overflow-x: auto;
-            padding: 8px 0;
-        }
-        
-        .quick-action-item {
-            background: white;
-            padding: 24px 32px;
-            border-radius: 50px;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            font-weight: 500;
-        }
-        
-        .quick-action-item:hover {
-            border-color: #ff6b35;
-            background: #fff5f2;
-            transform: scale(1.05);
-        }
-        
-        .quick-action-item.active {
-            background: #ff6b35;
-            color: white;
-        }
-        
         /* Restaurant Grid */
         .restaurants-section {
             margin-bottom: 60px;
@@ -253,28 +222,6 @@
             margin-bottom: 32px;
             flex-wrap: wrap;
             gap: 16px;
-        }
-        
-        .filter-options {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: #ff6b35;
-            color: white;
-            border-color: #ff6b35;
         }
         
         .restaurants-grid {
@@ -387,6 +334,222 @@
             background: #e55a2b;
         }
         
+        /* 챗봇 스타일 */
+        .chatbot-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+        
+        .chatbot-button {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            position: relative;
+        }
+        
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 24px rgba(255, 107, 53, 0.6);
+        }
+        
+        .chatbot-button.active {
+            transform: rotate(45deg);
+        }
+        
+        /* 미리보기 말풍선 */
+        .chat-preview {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .chat-preview.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .chat-preview::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 24px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+        
+        .chat-preview-text {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* 채팅창 */
+        .chatbot-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            height: 800px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chatbot-window.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            text-align: center;
+        }
+        
+        .chat-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chat-header p {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .message.bot {
+            background: #f8f9fa;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+        }
+        
+        .message.user {
+            background: #ff6b35;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+        }
+        
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid #f1f3f4;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-input:focus {
+            border-color: #ff6b35;
+        }
+        
+        .chat-send-btn {
+            width: 40px;
+            height: 40px;
+            background: #ff6b35;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-send-btn:hover {
+            background: #e55a2b;
+            transform: scale(1.05);
+        }
+        
+        /* 빠른 응답 버튼 */
+        .quick-responses {
+            padding: 0 20px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quick-response-btn {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-response-btn:hover {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header-content {
@@ -416,6 +579,13 @@
             .restaurants-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .chatbot-window {
+                width: calc(100vw - 32px);
+                height: 80vh;
+                bottom: 90px;
+                right: -8px;
+            }
         }
     </style>
 </head>
@@ -434,7 +604,7 @@
             </div>
             
             <div class="user-actions">
-                <button class="btn btn-secondary">로그인</button>
+                <button class="btn btn-secondary"><a href="mypage.html">로그인</a></button>
                 <button class="btn btn-primary">회원가입</button>
             </div>
         </div>
@@ -456,6 +626,11 @@
         <section>
             <h2 class="section-title">어떤 음식이 드시고 싶으세요?</h2>
             <div class="categories-grid">
+                <div class="category-item">
+                    <div class="category-icon">🛍️</div>
+                    <div class="category-name"><a href="/html/restlist.html">전체</a></div>
+                    <div class="category-desc">특별한 날의 선택</div>
+                </div>
                 <div class="category-item">
                     <div class="category-icon">🛍️</div>
                     <div class="category-name">한식</div>
@@ -497,10 +672,12 @@
          <section>
             <h2 class="section-title">어디로 가시나요?</h2>
             <div class="categories-grid">
-                <div class="category-item">
-                    <div class="category-icon">🛍️</div>
-                    <div class="category-name">서울</div>
-                </div>
+                <a href="/html/map.html">
+                    <div class="category-item">
+                        <div class="category-icon">🛍️</div>
+                        <div class="category-name">서울</div>
+                    </div>
+                </a>
                 <div class="category-item">
                     <div class="category-icon">🏠</div>
                     <div class="category-name">대전</div>
@@ -533,18 +710,10 @@
         <section class="restaurants-section">
             <div class="filter-bar">
                 <h2 class="section-title">놓치면 안되는 핫플 가게!(광고)</h2>
-                <!-- <div class="filter-options">
-                    <div class="filter-btn active">전체</div>
-                    <div class="filter-btn">한식</div>
-                    <div class="filter-btn">양식</div>
-                    <div class="filter-btn">일식</div>
-                    <div class="filter-btn">중식</div>
-                    <div class="filter-btn">아시아</div>
-                    <div class="filter-btn">카페·디저트</div>
-                </div> -->
             </div>
             
             <div class="restaurants-grid">
+                <a href="/html/rest.html">
                 <div class="restaurant-card">
                     <div class="restaurant-image"></div>
                     <div class="restaurant-info">
@@ -568,7 +737,8 @@
                         </div>
                     </div>
                 </div>
-                
+                </a>
+
                 <div class="restaurant-card">
                     <div class="restaurant-image"></div>
                     <div class="restaurant-info">
@@ -622,15 +792,6 @@
          <section class="restaurants-section">
             <div class="filter-bar">
                 <h2 class="section-title">새로 입점했어요</h2>
-                <!-- <div class="filter-options">
-                    <div class="filter-btn active">전체</div>
-                    <div class="filter-btn">한식</div>
-                    <div class="filter-btn">양식</div>
-                    <div class="filter-btn">일식</div>
-                    <div class="filter-btn">중식</div>
-                    <div class="filter-btn">아시아</div>
-                    <div class="filter-btn">카페·디저트</div>
-                </div> -->
             </div>
             
             <div class="restaurants-grid">
@@ -691,7 +852,7 @@
                                 <span>4.6</span>
                             </div>
                             <span>양식 • 강남</span>
-                            <span>8만원~</span>
+                            <span class="price">8만원~</span>
                         </div>
                         <div class="restaurant-tags">
                             <span class="tag">파인다이닝</span>
@@ -704,31 +865,60 @@
                         </div>
                     </div>
                 </div>
-                
-    
             </div>
         </section>
     </main>
 
+    <!-- 챗봇 -->
+    <div class="chatbot-container">
+        <!-- 미리보기 말풍선 -->
+        <div class="chat-preview" id="chatPreview">
+            <div class="chat-preview-text">궁금한 게 있으시면 물어보세요! 💬</div>
+        </div>
+        
+        <!-- 채팅창 -->
+        <div class="chatbot-window" id="chatWindow">
+            <div class="chat-header">
+                <h3>테이블토피아 도우미</h3>
+                <p>레스토랑 예약에 대해 궁금한 것을 물어보세요</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    안녕하세요! 테이블토피아 도우미입니다 😊<br>
+                    레스토랑 예약이나 맛집 추천에 대해 도움드릴게요!
+                </div>
+            </div>
+            
+            <div class="quick-responses">
+                <button class="quick-response-btn" onclick="sendQuickMessage('강남 맛집 추천해주세요')">강남 맛집 추천</button>
+                <button class="quick-response-btn" onclick="sendQuickMessage('오늘 예약 가능한 곳 있나요?')">오늘 예약 가능</button>
+                <button class="quick-response-btn" onclick="sendQuickMessage('데이트 코스 추천')">데이트 코스</button>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+                    <button class="chat-send-btn" onclick="sendMessage()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 챗봇 버튼 -->
+        <button class="chatbot-button" id="chatbotButton" onclick="toggleChat()">
+            💬
+        </button>
+    </div>
+
     <script>
-        // 간단한 인터랙션
+        // 기존 스크립트
         document.querySelectorAll('.category-item').forEach(item => {
             item.addEventListener('click', () => {
                 console.log('카테고리 클릭:', item.querySelector('.category-name').textContent);
-            });
-        });
-
-        document.querySelectorAll('.quick-action-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.quick-action-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            });
-        });
-
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
             });
         });
 
@@ -738,6 +928,117 @@
                     alert('예약 페이지로 이동합니다!');
                 }
             });
+        });
+
+        // 챗봇 기능
+        let chatOpen = false;
+        let previewTimeout;
+
+        // 페이지 로드 후 3초 뒤에 미리보기 표시
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showPreview();
+            }, 3000);
+        });
+
+        function showPreview() {
+            if (!chatOpen) {
+                const preview = document.getElementById('chatPreview');
+                preview.classList.add('show');
+                
+                // 5초 후 자동으로 숨김
+                previewTimeout = setTimeout(() => {
+                    preview.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        function hidePreview() {
+            const preview = document.getElementById('chatPreview');
+            preview.classList.remove('show');
+            clearTimeout(previewTimeout);
+        }
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatButton = document.getElementById('chatbotButton');
+            
+            chatOpen = !chatOpen;
+            
+            if (chatOpen) {
+                chatWindow.classList.add('show');
+                chatButton.classList.add('active');
+                chatButton.innerHTML = '✕';
+                hidePreview();
+                
+                // 채팅창이 열릴 때 입력창에 포커스
+                setTimeout(() => {
+                    document.getElementById('chatInput').focus();
+                }, 300);
+            } else {
+                chatWindow.classList.remove('show');
+                chatButton.classList.remove('active');
+                chatButton.innerHTML = '💬';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // 봇 응답 시뮬레이션
+                setTimeout(() => {
+                    const botResponse = getBotResponse(message);
+                    addMessage(botResponse, 'bot');
+                }, 1000);
+            }
+        }
+
+        function sendQuickMessage(message) {
+            addMessage(message, 'user');
+            
+            setTimeout(() => {
+                const botResponse = getBotResponse(message);
+                addMessage(botResponse, 'bot');
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = text;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getBotResponse(message) {
+            const responses = {
+                '강남 맛집 추천해주세요': '강남 지역 인기 맛집을 추천드릴게요!<br>🍣 오마카세 청담 - 일식 오마카세<br>🥩 비스트로 라파엘 - 파인다이닝<br>🍜 미야의 정원 - 아시아 요리<br><br>더 자세한 정보가 필요하시면 말씀해주세요!',
+                '오늘 예약 가능한 곳 있나요?': '오늘 예약 가능한 레스토랑을 확인해드릴게요!<br><br>✅ 오마카세 청담 - 19:00, 21:00<br>✅ 미야의 정원 - 18:30, 20:00<br>❌ 비스트로 라파엘 - 예약 마감<br><br>예약을 원하시는 시간대를 알려주세요!',
+                '데이트 코스 추천': '로맨틱한 데이트 코스를 추천해드릴게요! 💕<br><br>🌅 점심: 미야의 정원 (분위기 좋은 아시아 요리)<br>☕ 오후: 근처 카페에서 디저트<br>🌃 저녁: 비스트로 라파엘 (파인다이닝)<br><br>특별한 날을 위한 완벽한 코스예요!'
+            };
+            
+            return responses[message] || '죄송해요, 조금 더 구체적으로 말씀해주시면 더 정확한 답변을 드릴 수 있어요! 😊<br><br>예를 들어:<br>• "강남 일식 맛집 추천"<br>• "2명 예약 가능한 곳"<br>• "특별한 날 레스토랑"<br>등으로 물어보세요!';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 챗봇 외부 클릭 시 닫기
+        document.addEventListener('click', (e) => {
+            const chatContainer = document.querySelector('.chatbot-container');
+            if (!chatContainer.contains(e.target) && chatOpen) {
+                toggleChat();
+            }
         });
     </script>
 </body>

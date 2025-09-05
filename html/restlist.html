@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이다이닝 - 레스토랑 목록</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fafbfc;
+            color: #1a1a1a;
+            line-height: 1.5;
+        }
+
+        .header {
+            background: white;
+            padding: 16px 0;
+            border-bottom: 1px solid #e8eaed;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff4444;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 48px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #5f6368;
+            font-weight: 500;
+            padding: 8px 0;
+            transition: color 0.2s;
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            color: #ff4444;
+        }
+
+        .main-content {
+            padding: 24px 0;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid #e8eaed;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: #ff4444;
+        }
+
+        .search-btn {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #ff4444, #e63939);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #5f6368;
+            min-width: 60px;
+        }
+
+        .filter-select {
+            padding: 8px 16px;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #e8eaed;
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .results-info {
+            font-size: 16px;
+            color: #5f6368;
+        }
+
+        .results-info .count {
+            font-weight: 600;
+            color: #ff4444;
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .sort-btn {
+            padding: 8px 16px;
+            border: 1px solid #e8eaed;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sort-btn:hover, .sort-btn.active {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+        }
+
+        .card-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .restaurant-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .bookmark-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bookmark-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .bookmark-btn.active {
+            color: #ff4444;
+        }
+
+        .quick-info {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .info-badge {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .restaurant-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .restaurant-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rating .star {
+            color: #ffd700;
+            font-size: 14px;
+        }
+
+        .rating .score {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .rating .reviews {
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .location {
+            color: #5f6368;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .distance {
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .restaurant-tags {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .tag.cuisine {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tag.feature {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .availability-section {
+            border-top: 1px solid #e8eaed;
+            padding-top: 16px;
+        }
+
+        .availability-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .time-slots {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .time-slot {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .time-slot.available {
+            background: #e8f5e8;
+            color: #388e3c;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-slot.available:hover {
+            background: #388e3c;
+            color: white;
+        }
+
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .time-slot.full {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .load-more {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .load-more-btn {
+            padding: 16px 32px;
+            background: white;
+            border: 2px solid #e8eaed;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #5f6368;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .load-more-btn:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .map-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(255, 68, 68, 0.3);
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        .map-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+            .restaurant-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .search-section {
+                padding: 20px;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .restaurant-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">마이다이닝</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="#" class="active">레스토랑 찾기</a></li>
+                        <li><a href="#">나의 예약</a></li>
+                        <li><a href="#">내 주변</a></li>
+                        <li><a href="#">MY</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="매장명, 지역, 음식 종류를 검색해보세요">
+                    <button class="search-btn">🔍 검색</button>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <span class="filter-label">지역</span>
+                        <select class="filter-select">
+                            <option>전체</option>
+                            <option>강남구</option>
+                            <option>서초구</option>
+                            <option>중구</option>
+                            <option>종로구</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <span class="filter-label">음식</span>
+                        <select class="filter-select">
+                            <option>전체</option>
+                            <option>한식</option>
+                            <option>일식</option>
+                            <option>중식</option>
+                            <option>양식</option>
+                        </select>
+                    </div>
+
+                    <!-- <button class="filter-btn active">내 주변</button> -->
+                    <!-- <button class="filter-btn">즉시 예약</button> -->
+                    <!-- <button class="filter-btn">평점 높은 순</button> -->
+                    <!-- <button class="filter-btn">가격대</button> -->
+                </div>
+            </div>
+
+            <div class="results-header">
+                <div class="results-info">
+                    총 <span class="count">127</span>개의 레스토랑을 찾았습니다
+                </div>
+                <div class="sort-options">
+                    <button class="sort-btn active">추천순</button>
+                    <button class="sort-btn">평점순</button>
+                    <button class="sort-btn">리뷰많은순</button>
+                </div>
+            </div>
+
+            
+            <div class="restaurant-grid">
+                <!-- 레스토랑 카드 1 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=200&fit=crop" alt="소시센몬">
+                        <button class="bookmark-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <span class="info-badge">예약가능</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">소시센몬</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.7</span>
+                                <span class="reviews">(1,016)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>선릉 • 소시오마케</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">음식카테고리</span>
+                            <span class="tag feature">여기에 편의시설 항목들</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot unavailable">8.14 (화)</span>
+                                <span class="time-slot available">8.15 (수)</span>
+                                <span class="time-slot available">8.16 (목)</span>
+                                <span class="time-slot full">8.17 (금)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 레스토랑 카드 2 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop" alt="더 스테이크 하우스">
+                        <button class="bookmark-btn active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <span class="info-badge">웨이팅 가능</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">더 스테이크 하우스</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.5</span>
+                                <span class="reviews">(842)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>강남구 청담동 </span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">양식</span>
+                            <span class="tag feature">스테이크</span>
+                            <span class="tag feature">와인바</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot available">18:00</span>
+                                <span class="time-slot available">19:30</span>
+                                <span class="time-slot full">20:00</span>
+                                <span class="time-slot available">21:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 레스토랑 카드 3 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=200&fit=crop" alt="이타리아노 파스타">
+                        <button class="bookmark-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <!-- <span class="info-badge">즉시 예약</span> -->
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">이타리아노 파스타</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.3</span>
+                                <span class="reviews">(567)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>서초구 서초동</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">이탈리안</span>
+                            <span class="tag feature">파스타</span>
+                            <span class="tag feature">피자</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot available">17:30</span>
+                                <span class="time-slot available">18:30</span>
+                                <span class="time-slot available">19:00</span>
+                                <span class="time-slot available">20:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 레스토랑 카드 4 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=200&fit=crop" alt="한정식 궁중연">
+                        <button class="bookmark-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <span class="info-badge">예약 필수</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">한정식 궁중연</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.8</span>
+                                <span class="reviews">(321)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>중구 명동 </span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">한식</span>
+                            <span class="tag feature">한정식</span>
+                            <span class="tag feature">개인실</span>
+                            <span class="tag feature">접대</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot full">12:00</span>
+                                <span class="time-slot available">18:00</span>
+                                <span class="time-slot full">19:00</span>
+                                <span class="time-slot available">20:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 레스토랑 카드 5 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=200&fit=crop" alt="스시 마사">
+                        <button class="bookmark-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <span class="info-badge">오마카세</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">스시 마사</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.9</span>
+                                <span class="reviews">(189)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>강남구 신사동</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">일식</span>
+                            <span class="tag feature">오마카세</span>
+                            <span class="tag feature">프리미엄</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot full">18:00</span>
+                                <span class="time-slot full">19:00</span>
+                                <span class="time-slot available">20:30</span>
+                                <span class="time-slot unavailable">21:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 레스토랑 카드 6 -->
+                <div class="restaurant-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=200&fit=crop" alt="비스트로 파리">
+                        <button class="bookmark-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                        <div class="quick-info">
+                            <span class="info-badge">영업중</span>
+                            <span class="info-badge">예약가능</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="restaurant-name">비스트로 파리</h3>
+                        <div class="restaurant-info">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                <span class="score">4.4</span>
+                                <span class="reviews">(734)</span>
+                            </div>
+                            <div class="location">
+                                <span>📍</span>
+                                <span>종로구 인사동 • 내 위치에서 3.2km</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-tags">
+                            <span class="tag cuisine">프렌치</span>
+                            <span class="tag feature">비스트로</span>
+                            <span class="tag feature">와인</span>
+                        </div>
+                        <div class="availability-section">
+                            <div class="availability-title">오늘 예약 가능 시간</div>
+                            <div class="time-slots">
+                                <span class="time-slot available">18:30</span>
+                                <span class="time-slot available">19:30</span>
+                                <span class="time-slot full">20:00</span>
+                                <span class="time-slot available">21:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>

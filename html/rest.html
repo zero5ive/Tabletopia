@@ -548,6 +548,32 @@
             top: 120px;
         }
         
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+        
+        .toggle-option {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #6c757d;
+        }
+        
+        .toggle-option.active {
+            background: white;
+            color: #ff6b35;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         .reservation-title {
             font-size: 24px;
             font-weight: 600;
@@ -654,6 +680,59 @@
             cursor: not-allowed;
         }
         
+        /* Waiting specific styles */
+        .waiting-info {
+            background: #fff8f2;
+            border: 1px solid #ffe8d6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .waiting-status {
+            font-weight: 600;
+            color: #ff6b35;
+            margin-bottom: 8px;
+        }
+        
+        .waiting-description {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .table-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .table-option {
+            padding: 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .table-option:hover, .table-option.selected {
+            border-color: #ff6b35;
+            background: #fff8f2;
+        }
+        
+        .table-type {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .table-waiting {
+            font-size: 14px;
+            color: #666;
+        }
+        
         .reservation-btn {
             width: 100%;
             background: #ff6b35;
@@ -693,6 +772,15 @@
         .quick-btn:hover {
             background: #f8f9fa;
             border-color: #ff6b35;
+        }
+        
+        /* Hidden content */
+        .reservation-content, .waiting-content {
+            display: none;
+        }
+        
+        .reservation-content.active, .waiting-content.active {
+            display: block;
         }
         
         /* Responsive */
@@ -783,19 +871,11 @@
                         <span class="review-count">리뷰 386개</span>
                     </div>
                     <span class="cuisine-type">일식 • 스시/사시미</span>
-                    <!-- <span class="price-range">8만원~12만원</span> -->
                 </div>
-                <!-- <div class="restaurant-badges">
-                    <span class="badge featured">이달의 맛집</span>
-                    <span class="badge">데이트 코스</span>
-                    <span class="badge">오마카세</span>
-                    <span class="badge">특별한 날</span>
-                </div> -->
                 <div class="restaurant-address">
                     <span class="address-icon">📍</span>
                     <div>
                         <div>서울 강남구 압구정로 464-41</div>
-                        <!-- <div style="font-size: 14px; color: #adb5bd; margin-top: 4px;">압구정역 6번출구에서 도보 1분</div> -->
                     </div>
                 </div>
                 <div class="operating-hours">
@@ -804,10 +884,6 @@
                 </div>
             </div>
 
-            <!-- 웨이팅 -->
-            <div class="nav-tabs">
-                <div class="nav-tab active" data-tab="menu">현재 웨이팅 n팀</div>
-            </div>
             <!-- Navigation Tabs -->
             <div class="nav-tabs">
                 <div class="nav-tab active" data-tab="menu">메뉴소개</div>
@@ -878,18 +954,6 @@
                             <span class="location-label">주소</span>
                             <span class="location-value">서울 강남구 압구정로 464-41</span>
                         </div>
-                        <!-- <div class="location-item">
-                            <span class="location-label">지하철</span>
-                            <span class="location-value">압구정역 6번출구 도보 1분</span>
-                        </div>
-                        <div class="location-item">
-                            <span class="location-label">주차</span>
-                            <span class="location-value">발렛파킹 가능</span>
-                        </div>
-                        <div class="location-item">
-                            <span class="location-label">버스</span>
-                            <span class="location-value">압구정역 정류장 하차</span>
-                        </div> -->
                     </div>
                 </div>
 
@@ -946,22 +1010,6 @@
                             <span class="info-label">전화번호</span>
                             <span class="info-value">02-3446-8822</span>
                         </div>
-                        <!-- <div class="info-item">
-                            <span class="info-label">예약</span>
-                            <span class="info-value">필수 (당일 예약 불가)</span>
-                        </div> -->
-                        <!-- <div class="info-item">
-                            <span class="info-label">결제수단</span>
-                            <span class="info-value">현금, 카드, 계좌이체</span>
-                        </div> -->
-                        <!-- <div class="info-item">
-                            <span class="info-label">취소/변경</span>
-                            <span class="info-value">예약 2시간 전까지 가능</span>
-                        </div> -->
-                        <!-- <div class="info-item">
-                            <span class="info-label">최소 주문</span>
-                            <span class="info-value">1인당 30,000원</span>
-                        </div> -->
                     </div>
                 </div>
 
@@ -988,10 +1036,6 @@
                                 <div class="breakdown-label">2점</div>
                                 <div class="breakdown-score">4234명</div>
                             </div>
-                            <div class="breakdown-item">
-                                <div class="breakdown-label">1점</div>
-                                <div class="breakdown-score">4234명</div>
-                            </div>
                         </div>
                     </div>
                     
@@ -1006,7 +1050,6 @@
                             </div>
                             <div class="review-rating">⭐⭐⭐⭐⭐</div>
                         </div>
-                        <img src="" alt="이미지">
                         <div class="review-text">
                             정말 최고의 오마카세였습니다! 셰프님의 정성이 느껴지는 요리 하나하나가 예술 작품 같았어요. 
                             특히 참치 뱃살은 입에서 녹는 느낌이었고, 성게도 정말 신선했습니다. 
@@ -1075,71 +1118,80 @@
         <div class="sidebar">
             <!-- Reservation Card -->
             <div class="reservation-card">
-                <h3 class="reservation-title">예약하기</h3>
-                
-                <div class="date-time-selector">
-                    <div class="selector-group">
-                        <label class="selector-label">날짜</label>
-                        <input type="date" class="selector-input" value="2025-09-03">
+                <!-- Toggle Switch -->
+                <div class="toggle-container">
+                    <div class="toggle-option active" onclick="toggleReservationType('reservation')">예약하기</div>
+                    <div class="toggle-option" onclick="toggleReservationType('waiting')">웨이팅하기</div>
+                </div>
+
+                <!-- Reservation Content -->
+                <div class="reservation-content active">
+                    <div class="date-time-selector">
+                        <div class="selector-group">
+                            <label class="selector-label">날짜</label>
+                            <input type="date" class="selector-input" value="2025-09-03">
+                        </div>
+                        
+                        <div class="selector-group">
+                            <label class="selector-label">인원</label>
+                            <div class="guest-counter">
+                                <span>성인</span>
+                                <div class="counter-controls">
+                                    <button class="counter-btn">-</button>
+                                    <span class="guest-count">2</span>
+                                    <button class="counter-btn">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="available-times">
+                        <div class="time-slot disabled">17:30</div>
+                        <div class="time-slot">18:00</div>
+                        <div class="time-slot selected">19:00</div>
+                        <div class="time-slot">19:30</div>
+                        <div class="time-slot">20:00</div>
+                        <div class="time-slot disabled">20:30</div>
+                    </div>
+
+                    <button class="reservation-btn" onclick="location.href='/html/table.html'">예약하기</button>
+                </div>
+
+                <!-- Waiting Content -->
+                <div class="waiting-content">
+                    <div class="waiting-info">
+                        <div class="waiting-status">현재 웨이팅 5팀</div>
+                        <div class="waiting-description">예상 대기시간: 약 40분</div>
+                    </div>
+
+                    <div class="table-options">
+                        <div class="table-option selected">
+                            <div class="table-type">2인석</div>
+                            <div class="table-waiting">현재 5팀 대기</div>
+                        </div>
+                        <div class="table-option">
+                            <div class="table-type">4인석</div>
+                            <div class="table-waiting">웨이팅이 없어요</div>
+                        </div>
                     </div>
                     
-                    <div class="selector-group">
-                        <label class="selector-label">인원</label>
-                        <div class="guest-counter">
-                            <span>성인</span>
-                            <div class="counter-controls">
-                                <button class="counter-btn">-</button>
-                                <span class="guest-count">2</span>
-                                <button class="counter-btn">+</button>
+                    <div class="date-time-selector">                    
+                        <div class="selector-group">
+                            <label class="selector-label">인원</label>
+                            <div class="guest-counter">
+                                <span>성인</span>
+                                <div class="counter-controls">
+                                    <button class="counter-btn">-</button>
+                                    <span class="guest-count">2</span>
+                                    <button class="counter-btn">+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <button class="reservation-btn">웨이팅 등록</button>
                 </div>
 
-                <div class="available-times">
-                    <div class="time-slot disabled">17:30</div>
-                    <div class="time-slot">18:00</div>
-                    <div class="time-slot selected">19:00</div>
-                    <div class="time-slot">19:30</div>
-                    <div class="time-slot">20:00</div>
-                    <div class="time-slot disabled">20:30</div>
-                </div>
-
-                <button class="reservation-btn">예약하기</button>
-                
-                <div class="quick-actions">
-                    <button class="quick-btn">💬 문의</button>
-                    <button class="quick-btn">📞 전화</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 웨이팅 -->
-         <div class="reservation-card">
-                <h3 class="reservation-title">웨이팅하기</h3>
-                 <div class="available-times">
-                    <div class="time-slot disabled">2인석 (n팀)</div>
-                    <div class="time-slot">4인석 (웨이팅이 없어요)</div>
-                </div>
-                
-                <div class="date-time-selector">                    
-                    <div class="selector-group">
-                        <label class="selector-label">인원</label>
-                        <div class="guest-counter">
-                            <span>성인</span>
-                            <div class="counter-controls">
-                                <button class="counter-btn">-</button>
-                                <span class="guest-count">2</span>
-                                <button class="counter-btn">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            
-
-                <button class="reservation-btn">예약하기</button>
-                
                 <div class="quick-actions">
                     <button class="quick-btn">💬 문의</button>
                     <button class="quick-btn">📞 전화</button>
@@ -1149,6 +1201,27 @@
     </div>
 
     <script>
+        // Toggle between reservation and waiting
+        function toggleReservationType(type) {
+            // Update toggle buttons
+            document.querySelectorAll('.toggle-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            // Update content visibility
+            document.querySelectorAll('.reservation-content, .waiting-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            if (type === 'reservation') {
+                document.querySelector('.toggle-option:first-child').classList.add('active');
+                document.querySelector('.reservation-content').classList.add('active');
+            } else {
+                document.querySelector('.toggle-option:last-child').classList.add('active');
+                document.querySelector('.waiting-content').classList.add('active');
+            }
+        }
+
         // Tab navigation
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1190,6 +1263,14 @@
             });
         });
 
+        // Table option selection for waiting
+        document.querySelectorAll('.table-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.table-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
         // Image gallery thumbs
         document.querySelectorAll('.thumb').forEach((thumb, index) => {
             thumb.addEventListener('click', () => {
@@ -1197,11 +1278,6 @@
                 thumb.classList.add('active');
                 document.querySelector('.gallery-nav').textContent = `${index + 1}/5`;
             });
-        });
-
-        // Reservation button
-        document.querySelector('.reservation-btn').addEventListener('click', () => {
-            alert('예약 페이지로 이동합니다!');
         });
     </script>
 </body>
