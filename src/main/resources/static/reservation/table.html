@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>좌석 선택 - 정미스시</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .restaurant-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 8px;
+        }
+        
+        .booking-info {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .seating-layout {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .layout-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #212529;
+        }
+        
+        .restaurant-floor {
+            position: relative;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 40px;
+            min-height: 500px;
+        }
+        
+        /* 스시 바 카운터 */
+        .sushi-counter {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 80px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* 카운터 좌석 */
+        .counter-seats {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* 테이블들 */
+        .table-area {
+            position: absolute;
+        }
+        
+        .table-2 {
+            top: 280px;
+            left: 100px;
+        }
+        
+        .table-4 {
+            top: 280px;
+            right: 100px;
+        }
+        
+        .table-window {
+            top: 180px;
+            left: 50px;
+        }
+        
+        .private-room {
+            bottom: 50px;
+            right: 50px;
+            width: 200px;
+            height: 120px;
+            border: 2px solid #ff6b35;
+            border-radius: 8px;
+            background: rgba(255, 107, 53, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff6b35;
+        }
+        
+        /* 좌석 스타일 */
+        .seat {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .seat.available {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            color: #1976d2;
+        }
+        
+        .seat.available:hover {
+            background: #bbdefb;
+            transform: scale(1.1);
+        }
+        
+        .seat.selected {
+            background: #ff6b35;
+            border: 2px solid #e55a2b;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .seat.occupied {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            color: #c62828;
+            cursor: not-allowed;
+        }
+        
+        /* 테이블 */
+        .table {
+            background: #6d4c41;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .round-table {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        
+        .rect-table {
+            width: 100px;
+            height: 60px;
+        }
+        
+        /* 좌석 그룹 */
+        .seat-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .seat-group.vertical {
+            flex-direction: column;
+        }
+        
+        /* 창가 표시 */
+        .window {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #1976d2;
+        }
+        
+        /* 범례 */
+        .legend {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .legend-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #212529;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-seat {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        /* 예약 정보 */
+        .booking-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 20px;
+        }
+        
+        .summary-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #212529;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: #ff6b35;
+        }
+        
+        .confirm-btn {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        
+        .confirm-btn:hover:not(:disabled) {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+        
+        .confirm-btn:disabled {
+            background: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .restaurant-floor {
+                padding: 20px;
+                min-height: 400px;
+            }
+            
+            .sushi-counter {
+                width: 200px;
+                height: 60px;
+                font-size: 12px;
+            }
+            
+            .counter-seats {
+                top: 130px;
+                gap: 10px;
+            }
+            
+            .seat {
+                width: 35px;
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="restaurant-name">정미스시</div>
+        <div class="booking-info">2025년 9월 3일 (수) 19:00 • 2명</div>
+    </div>
+    
+    <div class="container">
+        <div class="main-content">
+            <div>
+                <!-- 범례 -->
+                <div class="legend">
+                    <div class="legend-title">좌석 안내</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-seat available">1</div>
+                            <span>선택 가능</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-seat selected">2</div>
+                            <span>선택됨</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-seat occupied">X</div>
+                            <span>예약됨</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 좌석 배치도 -->
+                <div class="seating-layout">
+                    <div class="layout-title">좌석 배치도</div>
+                    
+                    <div class="restaurant-floor">
+                        <!-- 창가 -->
+                        <div class="window">🪟 창가</div>
+                        
+                        <!-- 스시 카운터 -->
+                        <div class="sushi-counter">🍣 스시 바</div>
+                        
+                        <!-- 카운터 좌석 -->
+                        <div class="counter-seats">
+                            <div class="seat available" data-seat="C1" data-type="counter" data-price="0">1(1인석)</div>
+                            <div class="seat available" data-seat="C2" data-type="counter" data-price="0">2(1인석)</div>
+                            <div class="seat available" data-seat="C3" data-type="counter" data-price="0">3(1인석)</div>
+                            <div class="seat occupied" data-seat="C4">4</div>
+                            <div class="seat available" data-seat="C5" data-type="counter" data-price="0">5(1인석)</div>
+                            <div class="seat available" data-seat="C6" data-type="counter" data-price="0">6(1인석)</div>
+                        </div>
+                        
+                        <!-- 창가석 -->
+                        <div class="table-area table-window">
+                            <div class="seat-group">
+                                <div class="table round-table">1 (2인석)</div>
+                                <div class="seat-group vertical">
+                                    <!-- <div class="seat available" data-seat="W1-1" data-type="window" data-price="15000">1</div>
+                                    <div class="seat available" data-seat="W1-2" data-type="window" data-price="15000">2</div> -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2인 테이블 -->
+                        <div class="table-area table-2">
+                            <div class="seat-group">
+                                <!-- <div class="seat available" data-seat="T2-1" data-type="table2" data-price="10000">1</div> -->
+                                <div class="table rect-table">2 (2인석)</div>
+                                <!-- <div class="seat occupied" data-seat="T2-2">2</div> -->
+                            </div>
+                        </div>
+                        
+                        <!-- 4인 테이블 -->
+                        <div class="table-area table-4">
+                            <div class="seat-group">
+                                <div class="seat-group vertical">
+                                    <!-- <div class="seat available" data-seat="T4-1" data-type="table4" data-price="20000">1</div> -->
+                                    <!-- <div class="seat available" data-seat="T4-2" data-type="table4" data-price="20000">2</div> -->
+                                </div>
+                                <div class="table round-table">3 (4인석)</div>
+                                <div class="seat-group vertical">
+                                    <!-- <div class="seat available" data-seat="T4-3" data-type="table4" data-price="20000">3</div> -->
+                                    <!-- <div class="seat occupied" data-seat="T4-4">4</div> -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 프라이빗룸 -->
+                        <div class="private-room">
+                            <div style="margin-bottom: 8px;">🏠 프라이빗룸</div>
+                            <div style="display: flex; gap: 8px;">
+                                <div class="seat available" data-seat="P1" data-type="private" data-price="50000" style="width: 30px; height: 30px; font-size: 10px;">5</div>
+                                <div class="seat available" data-seat="P2" data-type="private" data-price="50000" style="width: 30px; height: 30px; font-size: 10px;">6</div>
+                                <div class="seat available" data-seat="P3" data-type="private" data-price="50000" style="width: 30px; height: 30px; font-size: 10px;">7</div>
+                                <div class="seat available" data-seat="P4" data-type="private" data-price="50000" style="width: 30px; height: 30px; font-size: 10px;">8</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 예약 요약 -->
+            <div class="booking-summary">
+                <div class="summary-title">선택한 좌석</div>
+                <div id="selected-seats">
+                    <p style="color: #6c757d; text-align: center; padding: 20px;">좌석을 선택해주세요</p>
+                </div>
+                
+                <div id="booking-details" style="display: none;">
+                    <div class="summary-item">
+                        <span>날짜</span>
+                        <span>2025-09-03</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>시간</span>
+                        <span>19:00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>인원</span>
+                        <span>2명</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>좌석</span>
+                        <span id="seat-info">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>테이블 요금</span>
+                        <span id="table-fee">0원</span>
+                    </div>
+                </div>
+                
+                <button class="confirm-btn" id="confirm-btn" disabled>좌석 확정</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedSeats = [];
+        const maxSeats = 2; // 2명 예약
+        
+        // 좌석 클릭 처리
+        document.querySelectorAll('.seat.available').forEach(seat => {
+            seat.addEventListener('click', () => {
+                const seatId = seat.getAttribute('data-seat');
+                const seatType = seat.getAttribute('data-type');
+                const seatPrice = parseInt(seat.getAttribute('data-price')) || 0;
+                
+                if (seat.classList.contains('selected')) {
+                    // 좌석 선택 해제
+                    seat.classList.remove('selected');
+                    selectedSeats = selectedSeats.filter(s => s.id !== seatId);
+                } else {
+                    // 새 좌석 선택
+                    if (selectedSeats.length < maxSeats) {
+                        seat.classList.add('selected');
+                        selectedSeats.push({
+                            id: seatId,
+                            type: seatType,
+                            price: seatPrice,
+                            element: seat
+                        });
+                    } else {
+                        alert(`최대 ${maxSeats}석까지 선택 가능합니다.`);
+                    }
+                }
+                
+                updateBookingSummary();
+            });
+        });
+        
+        // 예약 요약 업데이트
+        function updateBookingSummary() {
+            const selectedSeatsDiv = document.getElementById('selected-seats');
+            const bookingDetails = document.getElementById('booking-details');
+            const confirmBtn = document.getElementById('confirm-btn');
+            
+            if (selectedSeats.length === 0) {
+                selectedSeatsDiv.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">좌석을 선택해주세요</p>';
+                bookingDetails.style.display = 'none';
+                confirmBtn.disabled = true;
+            } else {
+                // 선택된 좌석 표시
+                const seatsList = selectedSeats.map(seat => `<div style="background: #fff5f2; padding: 8px 12px; border-radius: 6px; margin: 4px 0; color: #ff6b35; font-weight: 600;">${seat.id}</div>`).join('');
+                selectedSeatsDiv.innerHTML = seatsList;
+                
+                // 좌석 정보 업데이트
+                const seatInfo = selectedSeats.map(seat => seat.id).join(', ');
+                const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+                
+                document.getElementById('seat-info').textContent = seatInfo;
+                document.getElementById('table-fee').textContent = totalPrice.toLocaleString() + '원';
+                
+                bookingDetails.style.display = 'block';
+                confirmBtn.disabled = selectedSeats.length !== maxSeats;
+            }
+        }
+        
+        // 좌석 확정
+        document.getElementById('confirm-btn').addEventListener('click', () => {
+            if (selectedSeats.length === maxSeats) {
+                const seatInfo = selectedSeats.map(seat => seat.id).join(', ');
+                const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+                
+                alert(`좌석이 확정되었습니다!\n\n선택한 좌석: ${seatInfo}\n테이블 요금: ${totalPrice.toLocaleString()}원\n\n고객 정보 입력 페이지로 이동합니다.`);
+            }
+        });
+        
+        // 좌석 정보 툴팁 (호버시 정보 표시)
+        document.querySelectorAll('.seat.available').forEach(seat => {
+            const seatType = seat.getAttribute('data-type');
+            const seatPrice = parseInt(seat.getAttribute('data-price')) || 0;
+            
+            let typeName = '';
+            switch(seatType) {
+                case 'counter': typeName = '카운터석'; break;
+                case 'window': typeName = '창가석'; break;
+                case 'table2': typeName = '2인 테이블'; break;
+                case 'table4': typeName = '4인 테이블'; break;
+                case 'private': typeName = '프라이빗룸'; break;
+            }
+            
+            seat.title = `${typeName} - ${seatPrice > 0 ? '+' + seatPrice.toLocaleString() + '원' : '추가요금 없음'}`;
+        });
+    </script>
+</body>
+</html>
