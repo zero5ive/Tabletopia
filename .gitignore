@@ -2,8 +2,16 @@
 # 민감 정보
 # =============================
 **/application.properties
+**/application-*.properties
+**/application.yml
+**/application-*.yml
 .env
-.env.*.local
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+secrets.json
 
 # =============================
 # IntelliJ IDEA
@@ -79,29 +87,31 @@ gradle-app.setting
 # Node / React / Frontend
 # =============================
 node_modules/
-dist
-dist-ssr
+dist/
+dist-ssr/
 build/
 out/
-.cache
-.parcel-cache
-.next
-.nuxt
-.vuepress/dist
-.temp
-.docusaurus
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+.temp/
+.docusaurus/
 .serverless/
 .fusebox/
 .dynamodb/
 .webpack/
+.svelte-kit/
 coverage/
 *.lcov
-.nyc_output
-.grunt
+.nyc_output/
+.grunt/
 bower_components/
-.jspm_packages/
+jspm_packages/
+web_modules/
 *.tsbuildinfo
-.npm
+.npm/
 .eslintcache
 .stylelintcache
 .rpt2_cache/
@@ -109,38 +119,91 @@ bower_components/
 .node_repl_history
 *.tgz
 .yarn-integrity
+.yarn/
+.pnp.*
+lib-cov/
 .DS_*
 **/*.backup.*
 **/*.back.*
 *.sublime*
-psd
-thumb
-sketch
+psd/
+thumb/
+sketch/
+.turbo/
+.vercel/
+storybook-static/
 
 # =============================
 # Logs
 # =============================
-logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 .pnpm-debug.log*
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
+lib-cov/
 
 # =============================
 # Editor / OS
 # =============================
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
+
+# =============================
+# 기타
+# =============================
+*.local
+.history/
+.vite/
+gemini.md
+
+# =============================
+# AWS / 클라우드 관련
+# =============================
+
+# AWS CLI / SDK credentials
+.aws/
+%UserProfile%\.aws\credentials
+%UserProfile%\.aws\config
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# Terraform / CloudFormation
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.template.json
+
+# Lambda / ECS / SDK 로그 / 임시 파일
+*.log
+tmp/

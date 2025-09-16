@@ -1,0 +1,13 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "start:user": "cd user && npm run dev",
+    "start:admin": "cd admin && npm run dev",
+    "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\""
+  }
+}
