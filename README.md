@@ -86,4 +86,21 @@
       </a> 
           </td>
   </tr>
-  
+</table>
+
+
+## 설치 및 실행
+
+```
+# /frontend, /backend에서 실행
+npm install
+```
+
+  ```
+# /frontend에서 실행
+# axios
+npm install axios
+
+# root폴더에 있는 리액트 프로젝트가 서로 다른 포트 번호로 모두 실행
+npm run start:all
+```
