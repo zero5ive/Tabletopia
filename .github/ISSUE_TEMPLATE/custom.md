@@ -1,7 +1,7 @@
 ---
 name: Custom issue template
 about: 이슈 생성 템플릿
-title: 'TETO-번호: 요약'
+title: TETO-번호 / 라벨 / Jira 스토리명
 labels: ''
 assignees: ''
 
