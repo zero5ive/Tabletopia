@@ -1,5 +1,4 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
