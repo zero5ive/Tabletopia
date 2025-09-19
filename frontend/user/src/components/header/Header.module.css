@@ -1,0 +1,152 @@
+/* Header */
+.header {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.headerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ff6b35;
+    margin-right: 40px;
+    text-decoration: none;
+}
+
+/* 메인페이지 css */
+
+.searchContainer {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+    margin-right: 40px;
+}
+
+.searchBox {
+    width: 100%;
+    padding: 16px 24px;
+    border: 2px solid #e9ecef;
+    border-radius: 50px;
+    font-size: 16px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.searchBox:focus {
+    outline: none;
+    border-color: #ff6b35;
+    background: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.locationSelector {
+    background: white;
+    border: 1px solid #dee2e6;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-right: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.locationSelector:hover {
+    background: #f8f9fa;
+}
+
+.userActions {
+    display: flex;
+    gap: 16px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btnPrimary {
+    background: #ff6b35;
+    color: white;
+}
+
+.btnPrimary:hover {
+    background: #e55a2b;
+    transform: translateY(-1px);
+}
+
+.btnSecondary {
+    background: white;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.btnSecondary:hover {
+    background: #f8f9fa;
+}
+
+/* 상세페이지 css */
+
+.detailActions {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+}
+
+.breadcrumb {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: #ff6b35;
+}
+
+.header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-outline {
+    background: white;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.btn-outline:hover {
+    background: #f8f9fa;
+}
