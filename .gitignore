@@ -1,0 +1,209 @@
+# =============================
+# 민감 정보
+# =============================
+**/application.properties
+**/application-*.properties
+**/application.yml
+**/application-*.yml
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+secrets.json
+
+# =============================
+# IntelliJ IDEA
+# =============================
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/aws.xml
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/sonarlint/
+.idea/**/sonarIssues.xml
+.idea/**/markdown-navigator.xml
+.idea/**/markdown-navigator-enh.xml
+.idea/**/markdown-navigator/
+.idea/$CACHE_FILE$
+.idea/codestream.xml
+.idea/**/azureSettings.xml
+out/
+*.iws
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+.idea/httpRequests
+.idea/caches/build_file_checksums.ser
+
+# =============================
+# Java
+# =============================
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+*.hprof
+gemini.md
+
+# =============================
+# Gradle
+# =============================
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+.project
+.classpath
+
+# =============================
+# Node / React / Frontend
+# =============================
+node_modules/
+dist/
+dist-ssr/
+build/
+out/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+.temp/
+.docusaurus/
+.serverless/
+.fusebox/
+.dynamodb/
+.webpack/
+.svelte-kit/
+coverage/
+*.lcov
+.nyc_output/
+.grunt/
+bower_components/
+jspm_packages/
+web_modules/
+*.tsbuildinfo
+.npm/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_*
+.node_repl_history
+*.tgz
+.yarn-integrity
+.yarn/
+.pnp.*
+lib-cov/
+.DS_*
+**/*.backup.*
+**/*.back.*
+*.sublime*
+psd/
+thumb/
+sketch/
+.turbo/
+.vercel/
+storybook-static/
+
+# =============================
+# Logs
+# =============================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids/
+*.pid
+*.seed
+*.pid.lock
+lib-cov/
+
+# =============================
+# Editor / OS
+# =============================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# =============================
+# 기타
+# =============================
+*.local
+.history/
+.vite/
+gemini.md
+
+# =============================
+# AWS / 클라우드 관련
+# =============================
+
+# AWS CLI / SDK credentials
+.aws/
+%UserProfile%\.aws\credentials
+%UserProfile%\.aws\config
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# Terraform / CloudFormation
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.template.json
+
+# Lambda / ECS / SDK 로그 / 임시 파일
+*.log
+tmp/
