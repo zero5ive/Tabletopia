@@ -11,20 +11,27 @@ import SignUpSuccess from './pages/signuppage/SignUpSuccess';
 
 import Main from './pages/mainpage/Main';
 
-import MyPage from './pages/MyPage/MyPage';
+import MyPage from './pages/mypage/MyPage';
+import ChatBotLayout from './components/ChatBotLayout';
 
 function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Main />} />
-    
+      {/* Routes with ChatBot */}
+      <Route element={<ChatBotLayout />}>
+        {/* 요청주소(path)에 따라 <Outlet/>에 불러와지는 element가 달라짐
+            ex) "/"인 경우 <Outlet/> 자리에 <Main/> <=> "/mypage"인 경우 <MyPage/>
+        */}
+        <Route path="/" element={<Main />} />
+        <Route path="/mypage" element={<MyPage />} />
+      </Route>
+
+      {/* Routes without ChatBot */}
       <Route path="/members/new" element={<SignUp />} />
       <Route path="/members/new/success" element={<SignUpSuccess />} />
 
       <Route path="/members/login" element={<Login />} />
-
-      <Route path="/mypage" element={<MyPage />} />
     </Routes>
   )
 }

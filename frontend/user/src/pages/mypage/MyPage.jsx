@@ -1,17 +1,11 @@
 import styles from './MyPage.module.css';
 import { Link } from 'react-router-dom';
+import Header from '../../components/header/Header';
 
 export default function MyPage(){
     return(
         <>
-            <header className={styles.header}>
-                <Link to="/" className={styles.logo}>테이블토피아</Link>
-                <div className={styles['header-actions']}>
-                    <button className={styles['icon-btn']}>🔔</button>
-                    <button className={styles['icon-btn']}>⚙️</button>
-                </div>
-            </header>
-
+            <Header/>       
             <div className={styles['main-container']}>
                 <aside className={styles['left-sidebar']}>
                     <div className={styles['profile-card']}>
