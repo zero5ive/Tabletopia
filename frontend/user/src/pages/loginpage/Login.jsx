@@ -101,9 +101,15 @@ const Login = () => {
             password: formData.password
         });
 
+<<<<<<< HEAD
         // console.log('응답 전체:', response);
         // console.log('응답 데이터:', response.data);
         // console.log('응답 상태:', response.status);
+=======
+        console.log('응답 전체:', response);
+        console.log('응답 데이터:', response.data);
+        console.log('응답 상태:', response.status);
+>>>>>>> 797e545bbe66ad3d38132f3eacfc1b78b63688e6
 
         if (response.data.success) {
             navigate('/');

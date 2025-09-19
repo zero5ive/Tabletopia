@@ -3,7 +3,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+<<<<<<< HEAD
 import { Routes, Route, Navigate } from "react-router-dom";
+=======
+import { Routes, Route } from 'react-router-dom';
+>>>>>>> 797e545bbe66ad3d38132f3eacfc1b78b63688e6
 
 import Login from './pages/loginpage/Login';
 import SignUp from './pages/signuppage/SignUp';
@@ -31,7 +35,11 @@ function App() {
       <Route path="/members/new" element={<SignUp />} />
       <Route path="/members/new/success" element={<SignUpSuccess />} />
 
+<<<<<<< HEAD
       <Route path="/members/login" element={<Login />} />W
+=======
+      <Route path="/members/login" element={<Login />} />
+>>>>>>> 797e545bbe66ad3d38132f3eacfc1b78b63688e6
     </Routes>
   )
 }
