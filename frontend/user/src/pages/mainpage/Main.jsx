@@ -18,7 +18,6 @@ export default function Main(){
             <main className={styles.mainContainer}>
                 {/* HeroSection */}
                 <HeroSection/>
-                
                 {/* Categories */}
                 <FoodCategory/>
                 <LocationCategory/>

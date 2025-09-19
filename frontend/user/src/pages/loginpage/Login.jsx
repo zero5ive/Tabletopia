@@ -101,9 +101,9 @@ const Login = () => {
             password: formData.password
         });
 
-        console.log('응답 전체:', response);
-        console.log('응답 데이터:', response.data);
-        console.log('응답 상태:', response.status);
+        // console.log('응답 전체:', response);
+        // console.log('응답 데이터:', response.data);
+        // console.log('응답 상태:', response.status);
 
         if (response.data.success) {
             navigate('/');
@@ -111,21 +111,21 @@ const Login = () => {
             setGeneralError(response.data.message);
         }
     } catch (error) {
-        console.error('전체 에러 객체:', error);
-        console.error('에러 메시지:', error.message);
-        console.error('에러 코드:', error.code);
-        console.error('에러 설정:', error.config);
+        // console.error('전체 에러 객체:', error);
+        // console.error('에러 메시지:', error.message);
+        // console.error('에러 코드:', error.code);
+        // console.error('에러 설정:', error.config);
         
         if (error.response) {
-            console.error('응답 에러 - 상태:', error.response.status);
-            console.error('응답 에러 - 데이터:', error.response.data);
-            console.error('응답 에러 - 헤더:', error.response.headers);
+            // console.error('응답 에러 - 상태:', error.response.status);
+            // console.error('응답 에러 - 데이터:', error.response.data);
+            // console.error('응답 에러 - 헤더:', error.response.headers);
             setGeneralError(error.response.data.message || '로그인에 실패했습니다.');
         } else if (error.request) {
-            console.error('요청 에러:', error.request);
+            // console.error('요청 에러:', error.request);
             setGeneralError('서버에 연결할 수 없습니다.');
         } else {
-            console.error('설정 에러:', error.message);
+            // console.error('설정 에러:', error.message);
             setGeneralError(`요청 설정 오류: ${error.message}`);
         }
     }

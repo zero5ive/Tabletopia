@@ -10,6 +10,7 @@ const SignUpSuccess = () => {
     // 회원가입에서 전달받은 데이터
     const location = useLocation();
     const memberName = location.state?.memberName || '';
+    const memberEmail = location.state?.memberEmail || '';
 
     // 파티클 생성
     const createParticles = () => {
@@ -102,6 +103,7 @@ const SignUpSuccess = () => {
                 {memberName && (
                     <div className={styles.userInfo}>
                         <div className={styles.userId}>{memberName}님</div>
+                        <div className={styles.userId}>{memberEmail}</div>
                         <div className={styles.welcomeText}>이제 모든 서비스를 이용하실 수 있습니다</div>
                     </div>
                 )}
@@ -126,7 +128,7 @@ const SignUpSuccess = () => {
                 <div className={styles.additionalInfo}>
                     <div className={styles.infoItem}>
                         <InfoIcon />
-                        <span>로그인 후 채팅 서비스를 이용해보세요</span>
+                        <span>로그인 후 테이블토피아를 이용해보세요</span>
                     </div>
                 </div>
 

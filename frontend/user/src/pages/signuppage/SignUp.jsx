@@ -178,7 +178,7 @@ const SignUp = () => {
         // 회원가입 성공
         navigate('/members/new/success', {
           state: {
-            memberName: data.name,  // 서버에서 받은 이름
+            memberName: data.data.memberName,  // 서버에서 받은 이름
             memberEmail: fullEmail
           }
         });
