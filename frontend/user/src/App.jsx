@@ -13,6 +13,8 @@ import Main from './pages/mainpage/Main';
 
 import MyPage from './pages/mypage/MyPage';
 import ChatBotLayout from './components/ChatBotLayout';
+import RestaurantDetail from './pages/restaurant/RestaurantDetail';
+
 
 function App() {
 
@@ -28,6 +30,7 @@ function App() {
       </Route>
 
       {/* Routes without ChatBot */}
+      <Route path="/restdetail" element={<RestaurantDetail/>}/>
       <Route path="/members/new" element={<SignUp />} />
       <Route path="/members/new/success" element={<SignUpSuccess />} />
 
