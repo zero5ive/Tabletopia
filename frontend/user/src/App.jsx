@@ -11,6 +11,8 @@ import SignUpSuccess from './pages/signuppage/SignUpSuccess';
 
 import Main from './pages/mainpage/Main';
 
+import SelectTable from './pages/reservationpage/SelectTable';
+
 import MyPage from './pages/mypage/MyPage';
 import ChatBotLayout from './components/ChatBotLayout';
 
@@ -32,6 +34,9 @@ function App() {
       <Route path="/members/new/success" element={<SignUpSuccess />} />
 
       <Route path="/members/login" element={<Login />} />
+
+      {/* 예약 관련 페이지 */}
+      <Route path="/reservations/table" element={<SelectTable />} />
     </Routes>
   )
 }
