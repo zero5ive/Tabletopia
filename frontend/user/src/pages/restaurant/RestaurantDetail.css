@@ -21,6 +21,54 @@
             padding: 32px;
             border-bottom: 1px solid #f1f3f4;
         }
+
+                
+        /* Image Gallery */
+        .image-gallery {
+            position: relative;
+            height: 400px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .image-thumbs {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .thumb {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .thumb:hover, .thumb.active {
+            background: rgba(255,255,255,0.4);
+        }
+
+
+
         
         .restaurant-title {
             font-size: 36px;
@@ -468,11 +516,17 @@
         
         .selector-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px 36px 12px 16px; /* 오른쪽 공간 확보 */
             border: 1px solid #dee2e6;
             border-radius: 8px;
             font-size: 16px;
-            transition: all 0.2s;
+            background-color: white;
+            color: #212529;
+        }
+
+        .selector-input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.5); /* 약간 색상 반전 효과 가능 */
         }
         
         .selector-input:focus {
@@ -481,6 +535,7 @@
             box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
         }
         
+
         .guest-counter {
             display: flex;
             align-items: center;
@@ -497,6 +552,7 @@
         }
         
         .counter-btn {
+            color: #212529; 
             width: 32px;
             height: 32px;
             border: 1px solid #dee2e6;

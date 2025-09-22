@@ -14,6 +14,7 @@ import Main from './pages/mainpage/Main';
 import MyPage from './pages/mypage/MyPage';
 import ChatBotLayout from './components/ChatBotLayout';
 import RestaurantDetail from './pages/restaurant/RestaurantDetail';
+import RestaurantList from './pages/restaurant/RestaurantList';
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         */}
         <Route path="/" element={<Main />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path='/restlist' element={<RestaurantList/>}/>
       </Route>
 
       {/* Routes without ChatBot */}
