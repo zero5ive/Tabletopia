@@ -1,29 +1,20 @@
 import styles from './MyPage.module.css';
 import { Link } from 'react-router-dom';
 import Header from '../../components/header/Header';
+import MyWaiting from './MyWaiting';
 
 export default function MyPage(){
     return(
         <>
-            <Header/>       
             <div className={styles['main-container']}>
                 <aside className={styles['left-sidebar']}>
                     <div className={styles['profile-card']}>
                         <div className={styles['profile-avatar']}>👤</div>
-                        <h2 className={styles['profile-name']}>김김예진진</h2>
+                        <h2 className={styles['profile-name']}>김예진</h2>
                         <div className={styles['profile-stats']}>
-                            <div className={styles['stat-item']}>
-                                <div className={styles['stat-label']}>팔로워</div>
-                                <div className={styles['stat-value']}>0</div>
-                            </div>
-                            <div className={styles['stat-item']}>
-                                <div className={styles['stat-label']}>팔로잉</div>
-                                <div className={styles['stat-value']}>0</div>
-                            </div>
                         </div>
                         <div className={styles['action-buttons']}>
                             <button className={styles.btn}>프로필 수정</button>
-                            <button className={styles.btn}>공유함</button>
                         </div>
                     </div>
 
@@ -31,29 +22,15 @@ export default function MyPage(){
                         <h3 className={styles['sidebar-card-title']}>마이메뉴</h3>
                         <ul className={styles['menu-list']}>
                             <li className={styles['menu-item']}>
-                                <a href="#" className={styles['menu-link']}>💾 나의 저장</a>
+                                <a href="#" className={styles['menu-link']}>💾 나의 북마크</a>
                             </li>
                             <li className={styles['menu-item']}>
                                 <a href="#" className={styles['menu-link']}>📝 리뷰</a>
                             </li>
                             <li className={styles['menu-item']}>
-                                <a href="#" className={styles['menu-link']}>📅 예약 내역</a>
-                            </li>
-                            <li className={styles['menu-item']}>
-                                <a href="#" className={styles['menu-link']}>🏷️ 컬렉션</a>
-                            </li>
-                            <li className={styles['menu-item']}>
-                                <a href="#" className={styles['menu-link']}>🎁 쿠폰</a>
+                                <Link to="mypage/waiting" className={styles['menu-link']}>📅 예약 내역</Link>
                             </li>
                         </ul>
-                    </div>
-
-                    <div className={styles['notification-banner']}>
-                        <div className={styles['banner-icon']}>🎉</div>
-                        <div>
-                            <div style={{fontWeight: 600, marginBottom: 2}}>특별한 날 알림</div>
-                            <div>생일/기념일 등록하기</div>
-                        </div>
                     </div>
                 </aside>
 

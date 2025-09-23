@@ -11,9 +11,6 @@ import ChatBot from '../../components/chatbot/ChatBot';
 export default function Main(){
     return(
         <>
-            {/* Header */}
-            <Header/>
-
             {/* Main Content */}
             <main className={styles.mainContainer}>
                 {/* HeroSection */}
