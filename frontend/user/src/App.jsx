@@ -5,18 +5,26 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
+/* 로그인 관련 페이지 */
 import Login from './pages/loginpage/Login';
 import SignUp from './pages/signuppage/SignUp';
 import SignUpSuccess from './pages/signuppage/SignUpSuccess';
 
+/* 메인 페이지 */
 import Main from './pages/mainpage/Main';
-
-import SelectTable from './pages/reservationpage/SelectTable';
-
-import MyPage from './pages/mypage/MyPage';
+/* 챗봇 레이아웃 */
 import ChatBotLayout from './components/ChatBotLayout';
-import RestaurantDetail from './pages/restaurant/RestaurantDetail';
+
+/* 레스토랑 관련 페이지 */
 import RestaurantList from './pages/restaurant/RestaurantList';
+import RestaurantDetail from './pages/restaurant/RestaurantDetail';
+
+/* 예약 관련 페이지 */
+import SelectTable from './pages/reservationpage/SelectTable';
+import ConfirmInfo from './pages/reservationpage/ConfirmInfo';
+
+/* 사용자 마이페이지 */
+import MyPage from './pages/mypage/MyPage';
 
 
 function App() {
@@ -30,11 +38,11 @@ function App() {
         */}
         <Route path="/" element={<Main />} />
         <Route path="/mypage" element={<MyPage />} />
-        <Route path='/restlist' element={<RestaurantList/>}/>
+        <Route path='/restaurants' element={<RestaurantList/>}/>
       </Route>
 
       {/* Routes without ChatBot */}
-      <Route path="/restdetail" element={<RestaurantDetail/>}/>
+      <Route path="/restaurant" element={<RestaurantDetail/>}/>
       <Route path="/members/new" element={<SignUp />} />
       <Route path="/members/new/success" element={<SignUpSuccess />} />
 
@@ -42,6 +50,7 @@ function App() {
 
       {/* 예약 관련 페이지 */}
       <Route path="/reservations/table" element={<SelectTable />} />
+      <Route path="/reservations/confirm" element={<ConfirmInfo />} />
     </Routes>
   )
 }
