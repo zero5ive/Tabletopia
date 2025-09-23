@@ -1,0 +1,433 @@
+/* 진행바 높이 줄이기 */
+.progressBar {
+    height: 30px; /* 더 줄임 */
+    background: #fff;
+    padding: 8px 20px; /* 패딩 줄임 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px; /* 스텝 간격 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.progressStep {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 숫자와 텍스트 간격 */
+    position: relative;
+    z-index: 2;
+    background: #f8f9fa;
+    padding: 5px 8px; /* 패딩 줄임 */
+    border-radius: 4px;
+}
+
+.stepNumber {
+    width: 20px; /* 더 작게 */
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 11px; /* 폰트 크기 줄임 */
+    border: 2px solid;
+}
+
+.stepNumberActive {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.stepNumberCurrent {
+    background: #ff6b35;
+    color: white;
+    border-color: #ff6b35;
+}
+
+.stepNumberUpcoming {
+    background: #e9ecef;
+    color: #6c757d;
+    border-color: #e9ecef;
+}
+
+.stepText {
+    font-size: 11px; /* 텍스트 크기 줄임 */
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.stepTextActive {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.stepTextCurrent {
+    color: #ff6b35;
+    font-weight: 600;
+}
+
+.stepTextUpcoming {
+    color: #6c757d;
+}
+
+/* 메인 컨테이너 */
+.container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 1200px; /* 너비 증가 */
+    margin: 0 auto;
+}
+
+.containerContent {
+    max-width: 1100px; /* 너비 증가 */
+    margin: 20px auto; /* 마진 줄임 */
+    padding: 0 10px; /* 패딩 줄임 */
+}
+
+.mainContent {
+    display: grid;
+    grid-template-columns: 1fr 300px; /* 좌측 영역 확대, 우측 줄임 */
+    gap: 20px; /* 간격 줄임 */
+}
+
+/* 범례 스타일 */
+.legend {
+    background: white;
+    border-radius: 12px;
+    padding: 15px; /* 패딩 줄임 */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 20px; /* 마진 줄임 */
+}
+
+.legendTitle {
+    font-size: 14px; /* 크기 줄임 */
+    font-weight: 600;
+    margin-bottom: 12px; /* 마진 줄임 */
+    color: #212529;
+}
+
+.legendItems {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* 간격 줄임 */
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 간격 줄임 */
+    font-size: 11px; /* 크기 줄임 */
+}
+
+.legendIcon {
+    width: 18px; /* 크기 줄임 */
+    height: 18px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    border: 2px solid;
+}
+
+.legendIconAvailable {
+    background: #e8f5e8;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.legendIconSelected {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: white;
+}
+
+.legendIconMismatch {
+    background: #f5f5f5;
+    border-color: #bdbdbd;
+    color: #757575;
+}
+
+.legendIconOccupied {
+    background: #ffebee;
+    border-color: #f44336;
+    color: #c62828;
+}
+
+/* 좌석 배치도 */
+.seatingLayout {
+    background: white;
+    border-radius: 16px;
+    padding: 20px; /* 패딩 줄임 */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 20px; /* 마진 줄임 */
+}
+
+.restaurantFloor {
+    position: relative;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 20px; /* 패딩 줄임 */
+    min-height: 450px; /* 높이 증가 */
+    height: 450px;
+}
+
+.window {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #1976d2;
+}
+
+.sushiCounter {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px; /* 너비 증가 */
+    height: 70px; /* 높이 증가 */
+    background: linear-gradient(135deg, #8B4513, #A0522D);
+    border-radius: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 13px; /* 폰트 크기 증가 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.counterSeats {
+    position: absolute;
+    top: 130px; /* 위치 조정 */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px; /* 간격 증가 */
+}
+
+.tableArea {
+    position: absolute;
+}
+
+.privateRoom {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    width: 200px; /* 너비 증가 */
+    height: 110px; /* 높이 증가 */
+    border: 2px solid #ff6b35;
+    border-radius: 8px;
+    background: rgba(255, 107, 53, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ff6b35;
+}
+
+.privateRoomLabel {
+    margin-bottom: 8px;
+}
+
+/* 예약 요약 사이드바 */
+.bookingSummary {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.restaurantName {
+    font-size: 20px; /* 크기 줄임 */
+    font-weight: 700;
+    color: #ff6b35;
+    margin-bottom: 6px; /* 마진 줄임 */
+}
+
+.bookingInfo {
+    color: #6c757d;
+    font-size: 14px; /* 크기 줄임 */
+    margin-bottom: 20px;
+}
+
+.summaryTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #212529;
+}
+
+.noSelection {
+    color: #6c757d;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.noSelectionSmall {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.selectedTable {
+    background: #fff5f2;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 8px 0;
+    color: #ff6b35;
+    font-weight: 600;
+}
+
+.selectedTableName {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.selectedTableCapacity {
+    font-size: 12px;
+    color: #666;
+}
+
+.summaryItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.summaryItemTotal {
+    border-bottom: none;
+    font-weight: 600;
+    color: #ff6b35;
+}
+
+.confirmBtn {
+    width: 100%;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.confirmBtnActive {
+    background: #ff6b35;
+    color: white;
+}
+
+.confirmBtnDisabled {
+    background: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+/* 테이블 컴포넌트 기본 스타일 */
+.tableComponent {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px; /* 폰트 크기 증가 */
+    font-weight: 600;
+    transition: all 0.2s;
+    position: relative;
+    border: 2px solid;
+    border-radius: 8px;
+    min-width: 70px; /* 최소 크기 증가 */
+    min-height: 45px;
+}
+
+.tableComponentOccupied {
+    background: #ffebee;
+    border-color: #f44336;
+    color: #c62828;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tableComponentUnavailable {
+    background: #f5f5f5;
+    border-color: #bdbdbd;
+    color: #757575;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.tableComponentSelected {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.tableComponentAvailable {
+    background: #e8f5e8;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.tableComponentAvailable:hover {
+    background: #c8e6c9;
+    transform: scale(1.05);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .mainContent {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .bookingSummary {
+        position: relative;
+        top: 0;
+        max-height: none;
+    }
+    
+    .restaurantFloor {
+        height: 350px;
+        min-height: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .progressStep {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .legendItems {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .containerContent {
+        padding: 0 5px;
+    }
+}

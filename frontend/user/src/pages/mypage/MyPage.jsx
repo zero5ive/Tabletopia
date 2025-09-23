@@ -89,7 +89,7 @@ export default function MyPage(){
                             </div>
                             <div className={styles['content-section']}>
                                 <button className={styles['bookmark-btn']}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                                     </svg>
                                 </button>
@@ -109,7 +109,7 @@ export default function MyPage(){
                                 <div className={styles.pagination}>
                                     <button className={`${styles['pagination-btn']} ${styles.arrow} ${styles.disabled}`}>
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
                                         </svg>
                                     </button>
                                     <button className={`${styles['pagination-btn']} ${styles.active}`}>1</button>
@@ -121,7 +121,7 @@ export default function MyPage(){
                                     <button className={styles['pagination-btn']}>15</button>
                                     <button className={`${styles['pagination-btn']} ${styles.arrow}`}>
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                                         </svg>
                                     </button>
                                 </div>
