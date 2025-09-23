@@ -81,8 +81,6 @@ export default function RestaurantList() {
 
     return (
         <>
-            {/* <!-- Header --> */}
-            <Header />
 
             <div className="main-container">
                 {/* <!-- Main Content --> */}

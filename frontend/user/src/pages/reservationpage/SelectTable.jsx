@@ -110,7 +110,7 @@ const TableSelection = () => {
       // }
       
       // 팝업창 URL 변경
-      window.location.href = '/reservations/confirm';
+      window.location.href = '/reservations/confirm-info';
     }
   };
 
