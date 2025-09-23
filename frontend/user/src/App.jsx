@@ -5,7 +5,6 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import {  RouterProvider } from "react-router-dom";
 
-
 import router from './router/router';
 
 function App() {

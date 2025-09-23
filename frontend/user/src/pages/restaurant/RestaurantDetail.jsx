@@ -1,9 +1,19 @@
 import { useState } from "react"
 import Header from "../../components/header/Header"
 import './RestaurantDetail.css'
-import ImageGallery from "./gallery/ImageGallery"
 
 export default function RestaurantList(){
+
+    const [date, setDate] = useState("2025-09-03"); // 초기 날짜 설정
+    const [reservationType, setReservationType] = useState("reservation"); //예약, 웨이팅
+    const [activeTab, setActiveTab] = useState("menu"); //상세설명, 메뉴 소개
+    const [guest, setGuest] = useState(2); //인원 수
+
+    const increment =()=> setGuest(guest => guest + 1);
+    const decrement =()=> setGuest(guest => guest>1 ? guest-1 : 1);
+    
+
+
     return(
         <>
 
@@ -11,7 +21,17 @@ export default function RestaurantList(){
         {/* <!-- Main Content --> */}
         <div className="main-content">
             {/* <!-- Image Gallery --> */}
-            <ImageGallery/>
+             <div className="image-gallery">
+                🍣 레스토랑 이미지
+                <div className="gallery-nav">1/5</div>
+                <div className="image-thumbs">
+                    <div className="thumb active"></div>
+                    <div className="thumb"></div>
+                    <div className="thumb"></div>
+                    <div className="thumb"></div>
+                    <div className="thumb"></div>
+                </div>
+            </div>
 
             {/* <!-- Restaurant Info --> */}
             <div className="restaurant-header">
@@ -38,17 +58,22 @@ export default function RestaurantList(){
 
             {/* <!-- Navigation Tabs --> */}
             <div className="nav-tabs">
-                <div className="nav-tab active" data-tab="menu">메뉴소개</div>
-                <div className="nav-tab" data-tab="location">위치</div>
-                <div className="nav-tab" data-tab="facilities">편의시설</div>
-                <div className="nav-tab" data-tab="info">운영정보</div>
-                <div className="nav-tab" data-tab="reviews">리뷰</div>
+                <div className={`nav-tab ${activeTab === 'menu' ?  'active' : ''}`}
+                onClick={()=>setActiveTab('menu')}>메뉴소개</div>
+                <div className={`nav-tab ${activeTab === 'location' ?  'active' : ''}`}
+                onClick={()=>setActiveTab('location')}>위치</div>
+                <div className={`nav-tab ${activeTab === 'facilities' ?  'active' : ''}`}
+                onClick={()=>setActiveTab('facilities')}>편의시설</div>
+                <div className={`nav-tab ${activeTab === 'info' ?  'active' : ''}`}
+                onClick={()=>setActiveTab('info')}>운영정보</div>
+                <div className={`nav-tab ${activeTab === 'reviews' ?  'active' : ''}`}
+                onClick={()=>setActiveTab('reviews')}>리뷰</div>
             </div>
 
             {/* <!-- Tab Content --> */}
             <div className="tab-content">
                 {/* <!-- Menu Tab --> */}
-                <div className="tab-panel active" id="menu">
+                <div className={`tab-panel ${activeTab === 'menu' ? 'active' : ''}`} id="menu">
                     <div className="section-title">메뉴 소개</div>
                     <div className="description">
                         정통적인 일식을 기본으로 독창적인 스타일의 오마카세입니다.<br/>
@@ -96,7 +121,7 @@ export default function RestaurantList(){
                 </div>
 
                 {/* <!-- Location Tab --> */}
-                <div className="tab-panel" id="location">
+                <div className={`tab-panel ${activeTab === 'location' ? 'active' : ''}`} id="location">
                     <div className="section-title">위치</div>
                     <div className="map-container">
                         🗺️ 지도가 여기에 표시됩니다
@@ -110,7 +135,7 @@ export default function RestaurantList(){
                 </div>
 
                 {/* <!-- Facilities Tab --> */}
-                <div className="tab-panel" id="facilities">
+                <div className={`tab-panel ${activeTab === 'facilities' ? 'active' : ''}`} id="facilities">
                     <div className="section-title">편의시설</div>
                     <div className="facilities-grid">
                         <div className="facility-item">
@@ -147,7 +172,7 @@ export default function RestaurantList(){
                 </div>
 
                 {/* <!-- Operating Info Tab --> */}
-                <div className="tab-panel" id="info">
+                <div className={`tab-panel ${activeTab === 'info' ? 'active' : ''}`} id="info">
                     <div className="section-title">운영정보</div>
                     <div className="operating-info">
                         <div className="info-item">
@@ -166,7 +191,7 @@ export default function RestaurantList(){
                 </div>
 
                 {/* <!-- Reviews Tab --> */}
-                <div className="tab-panel" id="reviews">
+                <div className={`tab-panel ${activeTab === 'reviews' ? 'active' : ''}`} id="reviews">
                     <div className="section-title">리뷰</div>
                     <div className="review-summary">
                         <div className="review-score">4.8</div>
@@ -272,16 +297,18 @@ export default function RestaurantList(){
             <div className="reservation-card">
                 {/* <!-- Toggle Switch --> */}
                 <div className="toggle-container">
-                    <div className="toggle-option active" onclick="toggleReservationType('reservation')">예약하기</div>
-                    <div className="toggle-option" onclick="toggleReservationType('waiting')">웨이팅하기</div>
+                    <div className={`toggle-option ${reservationType === 'reservation' ? 'active' : ''}`}
+                     onClick={()=>setReservationType('reservation')}>예약하기</div>
+                    <div className={`toggle-option ${reservationType === 'waiting' ? 'active' : ''}`}
+                    onClick={()=>setReservationType('waiting')}>웨이팅하기</div>
                 </div>
 
                 {/* <!-- Reservation Content --> */}
-                <div className="reservation-content active">
+                <div className={`reservation-content ${reservationType === 'reservation' ? 'active' : ''}`}>
                     <div className="date-time-selector">
                         <div className="selector-group">
                             <label className="selector-label">날짜</label>
-                            <input type="date" className="selector-input" value="2025-09-03"/>
+                            <input type="date" className="selector-input" value={date}  onChange={(e) => setDate(e.target.value)} />
                         </div>
                         
                         <div className="selector-group">
@@ -289,9 +316,9 @@ export default function RestaurantList(){
                             <div className="guest-counter">
                                 <span>성인</span>
                                 <div className="counter-controls">
-                                    <button className="counter-btn">-</button>
-                                    <span className="guest-count">2</span>
-                                    <button className="counter-btn">+</button>
+                                    <button className="counter-btn" onClick={decrement}>-</button>
+                                    <span className="guest-count">{guest}</span>
+                                    <button className="counter-btn" onClick={increment}>+</button>
                                 </div>
                             </div>
                         </div>
@@ -306,47 +333,30 @@ export default function RestaurantList(){
                         <div className="time-slot disabled">20:30</div>
                     </div>
 
-                    <button className="reservation-btn" onclick="location.href='/html/table.html'">예약하기</button>
+                    <button className="reservation-btn" onClick={()=>location.href='/html/table.html'}>예약하기</button>
                 </div>
 
                 {/* <!-- Waiting Content --> */}
-                <div className="waiting-content">
+                <div className={`waiting-content ${reservationType === 'waiting' ? 'active' : ''}`}>
                     <div className="waiting-info">
                         <div className="waiting-status">현재 웨이팅 5팀</div>
-                        <div className="waiting-description">예상 대기시간: 약 40분</div>
                     </div>
-
-                    <div className="table-options">
-                        <div className="table-option selected">
-                            <div className="table-type">2인석</div>
-                            <div className="table-waiting">현재 5팀 대기</div>
-                        </div>
-                        <div className="table-option">
-                            <div className="table-type">4인석</div>
-                            <div className="table-waiting">웨이팅이 없어요</div>
-                        </div>
-                    </div>
-                    
+ 
                     <div className="date-time-selector">                    
                         <div className="selector-group">
                             <label className="selector-label">인원</label>
                             <div className="guest-counter">
                                 <span>성인</span>
                                 <div className="counter-controls">
-                                    <button className="counter-btn">-</button>
-                                    <span className="guest-count">2</span>
-                                    <button className="counter-btn">+</button>
+                                    <button className="counter-btn" onClick={decrement}>-</button>
+                                    <span className="guest-count">{guest}</span>
+                                    <button className="counter-btn" onClick={increment}>+</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <button className="reservation-btn">웨이팅 등록</button>
-                </div>
-
-                <div className="quick-actions">
-                    <button className="quick-btn">💬 문의</button>
-                    <button className="quick-btn">📞 전화</button>
                 </div>
             </div>
         </div>
