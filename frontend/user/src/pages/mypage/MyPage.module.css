@@ -138,6 +138,7 @@ body {
     font-size: 13px;
     font-weight: 500;
     transition: all 0.2s ease;
+    color: #007bff;
 }
 
 .btn:hover {
