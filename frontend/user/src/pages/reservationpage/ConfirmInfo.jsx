@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ConfirmInfo.module.css'
+import axios from 'axios';
 
 const ReservationConfirm = () => {
   const [reservationData, setReservationData] = useState(null);
@@ -8,6 +9,7 @@ const ReservationConfirm = () => {
     phone: '010-1111-1111',
     email: '1@example.com'
   });
+
   const [agreements, setAgreements] = useState({
     personalInfo: false,
     thirdParty: false,
@@ -16,6 +18,7 @@ const ReservationConfirm = () => {
 
   useEffect(() => {
     const data = localStorage.getItem('finalReservationData');
+    console.log(data);
     if (!data) {
       alert('예약 정보가 없습니다. 이전 단계로 돌아갑니다.');
       window.location.href = '/reservations/table';
@@ -66,17 +69,18 @@ const ReservationConfirm = () => {
   /**
    * 결제 진행
    * 모든 필수 정보와 약관 동의 확인 후 결제 페이지로 이동
+   * 결제 완료시 예약 정보 등록
    * 
    * @author 김예진
    * @since 2025-09-23
    */
-  const handlePayment = () => {
+  const handlePayment = async () => {
     // 필수 정보 입력 확인
     if (!customerInfo.name.trim()) {
       alert('이름을 입력해주세요.');
       return;
     }
-    
+
     if (!customerInfo.phone.trim()) {
       alert('휴대폰 번호를 입력해주세요.');
       return;
@@ -111,18 +115,21 @@ const ReservationConfirm = () => {
       customerInfo: customerInfo,
       agreements: agreements
     };
-
-    localStorage.setItem('completeReservationData', JSON.stringify(finalData));
-
+    
+    // 예약정보 등록 테스트
+    const response = await axios.post(
+      `http://localhost:10022/api/realtime/reservation`, finalData);
+    
     // 결제 페이지로 이동
-    window.location.href = '/reservations/payment';
+    // window.location.href = '/reservations/payment';
+
   };
 
   if (!reservationData) {
     return <div>예약 정보를 불러오는 중...</div>;
   }
 
-  const totalPrice = reservationData.tablePrice || 0;
+  const price = reservationData.price || 0;
 
   return (
     <div className={styles.container}>
@@ -155,7 +162,7 @@ const ReservationConfirm = () => {
             {/* 예약자 정보 */}
             <div className={styles.customerInfoSection}>
               <div className={styles.sectionTitle}>예약자 정보</div>
-              
+
               <div className={styles.inputGroup}>
                 <label className={styles.inputLabel}>
                   이름 <span className={styles.required}>*</span>
@@ -197,7 +204,7 @@ const ReservationConfirm = () => {
             {/* 약관 동의 */}
             <div className={styles.agreementSection}>
               <div className={styles.sectionTitle}>약관 동의</div>
-              
+
               <div className={styles.agreementItem}>
                 <label className={styles.checkboxLabel}>
                   <input
@@ -221,7 +228,7 @@ const ReservationConfirm = () => {
                     onChange={() => handleAgreementChange('thirdParty')}
                   />
                   <span className={styles.checkboxText}>
-                    개인정보 제3자 제공에 동의합니다. (고객응대 및 예약 정보 안내 등을 위함) 
+                    개인정보 제3자 제공에 동의합니다. (고객응대 및 예약 정보 안내 등을 위함)
                     <span className={styles.required}>*</span>
                   </span>
                 </label>
@@ -233,9 +240,9 @@ const ReservationConfirm = () => {
           <div className={styles.bookingSummary}>
             <div className={styles.restaurantName}>정미스시</div>
             <div className={styles.bookingInfo}>
-              {reservationData.date} {reservationData.time} • {reservationData.guestCount}명
+              {reservationData.date} {reservationData.time} • {reservationData.peopleCount}명
             </div>
-            
+
             <div className={styles.summaryTitle}>예약 정보</div>
             <div className={styles.summaryItem}>
               <span>날짜</span>
@@ -247,15 +254,15 @@ const ReservationConfirm = () => {
             </div>
             <div className={styles.summaryItem}>
               <span>인원</span>
-              <span>{reservationData.guestCount}명</span>
+              <span>{reservationData.peopleCount}명</span>
             </div>
             <div className={styles.summaryItem}>
               <span>테이블</span>
-              <span>{reservationData.tableName}</span>
+              <span>{reservationData.restaurantTableNameSnapshot}</span>
             </div>
             <div className={`${styles.summaryItem} ${styles.summaryItemTotal}`}>
               <span>예약금</span>
-              <span>{totalPrice.toLocaleString()}원</span>
+              <span>{price.toLocaleString()}원</span>
             </div>
 
             {/* 취소 정책 */}
@@ -270,7 +277,7 @@ const ReservationConfirm = () => {
               <div className={styles.policyDetail}>
                 • 당일: 100%  • 1일전: 50% • 2일전: 무료
               </div>
-              
+
               <div className={styles.agreementItem}>
                 <label className={styles.checkboxLabel}>
                   <input

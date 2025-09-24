@@ -11,11 +11,11 @@ export default function RestaurantList() {
     const [date, setDate] = useState(today); // 초기 날짜를 오늘로 설정
     const [reservationType, setReservationType] = useState("reservation"); //예약, 웨이팅
     const [activeTab, setActiveTab] = useState("menu"); //상세설명, 메뉴 소개
-    const [guest, setGuest] = useState(1); //인원 수
+    const [people, setPeople] = useState(1); //인원 수
     const [selectedTime, setSelectedTime] = useState(""); // 선택된 시간
 
-    const increment = () => setGuest(guest => guest + 1);
-    const decrement = () => setGuest(guest => guest > 1 ? guest - 1 : 1);
+    const increment = () => setPeople(people => people + 1);
+    const decrement = () => setPeople(people => people > 1 ? people - 1 : 1);
 
     /**
      * 날짜 변경 핸들러
@@ -64,8 +64,7 @@ export default function RestaurantList() {
             restaurantId: 1,
             date: date,
             time: selectedTime,
-            guestCount: guest,
-            reservationType: reservationType
+            peopleCount: people
         };
 
         // 로컬 스토리지에 정보를 저장
@@ -386,10 +385,10 @@ export default function RestaurantList() {
                                     <label className={styles["selector-label"]}>인원</label>
                                     <div className={styles["guest-counter"]}>
                                         <span>성인</span>
-                                        <div className={styles["counter-controls"]}>
-                                            <button className={styles["counter-btn"]} onClick={decrement}>-</button>
-                                            <span className={styles["guest-count"]}>{guest}</span>
-                                            <button className={styles["counter-btn"]} onClick={increment}>+</button>
+                                        <div className="counter-controls">
+                                            <button className="counter-btn" onClick={decrement}>-</button>
+                                            <span className="guest-count">{people}</span>
+                                            <button className="counter-btn" onClick={increment}>+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -446,10 +445,10 @@ export default function RestaurantList() {
                                     <label className={styles["selector-label"]}>인원</label>
                                     <div className={styles["guest-counter"]}>
                                         <span>성인</span>
-                                        <div className={styles["counter-controls"]}>
-                                            <button className={styles["counter-btn"]} onClick={decrement}>-</button>
-                                            <span className={styles["guest-count"]}>{guest}</span>
-                                            <button className={styles["counter-btn"]} onClick={increment}>+</button>
+                                        <div className="counter-controls">
+                                            <button className="counter-btn" onClick={decrement}>-</button>
+                                            <span className="guest-count">{people}</span>
+                                            <button className="counter-btn" onClick={increment}>+</button>
                                         </div>
                                     </div>
                                 </div>
