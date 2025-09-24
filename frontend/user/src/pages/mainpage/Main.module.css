@@ -203,6 +203,12 @@
     cursor: not-allowed;
 }
 
+.noUnderline {
+    text-decoration: none;
+    color: inherit;
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .headerContent {
