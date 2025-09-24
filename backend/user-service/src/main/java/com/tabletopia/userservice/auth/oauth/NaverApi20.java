@@ -1,5 +1,6 @@
 package com.tabletopia.userservice.auth.oauth;
 
+
 import com.github.scribejava.core.builder.api.DefaultApi20;
 
 public class NaverApi20 extends DefaultApi20 {
