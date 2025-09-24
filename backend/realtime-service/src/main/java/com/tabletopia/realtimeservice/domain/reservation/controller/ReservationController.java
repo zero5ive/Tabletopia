@@ -29,11 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-<<<<<<< Updated upstream
-@RequestMapping("/realtime/api")
-=======
 @RequestMapping("/api/realtime")
->>>>>>> Stashed changes
 @RequiredArgsConstructor
 public class ReservationController {
   private final ReservationService reservationService;
