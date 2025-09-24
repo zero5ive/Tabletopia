@@ -36,6 +36,9 @@ export default function Sidebar(){
                             <a className="nav-link" href="#reviews" data-bs-toggle="tab">
                                 <i className="fas fa-star me-2"></i>리뷰 관리
                             </a>
+                              <a className="nav-link" href="#waiting" data-bs-toggle="tab">
+                                <i className="fas fa-users me-2"></i>웨이팅 관리
+                            </a>
                         </nav>
                     </div>
                 </div>
