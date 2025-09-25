@@ -16,7 +16,7 @@ public class UserInfoExtractor {
             Map<String, Object> resp = (Map<String, Object>)attr.get("response");
             providerId = (String)resp.get("id");
         }else if(regId.equals("kakao")){
-            providerId = (String)attr.get("id");
+            providerId = attr.get("id").toString();
         }
         return providerId;
     }

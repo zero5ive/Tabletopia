@@ -31,6 +31,9 @@ public class User {
     @Column(name="phone_number")
     private String phoneNumber;
 
+    @Column(name="provider_id")
+    private String providerId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="sns_provider_id")
     private SnsProvider snsProvider;

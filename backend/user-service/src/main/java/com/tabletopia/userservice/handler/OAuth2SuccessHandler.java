@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,9 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
+    @Value("${app.oauth.success-redirect}")
+    private String redirectUrl;
+
     /**
      * 소셜로그인이 완료되고 난 후 보낼 요청주소를 담은 메서드
      * 핸들러 특성상 부모 객체가 생성될 떄 자동 실행됩니다.
@@ -31,6 +35,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.debug("핸들러로 OAuth인증 마무리 -> 여기서 토큰생성등 로직으로 보내야 하나?");
         //소셜로그인이 완료되면 보낼 redirect 주소 일단 success
-        response.sendRedirect("/success");
+        response.sendRedirect(redirectUrl);
     }
 }

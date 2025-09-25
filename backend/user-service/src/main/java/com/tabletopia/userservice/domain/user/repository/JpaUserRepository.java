@@ -12,6 +12,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 
 public interface JpaUserRepository extends JpaRepository<User, Long> {
-    //SnsProvider와 id(pk)를 통한 해당 유저 조회
-    public User findBySnsProviderAndId(SnsProvider snsProvider, Long id);
+    //SnsProvider와 providerId를 통한 해당 유저 조회
+    public User findBySnsProviderAndProviderId(SnsProvider snsProvider, String providerId);
 }
