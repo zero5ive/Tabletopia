@@ -1,6 +1,6 @@
 package com.tabletopia.restaurantservice.domain.service;
 
-import com.tabletopia.restaurantservice.domain.dto.RestaurantTableDto;
+import com.tabletopia.restaurantservice.domain.dto.RestaurantTableDTO;
 import com.tabletopia.restaurantservice.domain.repository.RestaurantTableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ public class RestaurantTableService {
 
   private final RestaurantTableRepository tableRepository;
 
-  public List<RestaurantTableDto> getTablesByRestaurant(Long restaurantId) {
+  public List<RestaurantTableDTO> getTablesByRestaurant(Long restaurantId) {
     return tableRepository.findByRestaurantId(restaurantId)
         .stream()
-        .map(table -> RestaurantTableDto.builder()
+        .map(table -> RestaurantTableDTO.builder()
             .id(table.getId())
             .name(table.getName())
             .minCapacity(table.getMinCapacity())
