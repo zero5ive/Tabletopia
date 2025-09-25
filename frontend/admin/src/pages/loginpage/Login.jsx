@@ -225,22 +225,6 @@ const Login = () => {
                     </button>
                 </div>
 
-                <div className={styles.divider}>
-                    <span>또는</span>
-                </div>
-
-                <div className={styles.socialLogin}>
-                    <button className={`${styles.socialButton} ${styles.google}`} type="button" onClick={() => socialLogin('google')}>
-                        Google
-                    </button>
-                    <button className={`${styles.socialButton} ${styles.naver}`} type="button" onClick={() => socialLogin('naver')}>
-                        Naver
-                    </button>
-                    <button className={`${styles.socialButton} ${styles.kakao}`} type="button" onClick={() => socialLogin('kakao')}>
-                        Kakao
-                    </button>
-                </div>
-
                 <div className={styles.signupLink}>
                     계정이 없으신가요? <a href="/members/new">회원가입</a>
                 </div>

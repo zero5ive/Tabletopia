@@ -1,8 +1,8 @@
 package com.tabletopia.userservice.exception;
 
 import com.tabletopia.userservice.dto.ErrorResponse;
-import com.tabletopia.userservice.exception.member.MemberAlreadyExistsException;
-import com.tabletopia.userservice.exception.member.MemberNotFoundException;
+import com.tabletopia.userservice.exception.user.UserAlreadyExistsException;
+import com.tabletopia.userservice.exception.user.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,25 +21,31 @@ public class GlobalExceptionHandler {
 
   /**
    * 회원을 찾을 수 없음 예외 처리
+   *
+   * @author 이세형
+   * @since 2025-09-25
    */
-  @ExceptionHandler(MemberNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
     log.warn("회원 로그인 실패: {}", e.getMessage());
     return ResponseEntity
         .badRequest()
-        .body(ErrorResponse.of(e.getMessage(), "MEMBER_NOT_FOUND"));
+        .body(ErrorResponse.of(e.getMessage(), "USER_NOT_FOUND"));
   }
 
   /**
    * 존재하는 회원 예외 처리
+   *
+   * @author 이세형
+   * @since 2025-09-25
    */
-  @ExceptionHandler(MemberAlreadyExistsException.class)
-  public ResponseEntity<ErrorResponse> handleMemberAlreadyExistsException(
-      MemberAlreadyExistsException e) {
+  @ExceptionHandler(UserAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(
+      UserAlreadyExistsException e) {
     log.warn("회원가입 실패: {}", e.getMessage());
     return ResponseEntity
         .badRequest()
-        .body(ErrorResponse.of(e.getMessage(), "MEMBER_ALREADY_EXIST"));
+        .body(ErrorResponse.of(e.getMessage(), "USER_ALREADY_EXISTS"));
   }
 
   /**
