@@ -19,9 +19,14 @@ import SelectTable from '../pages/reservationpage/SelectTable';
 import ConfirmInfo from '../pages/reservationpage/ConfirmInfo';
 
 // 마이페이지 관련 페이지
+import MyPageLayout from '../pages/mypage/MyPageLayout';
 import MyPage from '../pages/mypage/MyPage';
 import MyWaiting from "../pages/mypage/MyWaiting";
-
+import MyReservation from "../pages/mypage/MyReservation";
+import MyReview from "../pages/mypage/MyReview";
+import MyBookMark from "../pages/mypage/MyBookmark";
+import ReviewWrite from "../pages/mypage/ReviewWrite";
+import MyProfile from "../pages/mypage/MyProfileEdit";
 
 const router = createBrowserRouter([
     // 챗봇 하위 자식
@@ -36,11 +41,32 @@ const router = createBrowserRouter([
             // 마이페이지 관련
             {
                 path: "mypage",
+                element: <MyPageLayout />,
                 children: [
                     // 마이페이지 메인 화면
                     {
                         index: true,
                         element: <MyPage />
+                    },
+                    // 프로필 수정  
+                    {
+                        path: "profile",
+                        element: <MyProfile />
+                    },
+                    // 북마크 
+                    {
+                        path: "bookmark",
+                        element: <MyBookMark />
+                    },
+                    // 리뷰 내역
+                    {
+                        path: "review",
+                        element: <MyReview />
+                    },
+                    // 예약 내역
+                    {
+                        path: "reservation",
+                        element: <MyReservation />
                     },
                     // 웨이팅 내역
                     {
@@ -79,11 +105,17 @@ const router = createBrowserRouter([
                 element: <SelectTable />
             },
             // 예약 정보 입력 화면
-             {
+            {
                 path: "confirm-info",
                 element: <ConfirmInfo />
             }
         ]
+    },
+    // 리뷰 쓰기 
+    {
+        path: "review/write",
+        element: <ReviewWrite />
+
     },
     // 로그인 관련 (가이드 코드로 둔 거였으므로 수정하거나 나중에 지우거나)
     {

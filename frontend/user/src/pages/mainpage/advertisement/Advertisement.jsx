@@ -1,4 +1,5 @@
 import styles from '../Main.module.css'
+import { Link } from 'react-router-dom'
 
 export default function Advertisement(){
     return(
@@ -9,7 +10,7 @@ export default function Advertisement(){
                 </div>
                 
                 <div className={styles.restaurantsGrid}>
-                    <a href="/html/rest.html" className={styles.restaurantCard}>
+                    <Link to="/restaurant/detail" className={styles.noUnderline}>
                         <div className={styles.restaurantImage}></div>
                         <div className={styles.restaurantInfo}>
                             <div className={styles.restaurantName}>오마카세 청담</div>
@@ -31,7 +32,7 @@ export default function Advertisement(){
                                 <button className={styles.reservationBtn}>예약하기</button>
                             </div>
                         </div>
-                    </a>
+                    </Link>
 
                     <div className={styles.restaurantCard}>
                         <div className={styles.restaurantImage}></div>

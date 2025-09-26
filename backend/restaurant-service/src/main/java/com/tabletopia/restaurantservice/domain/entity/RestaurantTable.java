@@ -1,30 +1,25 @@
 package com.tabletopia.restaurantservice.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.time.LocalDateTime;
+
+/**
+ * 레스토랑 테이블 엔티티
+ *
+ * 레스토랑 내 개별 테이블 정보를 관리한다.
+ * (예: 11번 테이블, 창가석 등)
+ */
 @Entity
 @Table(
     name = "restaurant_table",
-    uniqueConstraints = @UniqueConstraint(name = "uk_restaurant_table_name", columnNames = {"restaurant_id", "name"}),
-    indexes = @Index(name = "idx_restaurant_table_capacity", columnList = "minCapacity, maxCapacity")
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_restaurant_table_name",
+            columnNames = {"restaurant_id", "name"}
+        )
+    }
 )
 @Getter
 @Setter
@@ -32,45 +27,55 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RestaurantTable {
-
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "restaurant_id", nullable = false)
+  @JoinColumn(name = "restaurant_id", nullable = false, foreignKey = @ForeignKey(name = "fk_table_restaurant"))
   private Restaurant restaurant;
 
   @Column(nullable = false, length = 50)
   private String name;
 
+  @Column(name = "min_capacity")
   private Integer minCapacity;
 
-  @Column(nullable = false)
+  @Column(name = "max_capacity", nullable = false)
   private Integer maxCapacity;
 
-  @Column(nullable = false)
+  @Column(name = "x_position", nullable = false)
   private Integer xPosition;
 
-  @Column(nullable = false)
+  @Column(name = "y_position", nullable = false)
   private Integer yPosition;
 
   @Column(nullable = false, length = 20)
   private String shape = "RECTANGLE";
 
-  @Column(nullable = false, updatable = false)
+  @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(nullable = false)
+  @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
+  /**
+   * 엔티티 최초 저장 시 자동 시간 세팅
+   * @author 김지민
+   * @since 2025-09-26
+   */
   @PrePersist
   void onCreate() {
     this.createdAt = this.updatedAt = LocalDateTime.now();
   }
 
+  /**
+   * 엔티티 업데이트 시 자동 수정일 갱신
+   * @author 김지민
+   * @since 2025-09-26
+   */
   @PreUpdate
   void onUpdate() {
     this.updatedAt = LocalDateTime.now();
   }
 }
-

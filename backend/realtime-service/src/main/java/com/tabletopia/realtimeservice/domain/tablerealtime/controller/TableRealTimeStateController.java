@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/realtime/api")
 @RequiredArgsConstructor
 public class TableRealTimeStateController {
   private final TableRealtimeStateService tableRealtimeStateService;

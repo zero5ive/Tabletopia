@@ -1,12 +1,11 @@
 package com.tabletopia.realtimeservice.domain.reservation.service;
 
-import com.tabletopia.realtimeservice.domain.reservation.controller.ReservationController;
 import com.tabletopia.realtimeservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.realtimeservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.realtimeservice.domain.reservation.entity.Reservation;
 import com.tabletopia.realtimeservice.domain.reservation.repository.ReservationRepository;
 import com.tabletopia.realtimeservice.dto.RestaurantSnapshot;
-import com.tabletopia.realtimeservice.dto.RestaurantTableResponse;
+import com.tabletopia.realtimeservice.dto.RestaurantTableDto;
 import com.tabletopia.realtimeservice.dto.TableSnapshot;
 import com.tabletopia.realtimeservice.feign.RestaurantServiceClient;
 import java.time.LocalDateTime;
@@ -122,8 +121,8 @@ public class ReservationService {
    * @author 김예진
    * @since 2025-09-23
    */
-  public List<RestaurantTableResponse> getTablesAt(Long restaurantId) {
-    List<RestaurantTableResponse> tables;
+  public List<RestaurantTableDto> getTablesAt(Long restaurantId) {
+    List<RestaurantTableDto> tables;
     try {
       tables = restaurantServiceClient.getRestaurantTables(restaurantId);
       return tables;

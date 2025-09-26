@@ -1,4 +1,4 @@
-package com.tabletopia.restaurantservice.domain.dto;
+package com.tabletopia.realtimeservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantTableDTO {
+public class RestaurantTableDto {
   private Long id;
   private String name;
   private Integer minCapacity;

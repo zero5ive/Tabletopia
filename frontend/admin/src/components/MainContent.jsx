@@ -1,4 +1,5 @@
 import './MainContent.css'
+import './Waiting.css'
 
 // Tabs import
 import DashboardTab from './tabs/DashboardTab'
@@ -8,6 +9,7 @@ import OperatingHoursTab from './tabs/OperatingHoursTab'
 import FacilitiesTab from './tabs/FacilitiesTab'
 import ImagesTab from './tabs/ImagesTab'
 import ReviewsTab from './tabs/ReviewsTab'
+import WaitingTab from './tabs/WaitingTab'
 
 export default function MainContent(){
   return (
@@ -44,6 +46,7 @@ export default function MainContent(){
             <FacilitiesTab />
             <ImagesTab />
             <ReviewsTab />
+            <WaitingTab />
           </div>
         </div>
       </div>
