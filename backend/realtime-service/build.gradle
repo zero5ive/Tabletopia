@@ -20,6 +20,10 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', "2025.0.0")
+}
+
 repositories {
     mavenCentral()
 }
@@ -43,8 +47,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // 마이크로 서비스 간 통신 처리

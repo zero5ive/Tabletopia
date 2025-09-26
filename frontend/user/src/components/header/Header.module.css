@@ -150,3 +150,8 @@
 .btn-outline:hover {
     background: #f8f9fa;
 }
+
+.linkNoDeco{
+    text-decoration: none;
+    color: inherit;
+}
