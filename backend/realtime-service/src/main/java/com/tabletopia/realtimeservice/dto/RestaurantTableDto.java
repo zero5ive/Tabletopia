@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantTableResponse {
+public class RestaurantTableDto {
   private Long id;
   private String name;
   private Integer minCapacity;

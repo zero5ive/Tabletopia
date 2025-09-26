@@ -1,12 +1,13 @@
 package com.tabletopia.realtimeservice.feign;
 
-import com.tabletopia.realtimeservice.dto.RestaurantTableResponse;
-import java.time.LocalDateTime;
+import com.tabletopia.realtimeservice.dto.OpeningHourResponse;
+import com.tabletopia.realtimeservice.dto.RestaurantTableDto;
+import com.tabletopia.realtimeservice.dto.TimeSlotResponse;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Restaurant Service와 통신하기 위한 Feign 클라이언트
@@ -27,5 +28,27 @@ public interface RestaurantServiceClient {
    * @return 테이블 정보 리스트
    */
   @GetMapping("/restaurant/{restaurantId}/tables")
-  List<RestaurantTableResponse> getRestaurantTables(@PathVariable("restaurantId") Long restaurantId);
+  List<RestaurantTableDto> getRestaurantTables(@PathVariable("restaurantId") Long restaurantId);
+
+  /**
+   * 레스토랑의 전체 운영시간 조회
+   *
+   * @param restaurantId 레스토랑 ID
+   * @return 운영시간 DTO 리스트
+   */
+  @GetMapping("/restaurant/opening-hours/{restaurantId}")
+  List<OpeningHourResponse> getOpeningHours(@PathVariable("restaurantId") Long restaurantId);
+
+  /**
+   * 레스토랑의 특정 요일의 예약 가능 슬롯 조회
+   *
+   * @param restaurantId 레스토랑 ID
+   * @param dayOfWeek 요일 (0: 일요일 ~ 6: 토요일)
+   * @return {시작 시간, 끝 시간}
+   */
+  @GetMapping("/restaurant/reservations/{restaurantId}/{dayOfWeek}")
+  public List<TimeSlotResponse> getSlots(
+      @PathVariable Long restaurantId,
+      @PathVariable int dayOfWeek
+  );
 }

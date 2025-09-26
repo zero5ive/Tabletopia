@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { useWebSocket } from '../../hooks/useWebSocket';
+
+// 소켓 관련 코드
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+
 import styles from './SelectTable.module.css';
 import axios from 'axios';
 
@@ -7,7 +14,8 @@ const TableSelection = () => {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [showAlert, setShowAlert] = useState(null);
+
   // 맵 인터랙션 상태
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -19,6 +27,7 @@ const TableSelection = () => {
   const reservationPeople = reservationStep1?.peopleCount || 1;
   const maxSeats = 1;
   const restaurantId = reservationStep1?.restaurantId || 1;
+  const time = reservationStep1.time;
 
   if (!reservationStep1) {
     alert('예약 정보가 없습니다. 처음부터 다시 시작해주세요.');
@@ -27,71 +36,143 @@ const TableSelection = () => {
   }
 
   /**
+   * 웹소켓 테이블 상태 업데이트 핸들러
+   */
+  const handleTableStatusUpdate = useCallback((data) => {
+    console.log('테이블 업데이트: ', data);
+
+    // 데이터가 배열로 올 경우 전체 테이블 상태 업데이트
+    if (Array.isArray(data)) {
+      setTableData(prevTables => {
+        prevTables.map(table => {
+          const updatedTable = data.find(d => d.id === `T${table.originalId}`);
+          if (updatedTable) {
+            return {
+              ...table,
+              occupied: updatedTable.status !== 'AVAILABLE',
+              selectedBy: updatedTable.sessionId,
+              selectionStatus: updatedTable.status,
+              selectedAt: updatedTable.selectedAt
+            };
+          }
+          return table;
+        })
+      });
+    } else {
+      // 데이터가 객체로 올 경우 개별 테이블 상태 업데이트
+      if (data.success) {
+        const tableId = data.tableId;
+        const selectionInfo = data.selectionInfo;
+
+        setTableData(prevTables =>
+          prevTables.map(table =>
+            `T${table.originalId}` === tableId
+              ? {
+                ...table,
+                occupied: selectionInfo ? selectionInfo.status !== 'AVAILABLE' : false,
+                selectedBy: selectionInfo?.sessionId,
+                selectionStatus: selectionInfo?.status || 'AVAILABLE',
+                selectedAt: selectionInfo?.selectedAt
+              }
+              : table
+          )
+        );
+
+        // 성공/실패 메시지 표시
+        setShowAlert({
+          type: data.success ? 'success' : 'error',
+          message: data.message
+        });
+      } else {
+        // 실패 메시지 표시
+        setShowAlert({ type: 'error', message: data.message });
+
+        // 선택 실패 시 로컬 선택 상태 초기화
+        setSelectedSeats([]);
+      }
+    }
+  }, []); // 의존성 배열 추가
+
+  // 웹소켓 연결
+  const {
+    isConnected,
+    connectionError,
+    selectTable,
+    releaseTable,
+    startPayment
+  } = useWebSocket(restaurantId, handleTableStatusUpdate);
+
+  // Alert 자동 숨김 효과
+  useEffect(() => {
+    if (showAlert) {
+      const timer = setTimeout(() => setShowAlert(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAlert]);
+
+
+  /**
    * API에서 테이블 데이터 가져오기
    */
   const fetchTableData = async () => {
-    try {
-      setLoading(true);
-      console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
-      
-      const response = await axios.get(`http://localhost:10022/api/realtime/reservations/tables/${restaurantId}`);
-      const data = response.data;
+  try {
+    setLoading(true);
+    console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
 
-      console.log('API 응답:', data);
+    const response = await axios.get(`http://localhost:10022/restaurant/${restaurantId}/tables`);
+    const data = response.data;
 
-      if (data && data.success) {
-        const apiTables = data.data;
-        const transformedTables = apiTables.map((table, index) => ({
-          id: `T${table.id}`,
-          name: table.name,
-          minCapacity: table.minCapacity,
-          maxCapacity: table.maxCapacity,
-          occupied: Math.random() > 0.7,
-          type: determineTableType(table),
-          // 좌표값 안전 처리 - NaN이나 null 방지
-          xPosition: typeof table.xPosition === 'number' && !isNaN(table.xPosition) 
-            ? table.xPosition 
-            : 100 + (index * 120), // 기본값: 가로로 120px씩 간격
-          yPosition: typeof table.yPosition === 'number' && !isNaN(table.yPosition) 
-            ? table.yPosition 
-            : 100 + Math.floor(index / 3) * 100, // 기본값: 세로로 100px씩 간격, 3개씩 한 줄
-          shape: table.shape,
-          originalId: table.id
-        }));
+    console.log('API 응답:', data);
 
-        console.log('변환된 테이블 데이터:', transformedTables);
-        setTableData(transformedTables);
-        setError(null);
-        
-        // 수정된 초기 위치 설정
-        initializeMapView(transformedTables);
-        
-      } else {
-        throw new Error('테이블 데이터를 불러오지 못했습니다.');
-      }
-    } catch (err) {
-      console.error('테이블 데이터 조회 실패:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    //  배열인지 확인하고 바로 사용
+    if (Array.isArray(data) && data.length > 0) {
+      const transformedTables = data.map((table, index) => ({
+        id: `T${table.id}`,
+        name: table.name,
+        minCapacity: table.minCapacity,
+        maxCapacity: table.maxCapacity,
+        occupied: Math.random() > 0.7, // TODO 여기 실제 예약 상태 반영
+        type: determineTableType(table),
+        xPosition: typeof table.xposition === 'number' && !isNaN(table.xposition)
+          ? table.xposition
+          : 100 + (index * 120),
+        yPosition: typeof table.yposition === 'number' && !isNaN(table.yposition)
+          ? table.yposition
+          : 100 + Math.floor(index / 3) * 100,
+        shape: table.shape,
+        originalId: table.id
+      }));
+
+      console.log('변환된 테이블 데이터:', transformedTables);
+      setTableData(transformedTables);
+      setError(null);
+      initializeMapView(transformedTables);
+    } else {
+      throw new Error('테이블 데이터가 없습니다.');
     }
-  };
+  } catch (err) {
+    console.error('테이블 데이터 조회 실패:', err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /**
    * 맵 초기화
    */
   const initializeMapView = (tables) => {
-    if (tables.length === 0) 
+    if (tables.length === 0)
       return;
-    
-    console.log('테이블 좌표:', tables.map(t => ({ 
-      name: t.name, 
-      x: t.xPosition, 
-      y: t.yPosition 
+
+    console.log('테이블 좌표:', tables.map(t => ({
+      name: t.name,
+      x: t.xPosition,
+      y: t.yPosition
     })));
 
     // 좌표값 검증 및 기본값 설정
-    const validTables = tables.filter(t => 
+    const validTables = tables.filter(t =>
       typeof t.xPosition === 'number' && !isNaN(t.xPosition) &&
       typeof t.yPosition === 'number' && !isNaN(t.yPosition)
     );
@@ -109,34 +190,34 @@ const TableSelection = () => {
     const maxX = Math.max(...positions.map(p => p.x));
     const minY = Math.min(...positions.map(p => p.y));
     const maxY = Math.max(...positions.map(p => p.y));
-    
+
     const tableWidth = Math.max(maxX - minX, 100); // 최소 100px
     const tableHeight = Math.max(maxY - minY, 100); // 최소 100px
     const mapWidth = 400; // CSS의 interactiveMap 너비
     const mapHeight = 400; // CSS의 interactiveMap 높이
-    
+
     console.log('테이블 영역:', { minX, maxX, minY, maxY, tableWidth, tableHeight });
-    
+
     // NaN 방지를 위한 계산
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
-    
+
     // 맵 중앙에서 테이블 영역 중앙을 뺀 값
     const offsetX = (mapWidth / 2) - centerX;
     const offsetY = (mapHeight / 2) - centerY;
-    
+
     // 스케일 계산 시 0으로 나누기 방지
     const scaleX = tableWidth > 0 ? (mapWidth * 0.6) / tableWidth : 1;
     const scaleY = tableHeight > 0 ? (mapHeight * 0.6) / tableHeight : 1;
     const initialScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.3), 1.5);
-    
+
     console.log('초기 설정:', { offsetX, offsetY, initialScale, centerX, centerY });
-    
+
     // NaN 체크 후 설정
     const finalX = isNaN(offsetX) ? 0 : offsetX;
     const finalY = isNaN(offsetY) ? 0 : offsetY;
     const finalScale = isNaN(initialScale) ? 1 : initialScale;
-    
+
     setPosition({ x: finalX, y: finalY });
     setScale(finalScale);
   };
@@ -195,7 +276,7 @@ const TableSelection = () => {
   // 드래그 중
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     setPosition({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
@@ -217,7 +298,7 @@ const TableSelection = () => {
   // 테이블 클릭 처리
   const handleTableClick = (table, e) => {
     e.stopPropagation();
-    
+
     if (!isTableAvailable(table)) {
       if (reservationPeople < table.minCapacity) {
         alert(`${table.name}은(는) 최소 ${table.minCapacity}명부터 이용 가능합니다.`);
@@ -245,7 +326,7 @@ const TableSelection = () => {
   const getTableColor = (table) => {
     const isSelected = selectedSeats.some(seat => seat.id === table.id);
     const isAvailable = isTableAvailable(table);
-    
+
     if (table.occupied) return '#a0a0a0ff';
     if (isSelected) return '#4ecdc4';
     if (!isAvailable) return '#ffa726';
@@ -337,7 +418,7 @@ const TableSelection = () => {
                 <span className={styles.zoomLevel}>{Math.round(scale * 100)}%</span>
                 <button onClick={handleZoomOut} className={styles.controlBtn}>🔍-</button>
               </div>
-              
+
               <div className={styles.mapInfo}>
                 <span>총 {tableData.length}개 테이블 | 드래그하여 이동, 휠로 확대/축소</span>
               </div>
@@ -357,26 +438,26 @@ const TableSelection = () => {
               <div className={styles.legendTitle}>좌석 안내</div>
               <div className={styles.legendItems}>
                 <div className={styles.legendItem}>
-                  <div className={`${styles.legendIcon}`} style={{backgroundColor: '#4CAF50'}}>✓</div>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#4CAF50' }}>✓</div>
                   <span>선택 가능</span>
                 </div>
                 <div className={styles.legendItem}>
-                  <div className={`${styles.legendIcon}`} style={{backgroundColor: '#4ecdc4'}}>●</div>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#4ecdc4' }}>●</div>
                   <span>선택됨</span>
                 </div>
                 <div className={styles.legendItem}>
-                  <div className={`${styles.legendIcon}`} style={{backgroundColor: '#ffa726'}}>△</div>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#ffa726' }}>△</div>
                   <span>인원수 불일치</span>
                 </div>
                 <div className={styles.legendItem}>
-                  <div className={`${styles.legendIcon}`} style={{backgroundColor: '#a0a0a0ff'}}>×</div>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#a0a0a0ff' }}>×</div>
                   <span>예약됨</span>
                 </div>
               </div>
             </div>
 
             {/* 인터랙티브 테이블 맵 */}
-            <div 
+            <div
               className={styles.interactiveMap}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -398,7 +479,7 @@ const TableSelection = () => {
                   const size = getTableSize(table);
                   const isSelected = selectedSeats.some(seat => seat.id === table.id);
                   const isAvailable = isTableAvailable(table);
-                  
+
                   return (
                     <div
                       key={table.id}
@@ -440,7 +521,7 @@ const TableSelection = () => {
             <div className={styles.bookingInfo}>
               {reservationStep1.date} {reservationStep1.time} • {reservationPeople}명
             </div>
-            
+
             <div className={styles.summaryTitle}>선택한 테이블</div>
             <div>
               {selectedSeats.length === 0 ? (
@@ -488,11 +569,10 @@ const TableSelection = () => {
             )}
 
             <button
-              className={`${styles.confirmBtn} ${
-                selectedSeats.length === maxSeats 
-                  ? styles.confirmBtnActive 
+              className={`${styles.confirmBtn} ${selectedSeats.length === maxSeats
+                  ? styles.confirmBtnActive
                   : styles.confirmBtnDisabled
-              }`}
+                }`}
               onClick={handleConfirmSeats}
               disabled={selectedSeats.length !== maxSeats}
             >
