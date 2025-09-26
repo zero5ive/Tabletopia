@@ -1,4 +1,5 @@
 import styles from '../Main.module.css'
+import { Link } from 'react-router-dom'
 
 export default function NewRestaurant(){
     return(

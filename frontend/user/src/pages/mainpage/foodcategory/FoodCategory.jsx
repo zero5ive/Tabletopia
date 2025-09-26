@@ -1,4 +1,5 @@
 import styles from '../Main.module.css'
+import { Link } from 'react-router-dom'
 
 export default function FoodCategory(){
     return(
@@ -6,11 +7,13 @@ export default function FoodCategory(){
             <section>
                 <h2 className={styles.sectionTitle}>어떤 음식이 드시고 싶으세요?</h2>
                 <div className={styles.categoriesGrid}>
+                    <Link to="/restaurant/list" className={styles.noUnderline}>
                     <div className={styles.categoryItem}>
                         <div className={styles.categoryIcon}>🛍️</div>
-                        <div className={styles.categoryName}><a href="/html/restlist.html">전체</a></div>
+                        <div className={styles.categoryName}>전체</div>
                         <div className={styles.categoryDesc}>특별한 날의 선택</div>
                     </div>
+                    </Link>
                     <div className={styles.categoryItem}>
                         <div className={styles.categoryIcon}>🛍️</div>
                         <div className={styles.categoryName}>한식</div>
