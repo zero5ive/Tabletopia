@@ -34,13 +34,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        log.debug("유저");
 
         //1) provider 유형 얻기(google, naver, kakao)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         log.debug("당신이 가입한 프로바이더는 ===={}", registrationId);
-        SnsProvider snsProvider = jpaSnsProviderRepository.findByName(registrationId);//pk반환
+        SnsProvider snsProvider = jpaSnsProviderRepository.findByName(registrationId);// SnsProvider객체 반환
+        log.debug("가입한 프로바이더 이름을 기반으로 추출한 pk는 {}", snsProvider.getId());
         if (snsProvider == null) {
-            throw new OAuth2AuthenticationException("회원가입 정보를 확인해 주세요(알려지지 않은 provider입니다.");
+            throw new OAuth2AuthenticationException("회원가입 정보를 확인해 주세요//알려지지 않은 provider입니다.");
         }
 
         //회원정보 꺼내기..
@@ -54,14 +56,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = UserInfoExtractor.getEmail(registrationId, attributes);
         String name = UserInfoExtractor.getName(registrationId, attributes);
 
-        User existing = jpaUserRepository.findBySnsProviderAndProviderId(snsProvider, providerId);
+        User existing = jpaUserRepository.findBySnsProviderAndEmail(snsProvider, providerId);
 
         //SNS검증 됐으나 우리 DB회원이 아니라면(자동가입)
         User user = null;
         if (existing == null) {
             user = new User();//가입에 사용할 모델 객체
             user.setSnsProvider(snsProvider);
-            user.setProviderId(providerId);
             user.setEmail(email);
             user.setName(name);
 

@@ -33,7 +33,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
      * */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.debug("핸들러로 OAuth인증 마무리 -> 여기서 토큰생성등 로직으로 보내야 하나?");
+        log.debug("====얘가 나와야 함 ===핸들러로 OAuth인증 마무리 -> 여기서 토큰생성등 로직으로 보내야 하나?");
         //소셜로그인이 완료되면 보낼 redirect 주소 일단 success
         response.sendRedirect(redirectUrl);
     }

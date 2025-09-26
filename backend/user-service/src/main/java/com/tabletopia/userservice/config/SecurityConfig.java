@@ -26,21 +26,16 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users/login/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/login/oauth2/**", "/oauth2/authorization/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                /*
-                 * 아래의 oauth2Login 등록되는 시점부터 Security 6의 OAuth2 기반 인증이 시작
-                 * OAuth2AuthorizationRequestRedirectFilter가 이 시점부터 작동
-                 * 주의할 점) 이 필터가 리다이렉트 할 Provider의 요청주소가 이미 정해진 형식
-                 * /oauth2/authorization/{providerId}로 정해져있기 때문에, 혹시나 요청시 스프링 시큐리티가 이해할 수 없는 접두어가 있다면
-                 * 반드시 제거해줘야 이 필터가 동작
-                 *
-                 * */
                 .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(ui->ui.userService(customOAuth2UserService))
-                        .successHandler(oAuth2SuccessHandler) //로그인 완료시 표시될 url주소
+//                        .loginPage("/user/loginform") // 커스텀 로그인 페이지 경로(React에서 관리하므로 불필요)
+                        .userInfoEndpoint(ui -> ui.userService(customOAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                        .defaultSuccessUrl("/user/login/ok")
                 );
+
 
         return http.build();
     }

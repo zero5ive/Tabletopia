@@ -131,24 +131,30 @@ const Login = () => {
     }
 };
 
-    const socialLogin = async (provider) => {
-        try {
-            const response = await axios.get(`api/members/${provider}/authurl`);
-            const url = response.data;
-            window.location.href = url;
-        } catch (error) {
-            if (error.response) {
-                // 서버가 응답했지만 오류 상태 코드 (4xx, 5xx)
-                alert(`로그인 요청에 실패했습니다: ${error.response.data || error.response.statusText}`);
-            } else if (error.request) {
-                // 요청이 전송되었지만 응답을 받지 못함
-                alert("서버에 연결할 수 없습니다.");
-            } else {
-                // 요청 설정 중에 오류 발생
-                alert('로그인 중 오류가 발생했습니다.');
-            }
-        }
-    };
+    // const socialLogin = async (provider) => {
+    //     try {
+    //         const response = await axios.get(`api/members/${provider}/authurl`);
+    //         const url = response.data;
+    //         window.location.href = url;
+    //     } catch (error) {
+    //         if (error.response) {
+    //             // 서버가 응답했지만 오류 상태 코드 (4xx, 5xx)
+    //             alert(`로그인 요청에 실패했습니다: ${error.response.data || error.response.statusText}`);
+    //         } else if (error.request) {
+    //             // 요청이 전송되었지만 응답을 받지 못함
+    //             alert("서버에 연결할 수 없습니다.");
+    //         } else {
+    //             // 요청 설정 중에 오류 발생
+    //             alert('로그인 중 오류가 발생했습니다.');
+    //         }
+    //     }
+    // };
+
+    const socialLogin = (provider)=>{
+    //원래는 각 provider별로 인증 url이 다르므로, 조건으로 처리해야 하지만
+    //spring boot에서 지원하는 oath2 라이브러리를 사용중이므로, 이 url을 서버측 스프링이 알아서 처리해 줌
+        window.location.href=`http://localhost:10022/user/oauth2/authorization/${provider}`;
+    }
 
     return (
         <div className={styles.loginPage}>

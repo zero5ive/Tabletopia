@@ -27,9 +27,11 @@ export function MainHeader() {
 
     /**
      * 로그인 페이지로 이동
+     * 
+     * TODO : 가입된유저 알러트//백엔드에서 존재하는 유저는 로그인처리 되도록 구현
      */
     const handleLogin = () => {
-        navigate('/members/login');
+        navigate('/users/loginform');
     };
 
     /**
