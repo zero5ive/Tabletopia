@@ -1,9 +1,12 @@
 package com.tabletopia.realtimeservice.domain.reservation.controller;
 
+import com.tabletopia.realtimeservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.realtimeservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.realtimeservice.domain.reservation.entity.Reservation;
 import com.tabletopia.realtimeservice.domain.reservation.service.ReservationService;
 import com.tabletopia.realtimeservice.dto.ApiResponse;
+import com.tabletopia.realtimeservice.dto.RestaurantTableResponse;
+import com.tabletopia.realtimeservice.feign.RestaurantServiceClient;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -12,20 +15,54 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 예약 컨트롤러
+ *
+ * @author 김예진
+ * @since 2025-09-23
+ */
 @Slf4j
 @RestController
-@RequestMapping("/realtime/api")
+@RequestMapping("/api/realtime")
 @RequiredArgsConstructor
 public class ReservationController {
   private final ReservationService reservationService;
+  private final RestaurantServiceClient restaurantServiceClient;
 
   /**
-   * 
+   * 특정 레스토랑의 테이블 조회
+   * @author 김예진
+   * @since 2025-09-23
    */
+  @GetMapping("/reservations/tables/{restaurantId}")
+  public ResponseEntity<ApiResponse<List<RestaurantTableResponse>>> getTablesAt(@PathVariable Long restaurantId){
+    List<RestaurantTableResponse> tables = restaurantServiceClient.getRestaurantTables(restaurantId);
+
+    return ResponseEntity.ok(ApiResponse.success("테이블 조회 성공", tables));
+  }
+
+  /**
+   * 예약 등록
+   *
+   * @author 김예진
+   * @since 2025-09-24
+   */
+  @PostMapping("/reservation")
+  public void registerReservation(@RequestBody ReservationRequest request){
+    log.debug("예약 정보 - {}", request);
+
+    Long reservationId = reservationService.createReservation(request);
+
+    log.debug("예약 등록 id - {}", reservationId);
+  }
+
+
 
   /**
    * 전체 예약 조회
@@ -59,12 +96,13 @@ public class ReservationController {
       @PathVariable Long restaurantId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reservation_at) {
 
-    List<UnavailableTableResponse> unavailableTables = reservationService.getUnavailableTablesAt(
-        restaurantId, reservation_at);
+    List<UnavailableTableResponse> unavailableTables = reservationService.getUnavailableTablesAt(restaurantId, reservation_at);
 
     return ResponseEntity.ok(
         ApiResponse.success("예약 불가능한 테이블 조회 성공", unavailableTables)
     );
   }
+
+
 
  }
