@@ -13,5 +13,9 @@ export default defineConfig({
         secure: false,
       }
     }
-  }
+  },
+  // 전역타입 정의
+  define: {
+    global: 'globalThis',
+  },
 })

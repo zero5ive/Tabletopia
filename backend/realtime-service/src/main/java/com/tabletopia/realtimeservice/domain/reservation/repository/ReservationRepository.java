@@ -26,5 +26,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
    * @author 김예진
    * @since 2025-09-23
    */
-  public List<Reservation> findReservationsByRestaurantIdAndReservationAt(Long restaurantId, LocalDateTime reservation_at);
+  public List<Reservation> findReservationsByRestaurantIdAndReservationAt(Long restaurantId, LocalDateTime reservationAt);
 }
