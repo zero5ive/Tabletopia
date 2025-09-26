@@ -1,19 +1,28 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Sidebar from './components/Sidebar'
-import MainContent from './components/MainContent';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function App() {
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-    return (
-        <div className="container-fluid">
-            <div className="row">
-                <Sidebar/>
-                <MainContent/>
-            </div>
+import Sidebar from './components/Sidebar';
+import Home from './pages/loginpage/Login';
+
+function App() {
+  return (
+    <Router>
+      <div className="container-fluid">
+        <div className="row">
+          <Sidebar />
+          <div className="col">
+            {/* 라우팅 되는 메인 콘텐츠 영역 */}
+            <Routes>
+              <Route path="/" element={<Home />} />
+            </Routes>
+          </div>
         </div>
-    );
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;

@@ -343,36 +343,6 @@ body,
     transform: translateY(-1px) !important;
 }
 
-.google {
-    background: #ffffff !important;
-    border-color: #4285F4 !important;
-    color: #4285F4 !important;
-}
-
-.google:hover {
-    background: #e8f0fe !important;
-}
-
-.naver {
-    background: #03C75A !important;
-    border-color: #03C75A !important;
-    color: #ffffff !important;
-}
-
-.naver:hover {
-    background: #02b350 !important;
-}
-
-.kakao {
-    background: #FEE500 !important;
-    border-color: #FEE500 !important;
-    color: #3C1E1E !important;
-}
-
-.kakao:hover {
-    background: #f2da00 !important;
-}
-
 .signupLink {
     text-align: center !important;
     margin-top: 32px !important;
@@ -435,8 +405,4 @@ body,
     background: rgba(211, 47, 47, 0.1) !important;
     border-radius: 6px !important;
     border: 1px solid rgba(211, 47, 47, 0.2) !important;
-}
-
-.focused {
-    /* 이미 .formGroup.focused .formLabel에서 처리됨 */
 }

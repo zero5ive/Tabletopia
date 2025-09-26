@@ -10,8 +10,8 @@ export default function Header({children}){
             <header className={styles.header}>
                 <div className={styles.headerContent}>
                     <Link to="/" className={styles.logo}>테이블토피아</Link>
-                    {/* <MainHeader/> */}
-                    { <DetailHeader/>}
+                    <MainHeader/>
+                    {/* { <DetailHeader/>} */}
                 </div>                      
             </header>
         </>
