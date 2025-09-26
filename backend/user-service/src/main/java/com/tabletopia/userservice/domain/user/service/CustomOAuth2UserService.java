@@ -56,7 +56,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = UserInfoExtractor.getEmail(registrationId, attributes);
         String name = UserInfoExtractor.getName(registrationId, attributes);
 
-        User existing = jpaUserRepository.findBySnsProviderAndEmail(snsProvider, providerId);
+        User existing = jpaUserRepository.findBySnsProviderAndEmail(snsProvider, email);
 
         //SNS검증 됐으나 우리 DB회원이 아니라면(자동가입)
         User user = null;

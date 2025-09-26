@@ -21,8 +21,8 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    @Value("${app.oauth.success-redirect}")
-    private String redirectUrl;
+//    @Value("${app.oauth.success-redirect}")
+//    private String redirectUrl;
 
     /**
      * 소셜로그인이 완료되고 난 후 보낼 요청주소를 담은 메서드
@@ -35,6 +35,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.debug("====얘가 나와야 함 ===핸들러로 OAuth인증 마무리 -> 여기서 토큰생성등 로직으로 보내야 하나?");
         //소셜로그인이 완료되면 보낼 redirect 주소 일단 success
-        response.sendRedirect(redirectUrl);
+        response.sendRedirect("http://localhost:10022/api/user/login/ok");
     }
 }

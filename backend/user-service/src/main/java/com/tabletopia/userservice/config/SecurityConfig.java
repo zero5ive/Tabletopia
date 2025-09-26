@@ -26,14 +26,16 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/login/oauth2/**", "/oauth2/authorization/**", "/login/ok").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
 //                        .loginPage("/user/loginform") // 커스텀 로그인 페이지 경로(React에서 관리하므로 불필요)
                         .userInfoEndpoint(ui -> ui.userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
-                        .defaultSuccessUrl("/user/login/ok")
+//                        .authorizationEndpoint(auth -> auth
+//                                .baseUri("/login/oauth2/authorization")
+//                        )
                 );
 
 

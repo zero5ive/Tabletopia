@@ -153,7 +153,7 @@ const Login = () => {
     const socialLogin = (provider)=>{
     //원래는 각 provider별로 인증 url이 다르므로, 조건으로 처리해야 하지만
     //spring boot에서 지원하는 oath2 라이브러리를 사용중이므로, 이 url을 서버측 스프링이 알아서 처리해 줌
-        window.location.href=`http://localhost:10022/user/oauth2/authorization/${provider}`;
+        window.location.href=`http://localhost:10022/api/user/oauth2/authorization/${provider}`;
     }
 
     return (

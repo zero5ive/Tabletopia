@@ -1,20 +1,29 @@
 package com.tabletopia.userservice.domain.user.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/user")
+import java.net.URI;
+
+@Controller
+@RequestMapping("/api/user")
 @Slf4j
 public class UserController {
 
-    //oauth2 인증 시스템이 한바퀴 돌아가는지 테스트
     @GetMapping("/login/ok")
-    public String loginOk(){
-        return "login...ok";
+    public String loginOk() {
+        log.debug("OAuth2 login OK 호출됨, redirect 처리");
+        return "redirect:http://localhost:3000/restaurant/detail";
     }
+
+
+
 
     /**
      * 로그인폼에 연결해주는 메서드
