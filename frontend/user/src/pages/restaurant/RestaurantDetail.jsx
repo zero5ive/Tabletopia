@@ -351,6 +351,30 @@ export default function RestaurantList() {
                                     단체 예약도 가능해서 좋았어요. 추천합니다!
                                 </div>
                             </div>
+                            <div className={styles['demo-section']}>
+                                <div className={styles['pagination-container']}>
+                                    <div className={styles.pagination}>
+                                        <button className={`${styles['pagination-btn']} ${styles.arrow} ${styles.disabled}`}>
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+                                            </svg>
+                                        </button>
+                                        <button className={`${styles['pagination-btn']} ${styles.active}`}>1</button>
+                                        <button className={styles['pagination-btn']}>2</button>
+                                        <button className={styles['pagination-btn']}>3</button>
+                                        <button className={styles['pagination-btn']}>4</button>
+                                        <button className={styles['pagination-btn']}>5</button>
+                                        <span className={styles['pagination-dots']}>...</span>
+                                        <button className={styles['pagination-btn']}>15</button>
+                                        <button className={`${styles['pagination-btn']} ${styles.arrow}`}>
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -403,7 +427,7 @@ export default function RestaurantList() {
                                 <div
                                     className={`${styles["time-slot"]} ${selectedTime === '18:00' ? styles['selected'] : ''}`}
                                     onClick={() => handleTimeSlotClick('18:00')}
-                                 >
+                                >
                                     18:00
                                 </div>
                                 <div

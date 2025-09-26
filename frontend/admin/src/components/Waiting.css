@@ -1,0 +1,595 @@
+/* 웨이팅 관련  */
+/* 전체 컨테이너 */
+.waiting-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* 헤더 섹션 */
+.waiting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.waiting-titleSection {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.waiting-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.waiting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #e8f5e8;
+  padding: 12px 16px;
+  border-radius: 20px;
+}
+
+.waiting-toggleLabel {
+  font-size: 14px;
+  color: #2d5016;
+  font-weight: 500;
+}
+
+/* 토글 스위치 */
+.waiting-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.waiting-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.waiting-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.waiting-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.waiting-switch input:checked + .waiting-slider {
+  background-color: #4CAF50;
+}
+
+.waiting-switch input:checked + .waiting-slider:before {
+  transform: translateX(24px);
+}
+
+/* 컨트롤 버튼 */
+.waiting-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.waiting-addButton {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.waiting-addButton:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+}
+
+.waiting-settingsButton {
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.waiting-settingsButton:hover {
+  background: #e9e9e9;
+  color: #333;
+}
+
+/* 필터 섹션 */
+.waiting-filterSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.waiting-statusFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.waiting-filterLabel {
+  color: #666;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.waiting-count {
+  color: #333;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.waiting-filterButton {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.waiting-filterButton:hover {
+  background: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+.waiting-filterButton.active {
+  color: white;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.waiting-filterButton.전체.active {
+  background: #333;
+}
+
+.waiting-filterButton.호출.active {
+  background: #17a2b8;
+}
+
+.waiting-filterButton.착석.active {
+  background: #6f42c1;
+}
+
+.waiting-filterButton.취소.active {
+  background: #dc3545;
+}
+
+.waiting-checkboxFilters {
+  display: flex;
+  gap: 20px;
+}
+
+.waiting-checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  user-select: none;
+}
+
+.waiting-checkboxLabel:hover {
+  color: #333;
+}
+
+.waiting-checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4CAF50;
+  cursor: pointer;
+}
+
+/* 웨이팅 리스트 */
+.waiting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.waiting-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.waiting-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #e9ecef;
+}
+
+/* 웨이팅 번호 */
+.waiting-number {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 24px;
+  min-width: 80px;
+}
+
+.waiting-numberBadge {
+  background: #e8f5e8;
+  color: #2d5016;
+  font-size: 28px;
+  font-weight: 800;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid #4CAF50;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.waiting-numberLabel {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* 고객 정보 */
+.waiting-customerInfo {
+  flex: 1;
+  margin-right: 24px;
+}
+
+.waiting-customerHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.waiting-customerName {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.waiting-guestInfo {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.waiting-contactInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.waiting-phone {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.waiting-separator {
+  color: #ccc;
+  font-weight: bold;
+}
+
+.waiting-waitTime {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.waiting-orderInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.waiting-orderItem {
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.waiting-notes {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* 액션 버튼들 */
+.waiting-actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.waiting-statusButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+  white-space: nowrap;
+}
+
+.waiting-statusButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.waiting-callButton {
+  background: #17a2b8;
+}
+
+.waiting-callButton:hover {
+  background: #138496;
+}
+
+.waiting-seatButton {
+  background: #6f42c1;
+}
+
+.waiting-seatButton:hover {
+  background: #5a359a;
+}
+
+.waiting-cancelButton {
+  background: #dc3545;
+}
+
+.waiting-cancelButton:hover {
+  background: #c82333;
+}
+
+/* 메뉴 버튼들 */
+.waiting-menuButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.waiting-editButton,
+.waiting-deleteButton {
+  background: #f5f5f5;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waiting-editButton:hover {
+  background: #e9e9e9;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+.waiting-deleteButton:hover {
+  background: #ffebee;
+  color: #d32f2f;
+  transform: translateY(-1px);
+}
+
+/* 빈 상태 메시지 */
+.waiting-emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.waiting-emptyState h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.waiting-emptyState p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 로딩 상태 */
+.waiting-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+.waiting-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .waiting-container {
+    padding: 16px;
+  }
+  .waiting-card {
+    padding: 16px;
+  }
+  .waiting-numberBadge {
+    font-size: 24px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .waiting-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .waiting-titleSection {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .waiting-toggle {
+    align-self: flex-start;
+  }
+  .waiting-controls {
+    justify-content: center;
+  }
+  .waiting-filterSection {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .waiting-statusFilters {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .waiting-checkboxFilters {
+    justify-content: center;
+  }
+  .waiting-card {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+  }
+  .waiting-number {
+    flex-direction: row;
+    justify-content: center;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  .waiting-customerInfo {
+    margin-right: 0;
+    text-align: center;
+  }
+  .waiting-actionButtons {
+    justify-content: center;
+    margin-right: 0;
+    flex-wrap: wrap;
+  }
+  .waiting-statusButton {
+    flex: 1;
+    min-width: 80px;
+  }
+  .waiting-menuButtons {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .waiting-container {
+    padding: 12px;
+  }
+  .waiting-header {
+    padding: 16px;
+  }
+  .waiting-title {
+    font-size: 20px;
+  }
+  .waiting-toggle {
+    padding: 10px 12px;
+  }
+  .waiting-toggleLabel {
+    font-size: 12px;
+  }
+  .waiting-filterSection {
+    padding: 12px 16px;
+  }
+  .waiting-statusFilters {
+    gap: 6px;
+  }
+  .waiting-filterButton {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .waiting-card {
+    padding: 12px;
+  }
+  .waiting-numberBadge {
+    font-size: 20px;
+    padding: 8px 12px;
+  }
+  .waiting-customerName {
+    font-size: 16px;
+  }
+  .waiting-actionButtons {
+    gap: 6px;
+  }
+  .waiting-statusButton {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
