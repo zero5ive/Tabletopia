@@ -98,11 +98,17 @@ const Login = () => {
                 password: formData.password
             });
 
-            const response = await axios.post('http://localhost:10022/api/user/login', {
-                email: formData.email,
-                password: formData.password
-            });
-
+            const response = await fetch('/api/user/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password
+                })
+                
+            })
+            // reponse찍어보기
+            console.log(response);
             if (response.data.success) {
                 navigate('/');
             } else {

@@ -15,6 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -30,9 +36,11 @@ public class SecurityConfig {
         http
                 // WebConfig에서 CORS 처리하므로 Security에서는 제거
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/user/login",      // 커스텀 로그인 API
+                                "/login",   //프론트 로그인 요청 받기
                                 "/api/user/register",   // 회원가입 API
                                 "/oauth2/**",           // OAuth2 인증 프로세스
                                 "/login/oauth2/**"      // OAuth2 인증 프로세스
@@ -50,6 +58,23 @@ public class SecurityConfig {
 
         return http.build();
     }
+//
+//    // 보안 필터에서 시큐리티에서 CORS 설정 처리
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//
+//        configuration.setAllowedOrigins(Arrays.asList(corsProperties.getAllowedOrigins().split(",")));
+//        configuration.setAllowedMethods(Collections.singletonList("*"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setAllowedHeaders(Collections.singletonList("*"));
+//        configuration.setMaxAge(3600L);
+//        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration); // 모든 URL에 적용
+//        return source;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/user")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
@@ -29,7 +28,7 @@ public class UserController {
     /**
      * 회원가입 처리
      */
-    @PostMapping("/register")
+    @PostMapping("/api/user/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDTO userDto) {
         userService.register(userDto);
         return ResponseEntity.ok(Map.of(
