@@ -122,7 +122,7 @@ const router = createBrowserRouter([
         path: "/users",
         children: [
             {
-                path: "new",
+                path: "signup",
                 element: <SignUp />
             },
             {

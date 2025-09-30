@@ -11,5 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2025-09-25
  */
 
+import java.util.Optional;
+
 public interface JpaUserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
 }

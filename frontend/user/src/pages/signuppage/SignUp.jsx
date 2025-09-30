@@ -8,7 +8,8 @@ const SignUp = () => {
     emailLocal: '',        // @ 앞부분
     emailDomain: 'gmail.com', // @ 뒷부분
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phoneNumber:''
   });
 
   const [errors, setErrors] = useState({});
@@ -162,11 +163,12 @@ const SignUp = () => {
     try {
       const fullEmail = getFullEmail();
 
-      const response = await fetch('/api/members/new', {
+      const response = await fetch('/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
+          phoneNumber: formData.phoneNumber,
           email: fullEmail, // 완전한 이메일 주소 전송
           password: formData.password
         })
@@ -176,7 +178,7 @@ const SignUp = () => {
 
       if (data.success) {
         // 회원가입 성공
-        navigate('/members/new/success', {
+        navigate('/userss/new/success', {
           state: {
             memberName: data.data.memberName,  // 서버에서 받은 이름
             memberEmail: fullEmail
@@ -296,6 +298,26 @@ const SignUp = () => {
             )}
           </div>
 
+          {/* 전화번호 입력 */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="phoneNumber">전화번호</label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              className={`${styles.formInput} ${errors.name ? styles.error : ''}`}
+              placeholder="전화번호"
+              required
+            />
+            {errors.name && (
+              <div className={styles.fieldError}>
+                <span>{errors.name}</span>
+              </div>
+            )}
+          </div>
+
           {/* 비밀번호 입력 */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="password">비밀번호</label>
@@ -358,7 +380,7 @@ const SignUp = () => {
         </div>
 
         <div className={styles.loginLink}>
-          이미 계정이 있으신가요? <a href="/members/login">로그인</a>
+          이미 계정이 있으신가요? <a href="/users/loginform">로그인</a>
         </div>
       </div>
     </div>
