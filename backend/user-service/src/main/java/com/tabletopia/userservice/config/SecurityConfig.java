@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/user/login",      // 커스텀 로그인 API
                                 "/login",   //프론트 로그인 요청 받기
                                 "/api/user/register",   // 회원가입 API
+                                "/register",   // 회원가입 API 요청받기
                                 "/oauth2/**",           // OAuth2 인증 프로세스
                                 "/login/oauth2/**"      // OAuth2 인증 프로세스
                         ).permitAll()

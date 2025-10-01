@@ -28,8 +28,9 @@ public class UserController {
     /**
      * 회원가입 처리
      */
-    @PostMapping("/api/user/register")
+    @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDTO userDto) {
+        log.debug("=====회원가입 요청 {}", userDto);
         userService.register(userDto);
         return ResponseEntity.ok(Map.of(
                 "success", true,
