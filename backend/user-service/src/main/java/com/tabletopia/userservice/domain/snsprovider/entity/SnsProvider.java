@@ -9,12 +9,16 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 /**
- * sns 제공자 엔티티
+ * sns 로그인 서비스 제공자 엔터티
  *
- * @author 김예진
- * @since 2025-08-20
+ * @author 이세형
+ * @since 2025-09-25
  */
 @Entity
 @Table(name = "sns_provider")
@@ -22,11 +26,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SnsProvider {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "sns_provider_id")
-  private Long snsProviderId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(name = "sns_provider_name")
-  private String snsProviderName;
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
