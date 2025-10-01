@@ -22,6 +22,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * SpringSecurity에 관항 통합 설정 파일
+ *
+ * @author 이세형
+ * @since 2025-09-30
+ * */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -59,23 +65,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-//
-//    // 보안 필터에서 시큐리티에서 CORS 설정 처리
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//
-//        configuration.setAllowedOrigins(Arrays.asList(corsProperties.getAllowedOrigins().split(",")));
-//        configuration.setAllowedMethods(Collections.singletonList("*"));
-//        configuration.setAllowCredentials(true);
-//        configuration.setAllowedHeaders(Collections.singletonList("*"));
-//        configuration.setMaxAge(3600L);
-//        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration); // 모든 URL에 적용
-//        return source;
-//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

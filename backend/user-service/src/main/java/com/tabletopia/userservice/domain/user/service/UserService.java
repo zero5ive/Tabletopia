@@ -7,6 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * 사용자 관련 핵심 비즈니스 로직을 처리하는 서비스입니다.
+ * 주로 신규 사용자 등록과 같은 기능을 담당합니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {

@@ -15,6 +15,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
+/**
+ * OAuth2 인증 성공 후 로직을 처리하는 핸들러입니다.
+ * 인증된 사용자 정보를 기반으로 JWT를 생성하고, 지정된 리다이렉트 URL로 토큰과 함께 사용자를 보냅니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

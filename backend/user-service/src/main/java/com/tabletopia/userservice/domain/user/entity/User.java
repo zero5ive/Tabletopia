@@ -7,6 +7,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * 사용자 정보를 나타내는 JPA 엔티티 클래스입니다.
+ * 데이터베이스의 'user' 테이블과 매핑됩니다.
+ *
+ * @author 이세형
+ * @since 2025-09-30
+ */
 @Data
 @Entity
 @Table(name = "user")

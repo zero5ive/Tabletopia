@@ -50,6 +50,9 @@ public class GlobalExceptionHandler {
 
   /**
    * 입력값 검증 실패 예외 처리
+   *
+   * @author 이세형
+   * @since 2025-10-01
    */
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
@@ -61,6 +64,9 @@ public class GlobalExceptionHandler {
 
   /**
    * DTO의 Bean Validation 예외 처리
+   *
+   * @author 이세형
+   * @since 2025-10-01
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationException(
@@ -74,6 +80,9 @@ public class GlobalExceptionHandler {
 
   /**
    * 서버 내부 오류
+   *
+   * @author 이세형
+   * @since 2025-10-01
    */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {

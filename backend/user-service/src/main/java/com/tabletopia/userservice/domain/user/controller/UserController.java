@@ -15,6 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * 사용자 관련 HTTP 요청을 처리하는 REST 컨트롤러입니다.
+ * 회원가입, 로그인 등의 API 엔드포인트를 제공합니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -37,13 +44,6 @@ public class UserController {
                 "message", "회원가입 성공"
         ));
     }
-
-    @GetMapping("/login")
-    public String loginCheck(){
-        log.debug("=========================loginCheck");
-        return "로그인요청드루옴";
-    }
-
     /**
      * 로그인 처리
      */
@@ -68,7 +68,7 @@ public class UserController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "로그인 성공",
-                    "token", jwt
+                    "accessToken", jwt
             ));
 
         } catch (Exception e) {

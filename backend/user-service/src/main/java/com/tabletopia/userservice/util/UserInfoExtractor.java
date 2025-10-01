@@ -2,6 +2,13 @@ package com.tabletopia.userservice.util;
 
 import java.util.Map;
 
+/**
+ * 다양한 OAuth2 제공자(Google, Naver, Kakao)로부터 받은 사용자 정보(attributes)에서
+ * 표준화된 사용자 정보(ID, 이메일, 이름)를 추출하는 유틸리티 클래스입니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 public class UserInfoExtractor {
 
     /*--------------------------------------------------------------------------------

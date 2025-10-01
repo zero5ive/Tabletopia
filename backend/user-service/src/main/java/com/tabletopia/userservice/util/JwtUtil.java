@@ -10,6 +10,13 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
+/**
+ * JWT(JSON Web Token) 처리를 위한 유틸리티 클래스입니다.
+ * 토큰 생성, 사용자 이름 추출, 유효성 검사 등의 기능을 제공합니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 @Component
 public class JwtUtil {
 

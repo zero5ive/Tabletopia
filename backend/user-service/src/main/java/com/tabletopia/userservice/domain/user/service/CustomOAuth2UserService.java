@@ -16,6 +16,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * OAuth2 로그인 시 사용자 정보를 로드하고, 필요한 경우 신규 사용자를 등록하는 서비스입니다.
+ * Spring Security의 DefaultOAuth2UserService를 확장하여 커스텀 로직을 구현합니다.
+ *
+ * @author 이세형
+ * @since 2025-10-01
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
