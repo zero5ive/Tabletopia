@@ -200,10 +200,12 @@ body,
 .inputIcon {
     position: absolute !important;
     right: 16px !important;
-    top: 50% !important;
+    top: 55px !important;
     transform: translateY(-50%) !important;
     color: #78909c !important;
     transition: color 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .formInput:focus ~ .inputIcon {

@@ -1,6 +1,6 @@
 package com.tabletopia.userservice.domain.user.repository;
 
-import com.tabletopia.userservice.domain.snsprovider.entity.SnsProvider;
+
 import com.tabletopia.userservice.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2025-09-25
  */
 
+import java.util.Optional;
+
 public interface JpaUserRepository extends JpaRepository<User, Long> {
-    //SnsProvider와 providerId를 통한 해당 유저 조회
-    public User findBySnsProviderAndEmail(SnsProvider snsProvider, String email);
+    Optional<User> findByEmail(String email);
 }
