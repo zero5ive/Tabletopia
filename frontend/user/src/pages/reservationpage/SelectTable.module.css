@@ -527,6 +527,251 @@
   margin-top: 10px;
 }
 
+
+/* ========================================
+   알림 메시지 스타일
+======================================== */
+.alert {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.3s ease-out;
+  max-width: 90%;
+  text-align: center;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 성공 메시지 */
+.alertSuccess {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* 에러 메시지 */
+.alertError {
+  background-color: #f44336;
+  color: white;
+}
+
+/* 경고 메시지 */
+.alertWarning {
+  background-color: #ff9800;
+  color: white;
+}
+
+/* 정보 메시지 */
+.alertInfo {
+  background-color: #2196F3;
+  color: white;
+}
+
+/* ========================================
+   웹소켓 연결 상태 표시
+======================================== */
+.connectionStatus {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ========================================
+   테이블 마커 개선
+======================================== */
+.tableMarker {
+  position: relative;
+  user-select: none;
+}
+
+/* 테이블 호버 효과 */
+.tableMarker:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+/* 선택 불가능한 테이블 */
+.tableMarker[data-selectable="false"] {
+  cursor: not-allowed !important;
+  filter: grayscale(20%);
+}
+
+/* 선택된 테이블 애니메이션 */
+.tableMarker[data-selected="true"] {
+  animation: selectedPulse 1.5s ease-in-out infinite;
+}
+
+
+
+/* ========================================
+   예약 요약 패널
+======================================== */
+.bookingSummary {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 20px;
+}
+
+.restaurantName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.bookingInfo {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.summaryTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.noSelection {
+  text-align: center;
+  padding: 32px 16px;
+  color: #999;
+  font-size: 14px;
+}
+
+.noSelectionSmall {
+  font-size: 12px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+.selectedTable {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 4px solid #4ecdc4;
+}
+
+.selectedTableName {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.selectedTableCapacity {
+  font-size: 12px;
+  color: #666;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.summaryItem span:first-child {
+  color: #666;
+}
+
+.summaryItem span:last-child {
+  font-weight: 500;
+  color: #333;
+}
+
+.summaryItemTotal {
+  border-bottom: none;
+  padding-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.summaryItemTotal span:last-child {
+  color: #4CAF50;
+}
+
+.confirmBtn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 20px;
+}
+
+.confirmBtnActive {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.confirmBtnActive:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.confirmBtnDisabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+
+@keyframes selectedPulse {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+  }
+}
+
+
+
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
     .mainContent {
@@ -561,3 +806,4 @@
         padding: 0 5px;
     }
 }
+
