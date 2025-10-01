@@ -53,6 +53,7 @@ dependencies {
 
     // 마이크로 서비스 간 통신 처리
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.3.0")
+
 }
 
 dependencyManagement {
