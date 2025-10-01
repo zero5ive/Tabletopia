@@ -409,10 +409,10 @@ export default function RestaurantList() {
                                     <label className={styles["selector-label"]}>인원</label>
                                     <div className={styles["guest-counter"]}>
                                         <span>성인</span>
-                                        <div className="counter-controls">
-                                            <button className="counter-btn" onClick={decrement}>-</button>
-                                            <span className="guest-count">{people}</span>
-                                            <button className="counter-btn" onClick={increment}>+</button>
+                                        <div className={styles["counter-controls"]}>
+                                            <button className={styles["counter-btn"]} onClick={decrement}>-</button>
+                                            <span className={styles["guest-count"]}>{people}</span>
+                                            <button className={styles["counter-btn"]} onClick={increment}>+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -469,10 +469,10 @@ export default function RestaurantList() {
                                     <label className={styles["selector-label"]}>인원</label>
                                     <div className={styles["guest-counter"]}>
                                         <span>성인</span>
-                                        <div className="counter-controls">
-                                            <button className="counter-btn" onClick={decrement}>-</button>
-                                            <span className="guest-count">{people}</span>
-                                            <button className="counter-btn" onClick={increment}>+</button>
+                                        <div className={styles["counter-controls"]}>
+                                            <button className={styles["counter-btn"]} onClick={decrement}>-</button>
+                                            <span className={styles["guest-count"]}>{people}</span>
+                                            <button className={styles["counter-btn"]} onClick={increment}>+</button>
                                         </div>
                                     </div>
                                 </div>

@@ -11,7 +11,9 @@
     "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\""
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.2.0",
     "axios": "^1.12.2",
-    "react-router-dom": "^7.9.1"
+    "react-router-dom": "^7.9.1",
+    "sockjs-client": "^1.6.1"
   }
 }
