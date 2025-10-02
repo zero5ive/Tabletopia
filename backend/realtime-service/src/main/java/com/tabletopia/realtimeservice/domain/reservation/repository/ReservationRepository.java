@@ -26,5 +26,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
    * @author 김예진
    * @since 2025-09-23
    */
-  public List<Reservation> findReservationsByRestaurantIdAndReservationAt(Long restaurantId, LocalDateTime reservation_at);
+  public List<Reservation> findReservationsByRestaurantIdAndReservationAt(Long restaurantId, LocalDateTime reservationAt);
+
+  /**
+   * 레스토랑의 해당 시간대의 테이블 예약 정보 조회
+   */
+  public Reservation findReservationByRestaurantIdAndRestaurantTableIdAndReservationAt(Long restaurantId, Long restaurantTableId, LocalDateTime reservationAt);
 }

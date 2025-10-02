@@ -119,10 +119,10 @@ const router = createBrowserRouter([
     },
     // 로그인 관련 (가이드 코드로 둔 거였으므로 수정하거나 나중에 지우거나)
     {
-        path: "/members",
+        path: "/users",
         children: [
             {
-                path: "new",
+                path: "signup",
                 element: <SignUp />
             },
             {
@@ -130,7 +130,7 @@ const router = createBrowserRouter([
                 element: <SignUpSuccess />
             },
             {
-                path: "login",
+                path: "loginform",
                 element: <Login />
             }
         ]

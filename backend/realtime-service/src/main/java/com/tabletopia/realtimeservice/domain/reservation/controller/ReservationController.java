@@ -5,8 +5,6 @@ import com.tabletopia.realtimeservice.domain.reservation.dto.UnavailableTableRes
 import com.tabletopia.realtimeservice.domain.reservation.entity.Reservation;
 import com.tabletopia.realtimeservice.domain.reservation.service.ReservationService;
 import com.tabletopia.realtimeservice.dto.ApiResponse;
-import com.tabletopia.realtimeservice.dto.RestaurantTableResponse;
-import com.tabletopia.realtimeservice.feign.RestaurantServiceClient;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -33,19 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReservationController {
   private final ReservationService reservationService;
-  private final RestaurantServiceClient restaurantServiceClient;
-
-  /**
-   * 특정 레스토랑의 테이블 조회
-   * @author 김예진
-   * @since 2025-09-23
-   */
-  @GetMapping("/reservations/tables/{restaurantId}")
-  public ResponseEntity<ApiResponse<List<RestaurantTableResponse>>> getTablesAt(@PathVariable Long restaurantId){
-    List<RestaurantTableResponse> tables = restaurantServiceClient.getRestaurantTables(restaurantId);
-
-    return ResponseEntity.ok(ApiResponse.success("테이블 조회 성공", tables));
-  }
 
   /**
    * 예약 등록

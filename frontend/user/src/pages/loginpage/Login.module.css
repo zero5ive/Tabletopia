@@ -200,10 +200,12 @@ body,
 .inputIcon {
     position: absolute !important;
     right: 16px !important;
-    top: 50% !important;
+    top: 55px !important;
     transform: translateY(-50%) !important;
     color: #78909c !important;
     transition: color 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .formInput:focus ~ .inputIcon {
@@ -341,6 +343,36 @@ body,
     background: rgba(25, 118, 210, 0.05) !important;
     color: #1976d2 !important;
     transform: translateY(-1px) !important;
+}
+
+.google {
+    background: #ffffff !important;
+    border-color: #4285F4 !important;
+    color: #4285F4 !important;
+}
+
+.google:hover {
+    background: #e8f0fe !important;
+}
+
+.naver {
+    background: #03C75A !important;
+    border-color: #03C75A !important;
+    color: #ffffff !important;
+}
+
+.naver:hover {
+    background: #02b350 !important;
+}
+
+.kakao {
+    background: #FEE500 !important;
+    border-color: #FEE500 !important;
+    color: #3C1E1E !important;
+}
+
+.kakao:hover {
+    background: #f2da00 !important;
 }
 
 .signupLink {

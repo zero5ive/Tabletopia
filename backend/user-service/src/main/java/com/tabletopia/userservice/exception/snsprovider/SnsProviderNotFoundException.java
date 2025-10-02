@@ -8,7 +8,7 @@ package com.tabletopia.userservice.exception.snsprovider;
  */
 public class SnsProviderNotFoundException extends RuntimeException {
 
-  private static final String DEFAULT_MESSAGE = "소셜 정보를 찾을 수 없습니다.";
+  private static final String DEFAULT_MESSAGE = "지원하지 않는 소셜로그인 형식입니다.";
 
   public SnsProviderNotFoundException() {
     super(DEFAULT_MESSAGE);

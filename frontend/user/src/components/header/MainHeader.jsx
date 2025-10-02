@@ -1,68 +1,82 @@
-// import styles from './Header.module.css'
-
-// export function MainHeader() {
-//     return (
-//         <>
-//             <div className={styles.searchContainer}>
-//                 <input 
-//                     type="text" 
-//                     className={styles.searchBox} 
-//                     placeholder="지역, 음식 또는 레스토랑명을 검색해보세요" 
-//                 />
-//             </div>
-//             <div className={styles.locationSelector}>📍 강남</div>
-//             <div className={styles.userActions}>
-//                 <button className={`${styles.btn} ${styles.btnSecondary}`}>로그인</button>
-//                 <button className={`${styles.btn} ${styles.btnPrimary}`}>회원가입</button>
-//             </div>
-//         </>
-//     )
-// }
-
 import { useNavigate } from 'react-router-dom';
-import styles from './Header.module.css'
+import styles from './Header.module.css';
+import { useEffect, useState } from 'react';
 
 export function MainHeader() {
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    /**
-     * 로그인 페이지로 이동
-     */
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            setIsLoggedIn(true);
+        }
+    }, []);
+
     const handleLogin = () => {
-        navigate('/members/login');
+        navigate('/users/loginform');
     };
 
-    /**
-     * 회원가입 페이지로 이동
-     */
     const handleSignUp = () => {
-        navigate('/members/new');
+        navigate('/users/signup');
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        setIsLoggedIn(false);
+        navigate('/');
+    };
+
+    const handleMyPage = () => {
+        navigate('/mypage');
     };
 
     return (
         <>
             <div className={styles.searchContainer}>
-                <input 
-                    type="text" 
-                    className={styles.searchBox} 
-                    placeholder="지역, 음식 또는 레스토랑명을 검색해보세요" 
+                <input
+                    type="text"
+                    className={styles.searchBox}
+                    placeholder="지역, 음식 또는 레스토랑명을 검색해보세요"
                 />
             </div>
-            <div className={styles.locationSelector}>📍 강남</div>
+            <div className={styles.searchButton}>
+                <div className={styles.searchIcon}></div>
+            </div>
             <div className={styles.userActions}>
-                <button 
-                    className={`${styles.btn} ${styles.btnSecondary}`}
-                    onClick={handleLogin}
-                >
-                    로그인
-                </button>
-                <button 
-                    className={`${styles.btn} ${styles.btnPrimary}`}
-                    onClick={handleSignUp}
-                >
-                    회원가입
-                </button>
+                {isLoggedIn ? (
+                    <>
+                        <button
+                            className={`${styles.btn} ${styles.iconButton}`}
+                            onClick={handleMyPage}
+                            aria-label="My Page"
+                        >
+                            <i className="fas fa-user"></i>
+                        </button>
+                        <button
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={handleLogout}
+                        >
+                            로그아웃
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            className={`${styles.btn} ${styles.btnSecondary}`}
+                            onClick={handleLogin}
+                        >
+                            로그인
+                        </button>
+                        <button
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={handleSignUp}
+                        >
+                            회원가입
+                        </button>
+                    </>
+                )}
             </div>
         </>
-    )
+    );
 }
