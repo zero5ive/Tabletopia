@@ -200,7 +200,7 @@ body,
 .inputIcon {
     position: absolute !important;
     right: 16px !important;
-    top: 55px !important;
+    top: 50% !important;
     transform: translateY(-50%) !important;
     color: #78909c !important;
     transition: color 0.3s ease !important;
@@ -289,13 +289,20 @@ body,
     }
 }
 
-.loginButton:hover {
+.loginButton:hover:not(:disabled) {
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 30px rgba(25, 118, 210, 0.3) !important;
 }
 
-.loginButton:active {
+.loginButton:active:not(:disabled) {
     transform: translateY(0) !important;
+}
+
+.loginButton:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .divider {
@@ -441,4 +448,47 @@ body,
 
 .focused {
     /* 이미 .formGroup.focused .formLabel에서 처리됨 */
+}
+
+/* 이메일 입력 스타일 */
+.emailInputContainer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    position: relative;
+}
+
+.emailLocal {
+    flex: 1 !important;
+}
+
+.emailSeparator {
+    color: #546e7a !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    padding: 0 4px !important;
+}
+
+.emailDomainSelect {
+    width: 140px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 2px solid rgba(25, 118, 210, 0.2) !important;
+    border-radius: 12px !important;
+    padding: 14px 12px !important;
+    color: #263238 !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    cursor: pointer !important;
+}
+
+.emailDomainSelect:focus {
+    border-color: #1976d2 !important;
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 0 20px rgba(25, 118, 210, 0.15) !important;
+}
+
+.emailDomainSelect.error {
+    border-color: #d32f2f !important;
 }

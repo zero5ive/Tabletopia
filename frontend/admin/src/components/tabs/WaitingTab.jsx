@@ -138,7 +138,7 @@ export default function WaitingTab() {
   };
 
   return (
-    <div className="tab-pane fade show active" id="waiting">
+    <div className="tab-pane fade" id="waiting">
       <div className="waiting-container">
         {/* 헤더 */}
         <div className="waiting-header">

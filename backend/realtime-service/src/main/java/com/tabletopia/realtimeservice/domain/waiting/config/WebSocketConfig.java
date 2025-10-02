@@ -12,7 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
  * @author 성유진
  * @since 2025-09-26
  */
-
+/*
 @Configuration
 @EnableWebSocketMessageBroker //이 어노테이션을 붙여야 브로커가 됨
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -37,3 +37,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   }
 }
+
+ */
