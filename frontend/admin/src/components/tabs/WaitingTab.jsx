@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 export default function WaitingTab() {
-  const [isWaitingOpen, setIsWaitingOpen] = useState(true);
   const [activeFilter, setActiveFilter] = useState('전체');
   const [showVisitConfirmed, setShowVisitConfirmed] = useState(false);
   const [showStoreArrival, setShowStoreArrival] = useState(false);
@@ -53,12 +54,87 @@ export default function WaitingTab() {
     취소: waitingList.filter(w => w.status === '취소').length
   };
 
+  //웨이팅 open관련
+  const [isWaitingOpen, setIsWaitingOpen] = useState(false);
+  const [stompClient, setStompClient] = useState(null);
+
   const handleStatusChange = (id, newStatus) => {
     setWaitingList(prev =>
       prev.map(waiting =>
         waiting.id === id ? { ...waiting, status: newStatus } : waiting
       )
     );
+  };
+
+  useEffect(() => {
+    const socket = new SockJS('http://localhost:8002/ws');
+    const client = new Client({
+      webSocketFactory: () => socket,
+      onConnect: () => {
+        console.log('웹소켓 연결 성공');
+
+        //구독
+        client.subscribe('/topic/open', (msg) => {
+          console.log('서버로부터 메시지 받음:', msg);
+
+          const alert = JSON.parse(msg.body);
+          if (alert.type === 'OPEN') {
+            setIsWaitingOpen(true);
+            window.alert('웨이팅이 오픈되었습니다.');
+          } else {
+            setIsWaitingOpen(false);
+            window.alert('웨이팅이 닫혔습니다.');
+          }
+        }),
+        
+        client.subscribe('/topic/close', (msg) => {
+          console.log('웨이팅 닫기 메시지 받음 : ', msg);
+
+          const alert = JSON.parse(msg.body);
+          if(alert.type === 'CLOSE'){
+            setIsWaitingOpen(false);
+            window.alert('웨이팅이 닫혔습니다.');
+          }else {
+            setIsWaitingOpen(true);
+            window.alert('웨이팅이 아직 오픈되어 있습니다.');
+          }
+        })
+      },
+      
+      onStompError: (frame) => {
+        console.error('STOMP 에러:', frame);
+      }
+    });
+    client.activate();
+    setStompClient(client);
+
+    // 컴포넌트 언마운트 시 웹소켓 연결 해제
+    return () => {
+      if (client) {
+        client.deactivate();
+      }
+    };
+  }, []); 
+
+ 
+  
+
+  //  웨이팅 토글 함수 (오픈/닫기)
+  const toggleWaiting = () => {
+    if (stompClient && stompClient.connected) {
+      // 현재 상태에 따라 OPEN 또는 CLOSE 결정
+      const action = isWaitingOpen ? 'close' : 'open';
+      stompClient.publish({
+        destination: `/app/waiting/${action.toLowerCase()}`,
+        body: JSON.stringify({
+          action: action,
+          timestamp: new Date().toISOString()
+        })
+      });
+      console.log(`웨이팅 ${action} 요청 전송`);
+    } else {
+      console.error('웹소켓이 연결되지 않았습니다');
+    }
   };
 
   return (
@@ -69,9 +145,13 @@ export default function WaitingTab() {
           <div className="waiting-titleSection">
             <h1 className="waiting-title">웨이팅 관리</h1>
             <div className="waiting-toggle">
-              <span className="waiting-toggleLabel">신규 웨이팅을 등록받고있어요</span>
+              {isWaitingOpen ? '신규 웨이팅을 등록받고있어요' : '웨이팅 등록이 중단되었습니다'}
               <label className="waiting-switch">
-                <input type="checkbox" checked={isWaitingOpen} onChange={(e) => setIsWaitingOpen(e.target.checked)} />
+                <input 
+                  type="checkbox" 
+                  checked={isWaitingOpen} 
+                  onChange={toggleWaiting}
+                />
                 <span className="waiting-slider"></span>
               </label>
             </div>

@@ -10,6 +10,7 @@ import FacilitiesTab from './tabs/FacilitiesTab'
 import ImagesTab from './tabs/ImagesTab'
 import ReviewsTab from './tabs/ReviewsTab'
 import WaitingTab from './tabs/WaitingTab'
+// import Test from './tabs/Test'
 
 export default function MainContent(){
   return (
@@ -47,6 +48,7 @@ export default function MainContent(){
             <ImagesTab />
             <ReviewsTab />
             <WaitingTab />
+            {/* <Test /> */}
           </div>
         </div>
       </div>

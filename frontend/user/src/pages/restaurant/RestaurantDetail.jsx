@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "../../components/header/Header";
 import styles from './RestaurantDetail.module.css';
 import axios from 'axios';
+import Waiting from "./Waiting";
 
 export default function RestaurantList() {
 
@@ -459,27 +460,8 @@ export default function RestaurantList() {
                         </div>
 
                         {/* <!-- Waiting Content --> */}
-                        <div className={`${styles["waiting-content"]} ${reservationType === 'waiting' ? styles['active'] : ''}`}>
-                            <div className={styles["waiting-info"]}>
-                                <div className={styles["waiting-status"]}>현재 웨이팅 5팀</div>
-                            </div>
+                       <Waiting />
 
-                            <div className={styles["date-time-selector"]}>
-                                <div className={styles["selector-group"]}>
-                                    <label className={styles["selector-label"]}>인원</label>
-                                    <div className={styles["guest-counter"]}>
-                                        <span>성인</span>
-                                        <div className="counter-controls">
-                                            <button className="counter-btn" onClick={decrement}>-</button>
-                                            <span className="guest-count">{people}</span>
-                                            <button className="counter-btn" onClick={increment}>+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button className={styles["reservation-btn"]}>웨이팅 등록</button>
-                        </div>
                     </div>
                 </div>
             </div>

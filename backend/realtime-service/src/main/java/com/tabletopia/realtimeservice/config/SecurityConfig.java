@@ -1,5 +1,5 @@
 package com.tabletopia.realtimeservice.config;
-
+/*
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,11 +14,12 @@ public class SecurityConfig {
 
     /**
      * 보안 설정
-     */
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/ws/**").permitAll() //websocket 관련 요청 허용
                         .anyRequest().permitAll()  // 모든 요청 허용
                 )
                 .csrf(csrf -> csrf.disable());
@@ -26,3 +27,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+*/
