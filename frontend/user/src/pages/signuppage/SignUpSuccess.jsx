@@ -9,8 +9,8 @@ const SignUpSuccess = () => {
 
     // 회원가입에서 전달받은 데이터
     const location = useLocation();
-    const memberName = location.state?.memberName || '';
-    const memberEmail = location.state?.memberEmail || '';
+    const userName = location.state?.userName || '';
+    const userEmail = location.state?.userEmail || '';
 
     // 파티클 생성
     const createParticles = () => {
@@ -100,10 +100,10 @@ const SignUpSuccess = () => {
                 </p>
 
                 {/* 사용자 정보 (옵션) */}
-                {memberName && (
+                {userName && (
                     <div className={styles.userInfo}>
-                        <div className={styles.userId}>{memberName}님</div>
-                        <div className={styles.userId}>{memberEmail}</div>
+                        <div className={styles.userId}>{userName}님</div>
+                        <div className={styles.userId}>{userEmail}</div>
                         <div className={styles.welcomeText}>이제 모든 서비스를 이용하실 수 있습니다</div>
                     </div>
                 )}
