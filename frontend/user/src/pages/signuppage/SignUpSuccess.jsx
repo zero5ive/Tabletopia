@@ -36,28 +36,28 @@ const SignUpSuccess = () => {
         createParticles();
 
         // 자동 리다이렉트를 원한다면 주석 해제
-        // const timer = setTimeout(() => {
-        //   setShowRedirectTimer(true);
-        // }, 3000);
+        const timer = setTimeout(() => {
+          setShowRedirectTimer(true);
+        }, 3000);
 
-        // const redirectTimer = setInterval(() => {
-        //   setCountdown(prev => {
-        //     if (prev <= 1) {
-        //       window.location.href = '/login';
-        //       return 0;
-        //     }
-        //     return prev - 1;
-        //   });
-        // }, 1000);
+        const redirectTimer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              window.location.href = '/users/loginform';
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
 
-        // return () => {
-        //   clearTimeout(timer);
-        //   clearInterval(redirectTimer);
-        // };
+        return () => {
+          clearTimeout(timer);
+          clearInterval(redirectTimer);
+        };
     }, []);
 
     const handleLoginClick = () => {
-        window.location.href = '/members/login';
+        window.location.href = '/users/loginform';
     };
 
     const handleHomeClick = () => {

@@ -175,13 +175,16 @@ const SignUp = () => {
       });
 
       const data = await response.json();
-
+      console.log("회원가입 시도한 유저 객체는===",data);
+      
       if (data.success) {
         // 회원가입 성공
-        navigate('/userss/new/success', {
+        console.log("success가 true여서 회원가입 성공폼을 불러오는 if true에 진입했습니다.");
+        
+        navigate('/users/new/success', {
           state: {
-            memberName: data.data.memberName,  // 서버에서 받은 이름
-            memberEmail: fullEmail
+            userName: formData.name,  // 서버에서 받은 이름
+            userEmail: formData.email
           }
         });
       } else {
