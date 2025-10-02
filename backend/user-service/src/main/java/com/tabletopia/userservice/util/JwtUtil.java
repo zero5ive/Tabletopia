@@ -54,7 +54,7 @@ public class JwtUtil {
 
     private String createToken(String subject) {
         return Jwts.builder().subject(subject).issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) //15분으로 설정
                 .signWith(SECRET_KEY, Jwts.SIG.HS256).compact();
     }
 

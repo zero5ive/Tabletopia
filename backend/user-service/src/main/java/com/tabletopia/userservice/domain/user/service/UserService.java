@@ -23,7 +23,7 @@ public class UserService {
     public User register(UserDTO userDto) {
         User user = new User();
         user.setName(userDto.getName());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword())); // ✅ 암호화
+        user.setPassword(passwordEncoder.encode(userDto.getPassword())); // 암호화
         user.setEmail(userDto.getEmail());
         user.setPhoneNumber(userDto.getPhoneNumber());
         return userRepository.save(user);
