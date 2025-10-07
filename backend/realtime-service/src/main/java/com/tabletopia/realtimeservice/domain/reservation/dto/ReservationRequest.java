@@ -44,7 +44,6 @@ public class ReservationRequest {
   @Min(value = 0, message = "예약금은 0원 이상이어야 합니다")
   private int price;
 
-  // 추가 필드들
   private CustomerInfo customerInfo;  // 고객 정보
   private Agreements agreements;      // 동의 정보
 

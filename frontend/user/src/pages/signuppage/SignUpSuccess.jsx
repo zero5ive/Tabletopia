@@ -9,8 +9,8 @@ const SignUpSuccess = () => {
 
     // 회원가입에서 전달받은 데이터
     const location = useLocation();
-    const memberName = location.state?.memberName || '';
-    const memberEmail = location.state?.memberEmail || '';
+    const userName = location.state?.userName || '';
+    const userEmail = location.state?.userEmail || '';
 
     // 파티클 생성
     const createParticles = () => {
@@ -36,28 +36,28 @@ const SignUpSuccess = () => {
         createParticles();
 
         // 자동 리다이렉트를 원한다면 주석 해제
-        // const timer = setTimeout(() => {
-        //   setShowRedirectTimer(true);
-        // }, 3000);
+        const timer = setTimeout(() => {
+          setShowRedirectTimer(true);
+        }, 3000);
 
-        // const redirectTimer = setInterval(() => {
-        //   setCountdown(prev => {
-        //     if (prev <= 1) {
-        //       window.location.href = '/login';
-        //       return 0;
-        //     }
-        //     return prev - 1;
-        //   });
-        // }, 1000);
+        const redirectTimer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              window.location.href = '/users/loginform';
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
 
-        // return () => {
-        //   clearTimeout(timer);
-        //   clearInterval(redirectTimer);
-        // };
+        return () => {
+          clearTimeout(timer);
+          clearInterval(redirectTimer);
+        };
     }, []);
 
     const handleLoginClick = () => {
-        window.location.href = '/members/login';
+        window.location.href = '/users/loginform';
     };
 
     const handleHomeClick = () => {
@@ -100,10 +100,10 @@ const SignUpSuccess = () => {
                 </p>
 
                 {/* 사용자 정보 (옵션) */}
-                {memberName && (
+                {userName && (
                     <div className={styles.userInfo}>
-                        <div className={styles.userId}>{memberName}님</div>
-                        <div className={styles.userId}>{memberEmail}</div>
+                        <div className={styles.userId}>{userName}님</div>
+                        <div className={styles.userId}>{userEmail}</div>
                         <div className={styles.welcomeText}>이제 모든 서비스를 이용하실 수 있습니다</div>
                     </div>
                 )}

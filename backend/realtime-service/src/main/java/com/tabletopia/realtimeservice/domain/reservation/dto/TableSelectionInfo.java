@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class TableSelectionInfo {
   private Long tableId;
   private String sessionId;
-  private Long userId;
+//  private String userEmail;
   private LocalDateTime selectedAt;
   private LocalDateTime expiryTime;
   private TableSelectStatus status;
