@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Sidebar from './components/Sidebar';
 import Home from './pages/loginpage/Login';
+import MainContent from './components/MainContent';
+
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
           <div className="col">
             {/* 라우팅 되는 메인 콘텐츠 영역 */}
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Home />} />
+              <Route path="/" element={<MainContent/>}/>
             </Routes>
           </div>
         </div>

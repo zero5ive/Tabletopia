@@ -9,13 +9,10 @@ import java.util.List;
 
 /**
  * 레스토랑 테이블 Service
- *
  * 특정 레스토랑에 속한 테이블 정보를 조회하고,
  * Entity → DTO(RestaurantTableResponse) 변환을 담당한다.
- *
- * @author [작성자]
+ * @author 김지민
  * @since 2025-09-26
- *
  * NOTE: Repository에서 가져온 엔티티를
  *       Controller 계층에서 바로 사용할 수 있도록 DTO로 가공한다.
  */
