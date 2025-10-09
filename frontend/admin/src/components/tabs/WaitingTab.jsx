@@ -73,32 +73,25 @@ export default function WaitingTab() {
       onConnect: () => {
         console.log('웹소켓 연결 성공');
 
-        //구독
+        // 웨이팅 오픈 구독
         client.subscribe('/topic/open', (msg) => {
-          console.log('서버로부터 메시지 받음:', msg);
-
+          console.log('웨이팅 오픈 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
           if (alert.type === 'OPEN') {
             setIsWaitingOpen(true);
             window.alert('웨이팅이 오픈되었습니다.');
-          } else {
-            setIsWaitingOpen(false);
-            window.alert('웨이팅이 닫혔습니다.');
           }
-        }),
-        
-        client.subscribe('/topic/close', (msg) => {
-          console.log('웨이팅 닫기 메시지 받음 : ', msg);
+        });
 
+        // 웨이팅 닫기 구독
+        client.subscribe('/topic/close', (msg) => {
+          console.log('웨이팅 닫기 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
-          if(alert.type === 'CLOSE'){
+          if (alert.type === 'CLOSE') {
             setIsWaitingOpen(false);
             window.alert('웨이팅이 닫혔습니다.');
-          }else {
-            setIsWaitingOpen(true);
-            window.alert('웨이팅이 아직 오픈되어 있습니다.');
           }
-        })
+        });
       },
       
       onStompError: (frame) => {

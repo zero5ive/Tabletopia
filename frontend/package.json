@@ -14,13 +14,9 @@
   "dependencies": {
     "@stomp/stompjs": "^7.2.0",
     "axios": "^1.12.2",
-<<<<<<< HEAD
+    "jwt-decode": "^4.0.0",
     "react-router-dom": "^7.9.1",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3"
-=======
-    "jwt-decode": "^4.0.0",
-    "react-router-dom": "^7.9.1"
->>>>>>> 9d204819f2dfb11a91d5fb134dfd6a2f1407ac8c
   }
 }

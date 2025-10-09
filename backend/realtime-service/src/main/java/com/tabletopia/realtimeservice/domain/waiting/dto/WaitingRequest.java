@@ -16,7 +16,7 @@ public class WaitingRequest {
   private String restaurantName;
   private Integer peopleCount;
   private Long restaurantId;
-  private Integer waitingNumber;
+
 
 
 }

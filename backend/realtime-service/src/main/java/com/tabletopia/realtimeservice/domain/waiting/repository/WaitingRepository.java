@@ -1,7 +1,10 @@
 package com.tabletopia.realtimeservice.domain.waiting.repository;
 
 import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
 /**
  * 웨이팅 레파지토리
  *
@@ -10,5 +13,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 
 public interface WaitingRepository extends JpaRepository<Waiting, Long> {
+
+  //waiting number계산
+  @Query("SELECT MAX(w.waitingNumber) FROM Waiting w WHERE w.restaurantId = :restaurantId")
+  Integer findMaxWaitingNumberByRestaurantId(@Param("restaurantId") Long restaurantId);
 
 }
