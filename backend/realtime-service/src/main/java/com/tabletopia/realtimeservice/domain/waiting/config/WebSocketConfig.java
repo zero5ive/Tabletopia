@@ -1,6 +1,5 @@
-package com.tabletopia.realtimeservice.config;
+package com.tabletopia.realtimeservice.domain.waiting.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -8,37 +7,35 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 /**
- * 스톰프 웹소켓 설정 클래스
+ * 웨이팅 컨피그
  *
- * @author 김예진
- * @since 2025-09-25
+ * @author 성유진
+ * @since 2025-09-26
  */
+/*
 @Configuration
-@EnableWebSocketMessageBroker
+@EnableWebSocketMessageBroker //이 어노테이션을 붙여야 브로커가 됨
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
-  /**
-   * 경로 설정
-   */
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
-    // 브로커 경로 설정
-    // 서버가 클라이언트에게 메시지를 브로드캐스팅
+    //서버 -> 모든 구독자
     registry.enableSimpleBroker("/topic", "/queue");
-
-    // 앱 경로 설정. 클라이언트에서 서버로 요청
+    //클라이언트 -> 서버
     registry.setApplicationDestinationPrefixes("/app");
-
-    // 개인 메시지 경로 설정
+    //서버 -> 특정유저
     registry.setUserDestinationPrefix("/user");
+
   }
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry
-        .addEndpoint("/ws")
+    //클라이언트의 서버 접속 엔드포인트 지정
+    registry.addEndpoint("/ws")
         .setAllowedOriginPatterns("*")
         .withSockJS();
+
   }
 }
+
+ */
