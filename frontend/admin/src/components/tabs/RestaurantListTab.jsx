@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getAllRestaurants, deleteRestaurant } from "../../api/restaurantApi";
 import { Tab } from "bootstrap";
 
-export default function RestaurantListTab({ onEdit }) {
+export default function RestaurantListTab({ onEdit, onSelectRestaurant }) {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,11 +24,11 @@ export default function RestaurantListTab({ onEdit }) {
     loadRestaurants();
 
     const handleRefresh = () => loadRestaurants();
-
     window.addEventListener("refreshRestaurantList", handleRefresh);
     return () => window.removeEventListener("refreshRestaurantList", handleRefresh);
   }, []);
 
+  // ✅ 매장 삭제
   const handleDelete = async (id) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
@@ -42,16 +42,30 @@ export default function RestaurantListTab({ onEdit }) {
     }
   };
 
+  // ✅ 매장 수정
   const handleEdit = (restaurant) => {
     onEdit(restaurant);
-
-    // Bootstrap의 탭 전환 API 직접 호출
     const tabTrigger = document.querySelector('a[href="#restaurant-info"]');
     if (tabTrigger) {
       const tab = new Tab(tabTrigger);
       tab.show();
     }
   };
+
+ const handleMenuManage = (restaurant) => {
+  onSelectRestaurant(restaurant);
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const tabTrigger = document.querySelector('a[href="#menu-management"]');
+      if (tabTrigger) {
+        const tab = new Tab(tabTrigger);
+        tab.show();
+      }
+    }, 0);
+  });
+};
+
 
   if (loading) return <p className="text-center mt-4">⏳ 불러오는 중...</p>;
 
@@ -91,11 +105,20 @@ export default function RestaurantListTab({ onEdit }) {
                       >
                         수정
                       </button>
+
                       <button
-                        className="btn btn-sm btn-danger"
+                        className="btn btn-sm btn-danger me-2"
                         onClick={() => handleDelete(r.id)}
                       >
                         삭제
+                      </button>
+
+                      {/* ✅ 메뉴 관리 버튼 */}
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleMenuManage(r)}
+                      >
+                        메뉴 관리
                       </button>
                     </td>
                   </tr>
