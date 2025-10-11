@@ -4,7 +4,7 @@
  * @author 김예진
  * @since 2025-10-01
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
@@ -18,8 +18,24 @@ import { Client } from '@stomp/stompjs';
 export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
     const [isConnected, setIsConnected] = useState(false);
     const [connectionError, setConnectionError] = useState(null);
+    const [mySessionId, setMySessionId] = useState(null);
+
     const clientRef = useRef(null);
     const subscriptionsRef = useRef([]);
+    // ✅ 콜백 함수를 ref로 저장하여 의존성 문제 해결
+    const callbackRef = useRef(onTableStatusUpdate);
+    const sessionIdRef = useRef(null);
+
+    // ✅ 콜백이 변경될 때마다 ref 업데이트 (의존성 배열에는 포함하지 않음)
+    useEffect(() => {
+        callbackRef.current = onTableStatusUpdate;
+    }, [onTableStatusUpdate]);
+
+
+    // ✅ 세션 ID가 변경될 때마다 ref 업데이트
+    useEffect(() => {
+        sessionIdRef.current = mySessionId;
+    }, [mySessionId]);
 
     /**
      * 웹소켓 연결 및 구독 설정
@@ -36,8 +52,8 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         const client = new Client({
             // SockJS를 통한 WebSocket 연결
             webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
-            
-            // 디버그 모드
+
+            // 디버그 모드 (프로덕션에서는 비활성화 권장)
             debug: function (str) {
                 console.log('STOMP:', str);
             },
@@ -56,97 +72,133 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
                 setConnectionError(null);
 
                 try {
-                    // 1. 레스토랑별 테이블 상태 토픽 구독
+                    // ✅ 1. 개인 세션 정보 구독 - 여러 경로 시도
+                    console.log('🔔 구독 시작...');
+
+                    // 방법 1
+                    const sessionInfoSubscription1 = client.subscribe(
+                        '/queue/session-info',
+                        function (message) {
+                            console.log('✅ [방법1] 개인 세션 정보 수신:', message.body);
+                            try {
+                                const data = JSON.parse(message.body);
+                                if (data.type === 'SESSION_INFO' && data.mySessionId) {
+                                    console.log('🔑 내 세션 ID 수신:', data.mySessionId);
+                                    setMySessionId(data.mySessionId);
+                                    sessionIdRef.current = data.mySessionId;
+                                }
+                            } catch (e) {
+                                console.error('세션 정보 파싱 오류:', e);
+                            }
+                        }
+                    );
+
+                    // 방법 2
+                    const sessionInfoSubscription2 = client.subscribe(
+                        '/user/queue/session-info',
+                        function (message) {
+                            console.log('✅ [방법2] 개인 세션 정보 수신:', message.body);
+                            try {
+                                const data = JSON.parse(message.body);
+                                if (data.type === 'SESSION_INFO' && data.mySessionId) {
+                                    console.log('🔑 내 세션 ID 수신 (방법2):', data.mySessionId);
+                                    setMySessionId(data.mySessionId);
+                                    sessionIdRef.current = data.mySessionId;
+                                }
+                            } catch (e) {
+                                console.error('세션 정보 파싱 오류:', e);
+                            }
+                        }
+                    );
+
+                    console.log('✅ 구독 완료');
+
+                    // ✅ 2. 레스토랑별 테이블 상태 토픽 구독
                     const tableStatusSubscription = client.subscribe(
                         `/topic/restaurant/${restaurantId}/tables/status`,
                         function (message) {
                             console.log('테이블 상태 메시지 수신:', message.body);
                             try {
                                 const data = JSON.parse(message.body);
-                                onTableStatusUpdate(data);
+                                callbackRef.current(data, sessionIdRef.current);
                             } catch (e) {
                                 console.error('메시지 파싱 오류:', e);
                             }
                         }
                     );
 
-                    // 2. 예약 관련 토픽 구독 (개별 테이블 선택/해제 알림용)
+                    // ✅ 3. 예약 관련 토픽 구독
                     const reservationSubscription = client.subscribe(
                         `/topic/reservation/${restaurantId}/table-status`,
                         function (message) {
                             console.log('예약 상태 메시지 수신:', message.body);
                             try {
                                 const data = JSON.parse(message.body);
-                                onTableStatusUpdate(data);
+                                // ✅ USER_CONNECTED 메시지에서 newUser가 나라면, 그게 내 세션!
+                                if (data.type === 'USER_CONNECTED' && data.newUser && !sessionIdRef.current) {
+                                    // 내가 방금 접속한 거면 newUser가 내 세션 ID
+                                    console.log('🔑 내 세션 ID 수신:', data.newUser);
+                                    setMySessionId(data.newUser);
+                                    sessionIdRef.current = data.newUser;
+                                }
+                                // callbackRef.current(data, sessionIdRef.current);
                             } catch (e) {
                                 console.error('메시지 파싱 오류:', e);
                             }
                         }
                     );
 
-                    // 구독 정보 저장 (나중에 구독 해제 시 사용)
                     subscriptionsRef.current = [
+                        sessionInfoSubscription1,
+                        sessionInfoSubscription2,
                         tableStatusSubscription,
                         reservationSubscription
                     ];
 
-                    console.log('토픽 구독 완료');
+                    console.log('✅ 토픽 구독 완료');
+                    console.log('📤 서버에 연결 알림 전송 중...');
 
-                    // 3. 서버에 연결 알림 (선택사항)
+                    // 4. 서버에 연결 알림
                     client.publish({
                         destination: `/app/reservation/${restaurantId}/connect`,
                         body: JSON.stringify({
-                            userEmail: 'user@example.com', // TODO: 실제 사용자 정보로 변경
+                            userEmail: 'user@example.com',
                             timestamp: new Date().toISOString()
                         })
                     });
 
+                    console.log('✅ 연결 알림 전송 완료');
+
                 } catch (error) {
-                    console.error('구독 설정 중 오류:', error);
+                    console.error('❌ 구독 설정 중 오류:', error);
                     setConnectionError('구독 설정 실패');
                 }
             },
 
-            /**
-             * 연결 해제 핸들러
-             */
             onDisconnect: function () {
                 console.log('웹소켓 연결 해제');
                 setIsConnected(false);
-                
-                // 구독 정보 초기화
                 subscriptionsRef.current = [];
             },
 
-            /**
-             * STOMP 에러 핸들러
-             */
             onStompError: function (frame) {
                 console.error('STOMP 오류:', frame);
                 setConnectionError('연결 오류가 발생했습니다');
                 setIsConnected(false);
             },
 
-            /**
-             * 웹소켓 에러 핸들러
-             */
             onWebSocketError: function (error) {
                 console.error('WebSocket 오류:', error);
                 setConnectionError('웹소켓 연결 실패');
             }
         });
 
-        // 클라이언트 저장 및 연결 시작
         clientRef.current = client;
         client.activate();
 
-        /**
-         * 컴포넌트 언마운트 시 정리
-         */
         return () => {
             console.log('웹소켓 연결 종료 중...');
-            
-            // 모든 구독 해제
+
             subscriptionsRef.current.forEach(subscription => {
                 try {
                     subscription.unsubscribe();
@@ -156,12 +208,11 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
             });
             subscriptionsRef.current = [];
 
-            // 클라이언트 비활성화
             if (client.active) {
                 client.deactivate();
             }
         };
-    }, [restaurantId, onTableStatusUpdate]);
+    }, [restaurantId]);
 
     /**
      * 테이블 상태 조회 요청
@@ -169,7 +220,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
      * @param {string} date - 예약 날짜 (YYYY-MM-DD)
      * @param {string} time - 예약 시간 (HH:mm)
      */
-    const getTableStatus = (date, time) => {
+    const getTableStatus = useCallback((date, time) => {
         if (!clientRef.current?.active) {
             console.warn('웹소켓이 연결되지 않았습니다.');
             return;
@@ -188,7 +239,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         } catch (error) {
             console.error('테이블 상태 조회 요청 실패:', error);
         }
-    };
+    }, [restaurantId]);
 
     /**
      * 테이블 선택 요청
@@ -199,7 +250,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
      * @param {string} time - 예약 시간
      * @param {number} peopleCount - 인원수
      */
-    const selectTable = (tableId, customerName, date, time, peopleCount) => {
+    const selectTable = useCallback((tableId, customerName, date, time, peopleCount) => {
         if (!clientRef.current?.active) {
             console.warn('웹소켓이 연결되지 않았습니다.');
             return;
@@ -220,7 +271,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         } catch (error) {
             console.error('테이블 선택 요청 실패:', error);
         }
-    };
+    }, [restaurantId]);
 
     /**
      * 테이블 선택 해제 요청
@@ -229,7 +280,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
      * @param {string} date - 예약 날짜
      * @param {string} time - 예약 시간
      */
-    const releaseTable = (tableId, date, time) => {
+    const cancelTable = useCallback((tableId, date, time) => {
         if (!clientRef.current?.active) {
             console.warn('웹소켓이 연결되지 않았습니다.');
             return;
@@ -239,7 +290,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
 
         try {
             clientRef.current.publish({
-                destination: `/app/restaurant/${restaurantId}/tables/${tableId}/release`,
+                destination: `/app/restaurant/${restaurantId}/tables/${tableId}/cancel`,
                 body: JSON.stringify({
                     date: date,
                     time: time
@@ -248,14 +299,14 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         } catch (error) {
             console.error('테이블 선택 해제 요청 실패:', error);
         }
-    };
+    }, [restaurantId]);
 
     /**
      * 결제 시작 알림 (테이블 선점 유지 시간 연장용)
      * 
      * @param {number} tableId - 테이블 ID
      */
-    const startPayment = (tableId) => {
+    const startPayment = useCallback((tableId) => {
         if (!clientRef.current?.active) {
             console.warn('웹소켓이 연결되지 않았습니다.');
             return;
@@ -274,7 +325,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         } catch (error) {
             console.error('결제 시작 알림 실패:', error);
         }
-    };
+    }, [restaurantId]);
 
     /**
      * 메시지 수동 전송 (디버깅용)
@@ -282,7 +333,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
      * @param {string} destination - 목적지 경로
      * @param {object} body - 메시지 본문
      */
-    const sendMessage = (destination, body) => {
+    const sendMessage = useCallback((destination, body) => {
         if (!clientRef.current?.active) {
             console.warn('웹소켓이 연결되지 않았습니다.');
             return;
@@ -297,18 +348,19 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         } catch (error) {
             console.error('메시지 전송 실패:', error);
         }
-    };
+    }, []);
 
     // 반환값
     return {
         // 상태
         isConnected,
         connectionError,
-        
+        mySessionId,
+
         // 함수
         getTableStatus,
         selectTable,
-        releaseTable,
+        cancelTable,
         startPayment,
         sendMessage
     };

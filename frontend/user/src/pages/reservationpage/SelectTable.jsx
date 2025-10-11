@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import styles from './SelectTable.module.css';
+import axios from 'axios';
 
-import axios from 'axios';const TableSelection = () => {
+const TableSelection = () => {
+  const navigate = useNavigate();
+
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,10 +21,19 @@ import axios from 'axios';const TableSelection = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapRef = useRef(null);
 
+
+  // ✅ 컴포넌트 마운트 상태 추적
+  const isMountedRef = useRef(true);
+
+  // 테이블 상태 조회 완료 여부 체크
+  const hasLoadedInitialStatus = useRef(false);
+
   const reservationStep1 = JSON.parse(localStorage.getItem('reservationStep1'));
   const reservationPeople = reservationStep1?.peopleCount || 1;
   const maxSeats = 1;
   const restaurantId = reservationStep1?.restaurantId || 1;
+
+  const navigateRef = useRef(navigate);
 
   if (!reservationStep1) {
     alert('예약 정보가 없습니다. 처음부터 다시 시작해주세요.');
@@ -29,86 +41,149 @@ import axios from 'axios';const TableSelection = () => {
     return null;
   }
 
-
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
   /**
    * 웹소켓 테이블 상태 업데이트 핸들러
+   * @author 김예진
+   * @since 2025-10-08
    */
-  const handleTableStatusUpdate = useCallback((data) => {
+
+  const handleTableStatusUpdate = useCallback((data, currentSessionId) => {
+    if (!isMountedRef.current) return;
+     // ✅ 세션 ID가 없으면 처리 중단
+  if (!currentSessionId) {
+    console.log('⏳ 세션 ID 대기 중... (메시지 무시)');
+    return;
+  }
+
     console.log('테이블 상태 업데이트 수신:', data);
 
-    // 1. 전체 테이블 목록 업데이트
+    // 1. 여러 테이블 상태를 한꺼번에 갱신하는 경우
     if (data.success && Array.isArray(data.tables)) {
-      console.log('전체 테이블 상태 업데이트:', data.tables.length, '개');
-
       setTableData(prevTables => {
         return prevTables.map(table => {
-          const updatedTable = data.tables.find(t => t.tableId === table.originalId);
-
-          if (updatedTable) {
+          const updated = data.tables.find(t => t.tableId === table.originalId);
+          if (updated) {
             return {
               ...table,
-              status: updatedTable.status,
-              occupied: updatedTable.status !== 'AVAILABLE',
-              selectedBy: updatedTable.selectedBy,
-              selectedAt: updatedTable.selectedAt,
-              expiryTime: updatedTable.expiryTime
+              status: updated.status,
+              occupied: updated.status !== 'AVAILABLE',
+              selectedBy: updated.selectedBy,
+              selectedAt: updated.selectedAt,
+              expiryTime: updated.expiryTime
             };
           }
           return table;
         });
       });
-
-      // 테이블 상태 로딩 완료
       setIsLoadingTableStatus(false);
+      return;
     }
-    // 개별 테이블 선택/해제 응답
-    else if (data.tableId) {
-      console.log('개별 테이블 상태 업데이트:', data.tableId);
 
+    // 2. 단일 테이블 갱신
+    if (data.tableId) {
       setTableData(prevTables =>
         prevTables.map(table => {
           if (table.originalId === data.tableId) {
+            const statusObj = data.tableStatus || {};
             return {
               ...table,
-              status: data.tableStatus?.status || 'AVAILABLE',
-              occupied: data.tableStatus?.status !== 'AVAILABLE',
-              selectedBy: data.tableStatus?.selectedBy,
-              selectedAt: data.tableStatus?.selectedAt,
-              expiryTime: data.tableStatus?.expiryTime
+              status: statusObj.status || 'AVAILABLE',
+              occupied: statusObj.status !== 'AVAILABLE',
+              selectedBy: statusObj.selectedBy,
+              selectedAt: statusObj.selectedAt,
+              expiryTime: statusObj.expiryTime
             };
           }
           return table;
         })
       );
 
-      // 선점 성공 처리
-      if (data.success === true && data.message === "테이블이 선택되었습니다.") {
-        const reservationData = JSON.parse(localStorage.getItem('reservationStep1'));
-        setSelectedSeats(prev => {
-          if (prev.length > 0) {
-            const finalData = {
-              ...reservationData,
-              restaurantTableId: prev[0].originalId,
-              restaurantTableNameSnapshot: prev[0].name,
-              price: reservationData.peopleCount * 2000
-            };
-            localStorage.setItem('finalReservationData', JSON.stringify(finalData));
-            setShowAlert({ type: 'success', message: '테이블이 확정되었습니다!' });
-            setTimeout(() => window.location.href = '/reservations/confirm-info', 1000);
-          }
-          return prev;
+
+      // 3. 선점 성공 처리
+      if (data.success === true) {
+        const activeSelectionStr = sessionStorage.getItem('activeTableSelection');
+        if (!activeSelectionStr) {
+          console.log('⚠️ activeTableSelection 없음');
+          return;
+        }
+
+        const activeSelection = JSON.parse(activeSelectionStr);
+        const tableStatus = data.tableStatus || {};
+
+        // ✅ 세션 ID 비교 - 현재 사용자가 선점자인지 확인
+        const isMine = tableStatus.selectedBy === currentSessionId;
+
+        console.log('🔐 세션 검증:', {
+          내세션: currentSessionId,
+          선점자: tableStatus.selectedBy,
+          일치여부: isMine,
+          테이블: data.tableId
         });
-      } else if (data.success === false) {
-        setShowAlert({ type: 'error', message: data.message });
-        setSelectedSeats([]);
+
+        if (isMine) {
+          // ✅ 내가 선점한 경우만 다음 단계로 이동
+          console.log('✅ 선점 성공! 다음 단계로 이동');
+
+          activeSelection.isConfirmed = true;
+          sessionStorage.setItem('activeTableSelection', JSON.stringify(activeSelection));
+
+          const step1 = JSON.parse(localStorage.getItem('reservationStep1'));
+          const finalData = {
+            ...step1,
+            restaurantTableNameSnapshot: activeSelection.tableName,
+            restaurantTableId: activeSelection.tableId,
+            price: step1.peopleCount * 2000
+          };
+          localStorage.setItem('finalReservationData', JSON.stringify(finalData));
+
+          navigateRef.current('/reservations/confirm-info');
+        } else {
+          // ❌ 다른 사용자가 먼저 선점한 경우
+          console.log('❌ 다른 사용자가 먼저 선점함');
+
+          setShowAlert({
+            type: 'error',
+            message: `해당 테이블은 이미 다른 사용자가 선택했습니다.`
+          });
+          setSelectedSeats([]);
+          sessionStorage.removeItem('activeTableSelection');
+        }
       }
     }
+  }, []); // 의존성 배열 비움
+
+
+
+  const {
+    isConnected,
+    connectionError,
+    mySessionId,
+    getTableStatus,
+    selectTable,
+    cancelTable,
+  } = useWebSocket(restaurantId, handleTableStatusUpdate);
+
+  
+// ✅ 개발용 - 세션 ID를 window에 노출
+useEffect(() => {
+  if (mySessionId) {
+    window.__MY_SESSION_ID__ = mySessionId;
+    console.log('🔑 내 세션 ID:', mySessionId);
+  }
+}, [mySessionId]);
+
+  // 컴포넌트 마운트/언마운트 추적
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      console.log('컴포넌트 언마운트');
+      isMountedRef.current = false;
+    };
   }, []);
-
-  // 웹소켓 연결
-  const { isConnected, connectionError, getTableStatus, selectTable } =
-    useWebSocket(restaurantId, handleTableStatusUpdate);
-
 
   // Alert 자동 숨김
   useEffect(() => {
@@ -118,64 +193,33 @@ import axios from 'axios';const TableSelection = () => {
     }
   }, [showAlert]);
 
-   // 웹소켓 연결 후 테이블 상태 조회
+  // 웹소켓 연결 후 테이블 상태 조회 (한 번만 실행)
   useEffect(() => {
-    if (isConnected && reservationStep1) {
-      console.log('웹소켓 연결됨, 테이블 상태 조회 시작');
-      setIsLoadingTableStatus(true); // 로딩 시작
-      getTableStatus(reservationStep1.date, reservationStep1.time);
+    // 이미 조회했거나, 연결되지 않았거나, 예약 정보가 없으면 스킵
+    if (hasLoadedInitialStatus.current || !isConnected || !reservationStep1) {
+      return;
     }
-  }, [isConnected, reservationStep1?.date, reservationStep1?.time]);
 
-/**
-   * API에서 테이블 기본 정보 가져오기
-   */
-  const fetchTableData = async () => {
-    try {
-      setLoading(true);
-      console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
+    console.log('테이블 상태 최초 조회 시작');
+    setIsLoadingTableStatus(true);
 
-      const response = await axios.get(`http://localhost:10022/restaurant/${restaurantId}/tables`);
-      const data = response.data;
-
-      if (Array.isArray(data) && data.length > 0) {
-        const transformedTables = data.map((table, index) => ({
-          id: `T${table.id}`,
-          name: table.name,
-          minCapacity: table.minCapacity,
-          maxCapacity: table.maxCapacity,
-          status: null, // null로 초기화 (웹소켓 응답 대기)
-          occupied: false,
-          type: determineTableType(table),
-          xPosition: typeof table.xposition === 'number' && !isNaN(table.xposition)
-            ? table.xposition
-            : 100 + (index * 120),
-          yPosition: typeof table.yposition === 'number' && !isNaN(table.yposition)
-            ? table.yposition
-            : 100 + Math.floor(index / 3) * 100,
-          shape: table.shape,
-          originalId: table.id
-        }));
-
-        console.log('변환된 테이블 데이터:', transformedTables);
-        setTableData(transformedTables);
-        setError(null);
-        initializeMapView(transformedTables);
-      } else {
-        throw new Error('테이블 데이터가 없습니다.');
+    // 약간의 딜레이를 줘서 연결이 완전히 되도록 함
+    const timer = setTimeout(() => {
+      if (isMountedRef.current && isConnected) {
+        getTableStatus(reservationStep1.date, reservationStep1.time);
+        hasLoadedInitialStatus.current = true;
       }
-    } catch (err) {
-      console.error('테이블 데이터 조회 실패:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isConnected]); // getTableStatus를 의존성에서 제거
 
   /**
    * 맵 초기 뷰 설정
+   * @author 김예진
+   * @since 2025-10-08
    */
-  const initializeMapView = (tables) => {
+  const initializeMapView = useCallback((tables) => {
     if (tables.length === 0) return;
 
     const validTables = tables.filter(t =>
@@ -184,7 +228,6 @@ import axios from 'axios';const TableSelection = () => {
     );
 
     if (validTables.length === 0) {
-      console.warn('테이블에 좌표가 없습니다.');
       setPosition({ x: 50, y: 50 });
       setScale(1);
       return;
@@ -210,30 +253,77 @@ import axios from 'axios';const TableSelection = () => {
     const scaleY = tableHeight > 0 ? (mapHeight * 0.6) / tableHeight : 1;
     const initialScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.3), 1.5);
 
-    const finalX = isNaN(offsetX) ? 0 : offsetX;
-    const finalY = isNaN(offsetY) ? 0 : offsetY;
-    const finalScale = isNaN(initialScale) ? 1 : initialScale;
-
-    setPosition({ x: finalX, y: finalY });
-    setScale(finalScale);
-  };
+    setPosition({ x: isNaN(offsetX) ? 0 : offsetX, y: isNaN(offsetY) ? 0 : offsetY });
+    setScale(isNaN(initialScale) ? 1 : initialScale);
+  }, []);
 
   /**
    * 테이블 타입 결정
+   * @author 김예진
+   * @since 2025-10-08
    */
-  const determineTableType = (table) => {
-    const name = table.name.toLowerCase();
+  const determineTableType = useCallback((table) => {
+
+    const name = table.name;
     if (name.includes('카운터') || name.includes('counter')) return 'counter';
     if (name.includes('창가') || name.includes('window')) return 'window';
     if (name.includes('프라이빗') || name.includes('private')) return 'private';
     if (table.maxCapacity <= 2) return 'table2';
     if (table.maxCapacity <= 4) return 'table4';
     return 'table2';
-  };
+  }, []);
 
+  /**
+   * API에서 테이블 기본 정보 가져오기
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const fetchTableData = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
+
+      const response = await axios.get(`http://localhost:10022/restaurant/${restaurantId}/tables`);
+      const data = response.data;
+
+      if (Array.isArray(data) && data.length > 0) {
+        const transformedTables = data.map((table, index) => ({
+          id: `T${table.id}`,
+          name: table.name,
+          minCapacity: table.minCapacity,
+          maxCapacity: table.maxCapacity,
+          status: null,
+          occupied: false,
+          type: determineTableType(table),
+          xPosition: typeof table.xposition === 'number' && !isNaN(table.xposition)
+            ? table.xposition
+            : 100 + (index * 120),
+          yPosition: typeof table.yposition === 'number' && !isNaN(table.yposition)
+            ? table.yposition
+            : 100 + Math.floor(index / 3) * 100,
+          shape: table.shape,
+          originalId: table.id
+        }));
+
+        console.log('변환된 테이블 데이터:', transformedTables);
+        setTableData(transformedTables);
+        setError(null);
+        initializeMapView(transformedTables);
+      } else {
+        throw new Error('테이블 데이터가 없습니다.');
+      }
+    } catch (err) {
+      console.error('테이블 데이터 조회 실패:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [restaurantId, determineTableType, initializeMapView]);
+
+  // 컴포넌트 마운트 시 1회만 실행
   useEffect(() => {
     fetchTableData();
-  }, [restaurantId]);
+  }, [fetchTableData]);
 
   // 줌 컨트롤
   const handleZoomIn = () => setScale(prev => Math.min(prev * 1.2, 3));
@@ -263,14 +353,14 @@ import axios from 'axios';const TableSelection = () => {
   };
 
   /**
-   * 테이블 클릭 처리 (로컬 선택만, 선점은 X)
+   * 테이블 클릭 처리
+   * @author 김예진
+   * @since 2025-10-08
    */
   const handleTableClick = (table, e) => {
     e.stopPropagation();
 
-    // 선택 불가능한 상태 체크
     if (!isTableSelectable(table)) {
-      // 상태별 안내 메시지
       if (table.status === 'RESERVED') {
         setShowAlert({
           type: 'error',
@@ -295,26 +385,33 @@ import axios from 'axios';const TableSelection = () => {
       return;
     }
 
-    // 이미 선택된 테이블 클릭 시 선택 해제
     const isSelected = selectedSeats.some(seat => seat.id === table.id);
     if (isSelected) {
       setSelectedSeats([]);
+      sessionStorage.removeItem('activeTableSelection');
       return;
     }
 
-    // 3. 로컬 상태만 업데이트 (웹소켓 선점은 X)
     setSelectedSeats([table]);
+
+    const reservationData = JSON.parse(localStorage.getItem('reservationStep1'));
+    sessionStorage.setItem('activeTableSelection', JSON.stringify({
+      restaurantId: restaurantId,
+      tableId: table.originalId,
+      tableName: table.name,
+      date: reservationData.date,
+      time: reservationData.time,
+      isConfirmed: false
+    }));
   };
 
   /**
    * 테이블 선택 가능 여부 판단
-   * @param {Object} table - 테이블 객체
-   * @returns {boolean} 선택 가능 여부
+   * @author 김예진
+   * @since 2025-10-08
    */
   const isTableSelectable = (table) => {
-    // 웹소켓 응답 대기 중
     if (table.status === null) return false;
-
     if (table.status === 'RESERVED') return false;
     if (table.status === 'SELECTED') return false;
     if (reservationPeople < table.minCapacity || reservationPeople > table.maxCapacity) {
@@ -325,19 +422,18 @@ import axios from 'axios';const TableSelection = () => {
 
   /**
    * 테이블 상태에 따른 색상 결정
+   * @author 김예진
+   * @since 2025-10-08
    */
   const getTableColor = (table) => {
     const isSelected = selectedSeats.some(seat => seat.id === table.id);
 
-    // 내가 선택한 테이블
     if (isSelected) return '#4ecdc4';
 
-    // 웹소켓 응답 대기 중
     if (table.status === null) {
-      return '#e0e0e0'; // 회색 - 로딩 중
+      return '#e0e0e0';
     }
 
-    // 테이블 상태별 색상
     switch (table.status) {
       case 'RESERVED':
         return '#a0a0a0';
@@ -355,6 +451,8 @@ import axios from 'axios';const TableSelection = () => {
 
   /**
    * 테이블 크기 결정
+   * @author 김예진
+   * @since 2025-10-08
    */
   const getTableSize = (table) => {
     if (table.maxCapacity <= 1) return { width: 40, height: 25 };
@@ -365,6 +463,8 @@ import axios from 'axios';const TableSelection = () => {
 
   /**
    * 테이블 상태 텍스트 가져오기
+   * @author 김예진
+   * @since 2025-10-08
    */
   const getTableStatusText = (table) => {
     if (table.status === 'RESERVED') return ' (예약됨)';
@@ -375,27 +475,37 @@ import axios from 'axios';const TableSelection = () => {
   };
 
   /**
-   * 테이블 확정
+   * 테이블 확정 (다음 단계로 이동)
+   * @author 김예진
+   * @since 2025-10-08
    */
   const handleConfirmSeats = () => {
-    if (selectedSeats.length !== maxSeats) {
-      return;
-    }
+    if (selectedSeats.length !== maxSeats) return;
+
+    // ⚠️ isSelectingRef.current = true; 로직 제거됨
 
     const tableInfo = selectedSeats[0];
 
-    // 웹소켓으로 테이블 선점 요청
+    const selection = sessionStorage.getItem('activeTableSelection');
+    if (selection) {
+      const data = JSON.parse(selection);
+      data.isConfirmed = false;
+      sessionStorage.setItem('activeTableSelection', JSON.stringify(data));
+    }
+
+    // 테이블 선점 요청 (비동기)
     selectTable(
       tableInfo.originalId,
-      'customerName', // TODO: 실제 사용자 이름으로 변경
+      'customerName',
       reservationStep1.date,
       reservationStep1.time,
       reservationPeople
     );
-
-    // 선점 성공 응답을 기다림 (handleTableStatusUpdate에서 처리)
-    // 성공 시 페이지 이동은 웹소켓 응답 후 처리
   };
+
+  // ------------------------
+  // ⚠️ 선점 취소 로직(sendCancelRequestSafe 및 관련 useEffect)이 모두 제거되었습니다.
+  // ------------------------
 
   const totalPrice = reservationPeople * 2000;
 
