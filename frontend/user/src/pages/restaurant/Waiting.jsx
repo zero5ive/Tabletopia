@@ -32,8 +32,9 @@ export default function Waiting() {
       const response = await getWaitingList(2);
       console.log('웨이팅 리스트', response);
 
-      setWaitingList(response.data);
-      console.log('웨이팅 리스트 조회', response.data);
+      // Page 객체의 content 배열을 가져옴
+      setWaitingList(response.data.content || []);
+      console.log('웨이팅 리스트 조회', response.data.content);
   }
 
   //총 팀 수 계산
