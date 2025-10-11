@@ -9,7 +9,6 @@ export default function Sidebar() {
           <small className="text-muted">정미스시</small>
         </div>
 
-        {/* ✅ nav-pills + active + data-bs-toggle="tab" */}
         <nav className="nav flex-column nav-pills">
           <a className="nav-link active" href="#dashboard" data-bs-toggle="tab">
             <i className="fas fa-tachometer-alt me-2"></i>대시보드

@@ -1,4 +1,4 @@
-import {  useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import './MainContent.css';
 import './Waiting.css';
 
@@ -48,8 +48,12 @@ export default function MainContent() {
               clearSelection={() => setSelectedRestaurant(null)}
               onSaved={() => setActiveTab("restaurant-list")}
             />
-            <RestaurantListTab onEdit={setSelectedRestaurant} />
-            <MenuManagementTab />
+            <RestaurantListTab
+              onEdit={setSelectedRestaurant}
+              onSelectRestaurant={setSelectedRestaurant}
+              onChangeTab={setActiveTab}
+            />
+            <MenuManagementTab selectedRestaurant={selectedRestaurant} />
             <OperatingHoursTab />
             <FacilitiesTab />
             <ImagesTab />

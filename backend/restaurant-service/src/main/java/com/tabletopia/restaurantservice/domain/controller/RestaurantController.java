@@ -23,7 +23,7 @@ import java.util.List;
  * - 레스토랑 삭제 (Soft Delete)
 
  * @author 김지민
- * @since 2025-09-26
+ * @since 2025-10-09
  */
 @RestController
 @RequestMapping("/api/restaurants")
