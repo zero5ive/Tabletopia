@@ -60,20 +60,29 @@ public class Waiting {
   public Waiting(Long restaurantId,
       Long userId,
       Integer peopleCount,
-      String restaurantNameSnapshot,
-      Integer waitingNumber) {
+      String restaurantNameSnapshot) {
 
     this.restaurantId = restaurantId;
     this.userId = userId;
     this.peopleCount = peopleCount;
     this.restaurantNameSnapshot = restaurantNameSnapshot;
-    this.waitingNumber = waitingNumber;
+    this.waitingNumber = 0;
 
     this.waitingState = WaitingState.WAITING; // 기본 상태
     this.delayCount = 0; // 기본 지연 횟수
     this.assignedTableName = null;
     this.assignedTableCapacity = null;
     this.calledAt = null;
+  }
+
+  //waitingnumber 설정 메서드
+  public void assignWaitingNumber(Integer waitingNumber) {
+    this.waitingNumber = waitingNumber;
+  }
+
+  //waitingState 설정 메섣,
+  public void assignWaitingState(WaitingState waitingState) {
+    this.waitingState = waitingState;
   }
 
 

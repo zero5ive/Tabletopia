@@ -59,6 +59,9 @@ dependencies {
 
     //jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.4")
+
+    //페이징
+    implementation 'org.modelmapper:modelmapper:3.1.1'
 }
 
 dependencyManagement {

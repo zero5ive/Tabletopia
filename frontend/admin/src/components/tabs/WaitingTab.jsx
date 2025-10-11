@@ -1,70 +1,120 @@
 import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import { getWaitingList } from '../../utils/WaitingApi';
+import { waitingCancel } from '../../utils/WaitingApi';
+import { useParams } from "react-router-dom";
+
 
 export default function WaitingTab() {
-  const [activeFilter, setActiveFilter] = useState('전체');
+  const [activeFilter, setActiveFilter] = useState('웨이팅');
   const [showVisitConfirmed, setShowVisitConfirmed] = useState(false);
   const [showStoreArrival, setShowStoreArrival] = useState(false);
+  const [waitingList, setWaitingList] = useState([]);
 
-  const [waitingList, setWaitingList] = useState([
-    {
-      id: 1,
-      waitingNumber: 407,
-      customerInfo: { name: '홍길동', phone: '010-1234-5678', partySize: 2, specialRequest: '41분 대기' },
-      status: '호출',
-      visitConfirmed: true,
-      storeArrival: false,
-      orderInfo: ['오일 파스타 x 1', '리구 파스타 x 1'],
-      notes: '보조석, 초장으로지리'
-    },
-    {
-      id: 2,
-      waitingNumber: 408,
-      customerInfo: { name: '김철수', phone: '010-9876-5432', partySize: 4, specialRequest: '15분 대기' },
-      status: '착석',
-      visitConfirmed: true,
-      storeArrival: true,
-      orderInfo: ['스테이크 x 2', '파스타 x 2'],
-      notes: '창가 자리 요청'
-    },
-    {
-      id: 3,
-      waitingNumber: 409,
-      customerInfo: { name: '박영희', phone: '010-1111-2222', partySize: 3, specialRequest: '32분 대기' },
-      status: '취소',
-      visitConfirmed: false,
-      storeArrival: false,
-      orderInfo: [],
-      notes: ''
-    }
-  ]);
+  //페이징 추가
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 10;
 
-  const filteredWaitingList = waitingList.filter(waiting => {
-    if (activeFilter !== '전체' && waiting.status !== activeFilter) return false;
-    if (showVisitConfirmed && !waiting.visitConfirmed) return false;
-    if (showStoreArrival && !waiting.storeArrival) return false;
-    return true;
-  });
+  //임의로 설정한 restaurantId
+  const restaurantId = 2;
 
-  const statusCounts = {
-    전체: waitingList.length,
-    호출: waitingList.filter(w => w.status === '호출').length,
-    착석: waitingList.filter(w => w.status === '착석').length,
-    취소: waitingList.filter(w => w.status === '취소').length
+  // 상태 매핑 추가
+  const statusMap = {
+    '웨이팅': 'WAITING',
+    '호출': 'CALLED',
+    '착석': 'SEATED',
+    '취소': 'CANCELLED'  
   };
+
+  //웨이팅 리스트 조회 함수
+  const fetchWaitingList = async (page = 0, status = 'WAITING') => {
+    const response = await getWaitingList(restaurantId, page, pageSize, status);
+    console.log('웨이팅 리스트 (페이징)', response.data);
+
+    // Spring Page 응답 구조
+    const pageData = response.data;
+
+    setWaitingList(transformedWatingData(pageData.content)); // 실제 데이터
+    setTotalPages(pageData.totalPages);                      // 전체 페이지 수
+    setTotalElements(pageData.totalElements);                // 전체 데이터 수
+    setCurrentPage(pageData.number);                         // 현재 페이지 번호
+
+    console.log('현재 페이지:', pageData.number);
+    console.log('전체 페이지:', pageData.totalPages);
+    console.log('전체 데이터:', pageData.totalElements);
+  }
+
+  //웨이팅 정보
+  const transformedWatingData = (waitingData) => {
+    return waitingData.map(item => ({
+      id: item.id,
+      waitingNumber: item.waitingNumber,
+      customerInfo: {
+        userId: item.userId,
+        peopleCount: item.peopleCount
+      },
+      createdAt: item.createdAt,
+
+    }));
+  }
 
   //웨이팅 open관련
   const [isWaitingOpen, setIsWaitingOpen] = useState(false);
   const [stompClient, setStompClient] = useState(null);
 
-  const handleStatusChange = (id, newStatus) => {
-    setWaitingList(prev =>
-      prev.map(waiting =>
-        waiting.id === id ? { ...waiting, status: newStatus } : waiting
-      )
-    );
+  //웨이팅 취소
+  const handleCancelChange = async (waitingId) => {
+    const confirm = window.confirm("정말 취소하시겠습니까?");
+    if (!confirm) return;
+
+    const response = await waitingCancel(waitingId, restaurantId);
+    window.alert("웨이팅이 취소되었습니다.");
+
+    //취소 후 새로고침
+    const status = statusMap[activeFilter];
+    fetchWaitingList(currentPage, status);
+
+  }
+
+  const handleFilterClick = (filterName) => {
+    setActiveFilter(filterName);
+    const status = statusMap[filterName];
+    fetchWaitingList(0, status); // 첫 페이지부터 해당 상태 조회
+
+  }
+
+  const filteredWaitingList = waitingList;
+
+  //페이지 이동 함수
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 0 && pageNumber < totalPages) {
+      const status = statusMap[activeFilter]; 
+      fetchWaitingList(pageNumber, status);
+    }
   };
+
+  const goToPrevPage = () => {
+    if (currentPage > 0) {
+      const status = statusMap[activeFilter]; 
+      fetchWaitingList(currentPage - 1, status);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      const status = statusMap[activeFilter]; 
+      fetchWaitingList(currentPage + 1, status);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchWaitingList(0, 'WAITING'); //초기 로드: 첫 페이지, WAITING 상태
+  }, []);
+
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8002/ws');
@@ -92,8 +142,18 @@ export default function WaitingTab() {
             window.alert('웨이팅이 닫혔습니다.');
           }
         });
+
+
+        // 웨이팅 등록 구독
+        client.subscribe('/topic/regist', (msg) => {
+          const alert = JSON.parse(msg.body);
+          if (alert.type === 'REGIST') {
+            fetchWaitingList();
+          }
+        });
+
       },
-      
+
       onStompError: (frame) => {
         console.error('STOMP 에러:', frame);
       }
@@ -107,10 +167,10 @@ export default function WaitingTab() {
         client.deactivate();
       }
     };
-  }, []); 
+  }, []);
 
- 
-  
+
+
 
   //  웨이팅 토글 함수 (오픈/닫기)
   const toggleWaiting = () => {
@@ -140,9 +200,9 @@ export default function WaitingTab() {
             <div className="waiting-toggle">
               {isWaitingOpen ? '신규 웨이팅을 등록받고있어요' : '웨이팅 등록이 중단되었습니다'}
               <label className="waiting-switch">
-                <input 
-                  type="checkbox" 
-                  checked={isWaitingOpen} 
+                <input
+                  type="checkbox"
+                  checked={isWaitingOpen}
                   onChange={toggleWaiting}
                 />
                 <span className="waiting-slider"></span>
@@ -160,11 +220,11 @@ export default function WaitingTab() {
             <span className="waiting-count">20명</span>
             <span className="waiting-filterLabel">)</span>
 
-            {Object.entries(statusCounts).map(([status, count]) => (
+           {Object.keys(statusMap).map(status => (
               <button
                 key={status}
                 className={`waiting-filterButton ${status} ${activeFilter === status ? 'active' : ''}`}
-                onClick={() => setActiveFilter(status)}
+                 onClick={() => handleFilterClick(status)}
               >
                 {status}
               </button>
@@ -182,22 +242,62 @@ export default function WaitingTab() {
               </div>
 
               <div className="waiting-customerInfo">
-                <div>{waiting.customerInfo.name} / 총 {waiting.customerInfo.partySize}명</div>
-                <div>{waiting.customerInfo.phone} • {waiting.customerInfo.specialRequest}</div>
-                {waiting.orderInfo.length > 0 && (
-                  <div>{waiting.orderInfo.join(', ')}</div>
-                )}
-                {waiting.notes && <div>{waiting.notes}</div>}
+                <div>{waiting.customerInfo.userId} / 총 {waiting.customerInfo.peopleCount}명</div>
+                <div>{waiting.customerInfo.phone}</div>
+
               </div>
 
               <div className="waiting-actionButtons">
                 <button onClick={() => handleStatusChange(waiting.id, '호출')}>호출</button>
                 <button onClick={() => handleStatusChange(waiting.id, '착석')}>착석</button>
-                <button onClick={() => handleStatusChange(waiting.id, '취소')}>취소</button>
+                <button onClick={() => handleCancelChange(waiting.id, '취소')}>취소</button>
               </div>
             </div>
           ))}
         </div>
+
+        {/* 페이징 UI */}
+        {totalPages > 1 && (
+          <div className="demo-section">
+            <div className="pagination-container">
+              <div className="pagination">
+                {/* 이전 버튼 */}
+                <button
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 0}
+                  className={`pagination-btn arrow ${currentPage === 0 ? 'disabled' : ''}`}
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+
+                {/* 페이지 번호 버튼들 */}
+                {Array.from({ length: totalPages }, (_, i) => i).map(pageNum => (
+                  <button
+                    key={pageNum}
+                    onClick={() => goToPage(pageNum)}
+                    className={`pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
+                  >
+                    {pageNum + 1}
+                  </button>
+                ))}
+
+                {/* 다음 버튼 */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages - 1}
+                  className={`pagination-btn arrow ${currentPage === totalPages - 1 ? 'disabled' : ''}`}
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
