@@ -1,13 +1,17 @@
 package com.tabletopia.realtimeservice.domain.reservation.controller;
 
+import com.tabletopia.realtimeservice.domain.reservation.dto.CancelRequest;
+import com.tabletopia.realtimeservice.domain.reservation.dto.ConnectResponse;
 import com.tabletopia.realtimeservice.domain.reservation.dto.ConnectionMessage;
+import com.tabletopia.realtimeservice.domain.reservation.dto.ReservationRequest;
+import com.tabletopia.realtimeservice.domain.reservation.dto.SessionInfoResponse;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableSelectionInfo;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableSelectionRequest;
-import com.tabletopia.realtimeservice.domain.reservation.dto.TableSelectionResult;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableStatus;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableStatusRequest;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableStatusResponse;
 import com.tabletopia.realtimeservice.domain.reservation.dto.TableStatusUpdateMessage;
+import com.tabletopia.realtimeservice.domain.reservation.dto.UserConnectedResponse;
 import com.tabletopia.realtimeservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.realtimeservice.domain.reservation.service.ReservationService;
 import com.tabletopia.realtimeservice.dto.RestaurantTableDto;
@@ -18,22 +22,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 실시간 테이블 선택 웹소켓 컨트롤러
  * 테이블 선택 시 실시간으로 상태 변경 (빨간불/초록불)
  *
+ * TODO Redis로 개선
+ * 
  * @author 김예진
  * @since 2025-09-26
  */
@@ -67,23 +75,40 @@ public class RealtimeTableSelectionController {
    * @since 2025-09-25
    *
    * @param restaurantId 레스토랑 id
+   * @param accessor STOMP 헤더 접근자
    * @param message 접속 메시지
-   * @return 현재 접속 중인 사용자 목록
    */
   @MessageMapping("/reservation/{restaurantId}/connect")
-  @SendTo("/topic/reservation/{restaurantId}/table-status")
-  private Set<String> connectToReservation(
+  public void connectToReservation(
       @DestinationVariable Long restaurantId,
+      SimpMessageHeaderAccessor accessor,
       ConnectionMessage message) {
-    // STOMP의 @DestinationVariable = HTTP에서 파라미터 값을 받아오기 위해 사용한 @PathVariable
-    log.debug("레스토랑 {}에 사용자 {} 접속 요청", restaurantId, message.getUserEmail());
+
+    String sessionId = accessor.getSessionId();
+
+    log.debug("레스토랑 {} 접속 요청: 사용자 {} 세션 {}", restaurantId, message.getUserEmail(), sessionId);
 
     // 접속자 목록에 추가
     connectedUsers
         .computeIfAbsent(restaurantId, k -> ConcurrentHashMap.newKeySet())
-        .add(message.getUserEmail());
+        .add(sessionId);
 
-    return connectedUsers.get(restaurantId);
+    // TODO 프론트엔드에 수신이 안되어, 현재 처음 받는 브로드 캐스트의 세션 id를 자신의 세션 id로 저장하게 해놓았음
+    //      추후 수정 필요
+    // 1. 개별 사용자에게만 자신의 세션 ID 전송 (개인 메시지)
+    messagingTemplate.convertAndSendToUser(
+        sessionId,
+        "/queue/session-info",
+        SessionInfoResponse.of(sessionId)
+    );
+
+    // 2. 모든 사용자에게 새 접속자 알림 (브로드캐스트)
+    messagingTemplate.convertAndSend(
+        String.format("/topic/reservation/%d/table-status", restaurantId),
+        UserConnectedResponse.of(sessionId, connectedUsers.get(restaurantId))
+    );
+
+    log.debug("세션 {} 정보 전송 완료 (접속자 수: {})", sessionId, connectedUsers.get(restaurantId).size());
   }
 
   /**
@@ -94,7 +119,6 @@ public class RealtimeTableSelectionController {
    * @since 2025-09-29
    */
   @MessageMapping("/restaurant/{restaurantId}/tables/{tableId}/select")
-//  @SendTo("/topic/restaurant/{restaurantId}/tables/status")
   public void selectTable(
       @DestinationVariable Long restaurantId,
       @DestinationVariable Long tableId,
@@ -145,22 +169,64 @@ public class RealtimeTableSelectionController {
     TableStatus updatedTableStatus = new TableStatus();
     updatedTableStatus.setTableId(tableId);
     updatedTableStatus.setStatus("SELECTED");
-    updatedTableStatus.setSelectedBy(request.getUserName());
+    updatedTableStatus.setSelectedBy(sessionId);
     updatedTableStatus.setSelectedAt(now);
     updatedTableStatus.setExpiryTime(expiryTime);
 
     selectedTables.put(selectionKey, selectionInfo);
-    log.debug("테이블 {}을 사용자 {}가 선점. 만료시간 {}", tableId, sessionId, selectionInfo.getExpiryTime());
+    log.debug("테이블 선점 생성: 테이블 {}, 세션 {}, 만료시간 {}", tableId, sessionId, selectionInfo.getExpiryTime());
 
     // 모든 클라이언트들에 상태 변경을 브로드 캐스트
     sendTableStatusUpdate(restaurantId, tableId, updatedTableStatus, true, "테이블이 선택되었습니다.");
   }
 
-  /**
-   * TODO 테이블 선택 취소 요청
-   * @author 김예진
-   * @since 2025-10-01
-   */
+//
+//  /**
+//   * 테이블 선택 취소 요청
+//   * @author 김예진
+//   * @since 2025-10-02
+//   */
+//  @MessageMapping("/restaurant/{restaurantId}/tables/{tableId}/cancel")
+//  public void cancelSelectTable(
+//      @DestinationVariable Long restaurantId,
+//      @DestinationVariable Long tableId,
+//      TableSelectionRequest request,
+//      SimpMessageHeaderAccessor accessor
+//  ){
+//    // 세션 아이디 조회
+//    String sessionId = accessor.getSessionId();
+//    // 선점키 조회
+//    String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(), request.getTime());
+//
+//    // 기존 선점 정보 확인
+//    TableSelectionInfo existSelectionInfo = selectedTables.get(selectionKey);
+//
+//    // 기존 선점 정보가 없거나 이미 만료됨
+//    if (existSelectionInfo == null || isSelectionExpired(existSelectionInfo)){
+//      log.debug("취소할 선점 정보가 없습니다.");
+//      return;
+//    }
+//
+//    // 본인이 선점한 테이블이 맞는지 확인
+//    if (!existSelectionInfo.getSessionId().equals(sessionId)){
+//      log.debug("본인이 선점한 테이블이 아닙니다.");
+//      return;
+//    }
+//
+//    // 선점 정보 삭제
+//    selectedTables.remove(selectionKey);
+//    log.debug("테이블 선점 삭제: 테이블 {} 세션 {}", tableId, sessionId);
+//
+//    // 상태 변경 브로드 캐스트
+//    TableStatus tableStatus = new TableStatus();
+//    tableStatus.setTableId(tableId);
+//    tableStatus.setStatus(String.valueOf(TableSelectStatus.AVAILABLE));
+//    tableStatus.setSelectedBy(null);
+//    tableStatus.setSelectedAt(null);
+//    tableStatus.setExpiryTime(null);
+//
+//    sendTableStatusUpdate(restaurantId, tableId, tableStatus, true, "테이블 선택이 취소되었습니다.");
+//  }
 
   /**
    * 테이블 상태 업데이트 전송
@@ -252,6 +318,35 @@ public class RealtimeTableSelectionController {
       return TableStatusResponse.error("테이블 상태를 불러올 수 없습니다.");
     }
   }
+
+
+  /**
+   * 예약 등록
+   *
+   * @author 김예진
+   * @since 2025-09-24
+   */
+  @PostMapping("/reservation")
+  public void registerReservation(@RequestBody ReservationRequest request){
+    log.debug("예약 정보 - {}", request);
+
+    Long reservationId = reservationService.createReservation(request);
+
+    log.debug("예약 등록 id - {}", reservationId);
+
+    // PENDING 제거
+    String selectionKey = createSelectionKey(request.getRestaurantId(), request.getRestaurantTableId(), request.getDate(), request.getTime());
+    selectedTables.remove(selectionKey);
+
+    // 예약 완료 상태 브로드캐스트
+    TableStatus tableStatus = new TableStatus();
+    tableStatus.setTableId(request.getRestaurantTableId());
+    tableStatus.setStatus("RESERVED");
+    sendTableStatusUpdate(request.getRestaurantId(), request.getRestaurantTableId(), tableStatus, true, "예약이 완료되었습니다.");
+
+  }
+
+
 
   /**
    * 시간대 문자열 생성: "2025-09-26T18:00"

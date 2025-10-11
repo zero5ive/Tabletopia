@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import styles from './ConfirmInfo.module.css'
+import React, { useState, useEffect, useRef } from 'react'; // ✅ useRef import
+import styles from './ConfirmInfo.module.css';
 import axios from 'axios';
 
 const ReservationConfirm = () => {
+  const isNavigatingRef = useRef(false);
+  const hasCleanedUpRef = useRef(false);
+
   const [reservationData, setReservationData] = useState(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '추후추가',
@@ -28,12 +31,73 @@ const ReservationConfirm = () => {
   }, []);
 
   /**
-   * 고객 정보 입력 핸들러
-   * 
-   * @param {string} field - 입력 필드명
-   * @param {string} value - 입력값
+   * 페이지 이탈/종료 시 선점 해제
    * @author 김예진
-   * @since 2025-09-23
+   * @since 2025-10-08
+   */
+  useEffect(() => {
+    const sendCancelRequest = () => {
+      if (hasCleanedUpRef.current) return;
+
+      const selection = sessionStorage.getItem('activeTableSelection');
+      if (!selection) return;
+
+      try {
+        const data = JSON.parse(selection);
+
+        if (!data.isConfirmed) {
+          sessionStorage.removeItem('activeTableSelection');
+          console.log('로컬 선택만 있어서 취소 요청 생략');
+          return;
+        }
+
+        const success = navigator.sendBeacon(
+          'http://localhost:10022/api/realtime/table/cancel',
+          new Blob([JSON.stringify({
+            restaurantId: data.restaurantId,
+            tableId: data.tableId,
+            date: data.date,
+            time: data.time
+          })], { type: 'application/json' })
+        );
+
+        if (success) {
+          console.log('테이블 선점 취소 요청 전송 성공 (ConfirmInfo)');
+          sessionStorage.removeItem('activeTableSelection');
+          hasCleanedUpRef.current = true;
+        }
+      } catch (error) {
+        console.error('테이블 선점 취소 요청 실패:', error);
+      }
+    };
+
+    const handleBeforeUnload = (e) => {
+      if (!isNavigatingRef.current) {
+        sendCancelRequest();
+      }
+    };
+
+    const handlePageHide = (e) => {
+      if (!isNavigatingRef.current && !e.persisted) {
+        sendCancelRequest();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+
+      if (!isNavigatingRef.current) {
+        sendCancelRequest();
+      }
+    };
+  }, []); // ✅ useEffect를 컴포넌트 최상위로 이동
+
+  /**
+   * 고객 정보 입력 핸들러
    */
   const handleCustomerInfoChange = (field, value) => {
     setCustomerInfo(prev => ({
@@ -44,10 +108,6 @@ const ReservationConfirm = () => {
 
   /**
    * 약관 동의 체크박스 핸들러
-   * 
-   * @param {string} agreementType - 동의 항목
-   * @author 김예진
-   * @since 2025-09-23
    */
   const handleAgreementChange = (agreementType) => {
     setAgreements(prev => ({
@@ -58,19 +118,14 @@ const ReservationConfirm = () => {
 
   /**
    * 이전 단계로 돌아가기
-   * 
-   * @author 김예진
-   * @since 2025-09-23
    */
   const handleGoBack = () => {
+    isNavigatingRef.current = true; // ✅ 정상 이동
     window.location.href = '/reservations/table';
   };
 
   /**
    * 결제 진행
-   * 모든 필수 정보와 약관 동의 확인 후 결제 페이지로 이동
-   * 결제 완료시 예약 정보 등록
-   * 
    * @author 김예진
    * @since 2025-09-23
    */
@@ -86,7 +141,7 @@ const ReservationConfirm = () => {
       return;
     }
 
-    // 휴대폰 번호 유효성 검사 (간단한 형식 체크)
+    // 휴대폰 번호 유효성 검사
     const phoneRegex = /^01[016789]-?\d{3,4}-?\d{4}$/;
     if (!phoneRegex.test(customerInfo.phone.replace(/-/g, ''))) {
       alert('올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)');
@@ -115,14 +170,25 @@ const ReservationConfirm = () => {
       customerInfo: customerInfo,
       agreements: agreements
     };
-    
-    // 예약정보 등록 테스트
-    const response = await axios.post(
-      `http://localhost:10022/api/realtime/reservation`, finalData);
-    
-    // 결제 페이지로 이동
-    // window.location.href = '/reservations/payment';
 
+    try {
+      // 예약정보 등록
+      const response = await axios.post(
+        'http://localhost:10022/api/realtime/reservation',
+        finalData
+      );
+
+      console.log('예약 등록 성공:', response.data);
+
+      // ✅ 정상 이동 플래그 설정
+      // isNavigatingRef.current = true;
+
+      // 결제 페이지로 이동
+      window.location.href = '/reservations/payment';
+    } catch (error) {
+      console.error('예약 등록 실패:', error);
+      alert('예약 등록 중 오류가 발생했습니다.');
+    }
   };
 
   if (!reservationData) {

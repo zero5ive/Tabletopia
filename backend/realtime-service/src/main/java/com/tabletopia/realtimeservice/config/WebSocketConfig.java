@@ -20,6 +20,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   /**
    * 경로 설정
+   *
+   * @author 김예진
+   * @since 2025-09-25
    */
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -34,6 +37,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.setUserDestinationPrefix("/user");
   }
 
+  /**
+   * STOMP 엔드포인트 설정
+   * <p>
+   * 예: 클라이언트는 ws://localhost:포트번호/ws 로 접속
+   *
+   * @author 김예진
+   * @since 2025-09-25
+   */
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry
