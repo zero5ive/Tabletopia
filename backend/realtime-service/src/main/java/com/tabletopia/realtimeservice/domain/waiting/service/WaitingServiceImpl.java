@@ -37,8 +37,8 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
   @Override
-  public List<Waiting> getWaitingList() {
-    return waitingRepository.findAll();
+  public List<Waiting> getWaitingList(Long restaurantId) {
+    return waitingRepository.findByRestaurantId(restaurantId);
   }
 
   @Override

@@ -13,7 +13,7 @@ public interface WaitingService {
   // 웨이팅 오픈 상태 조회
   public boolean isWaitingOpen();
 
-  public List<Waiting> getWaitingList();
+  public List<Waiting> getWaitingList(Long restaurantId);
 
   //waitingnumber조회
   public Integer getMaxWaitingNumber(Long restaurantId);

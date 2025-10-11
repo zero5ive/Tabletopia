@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
@@ -83,8 +84,9 @@ public class WaitingController {
 
       Waiting waiting = new Waiting(waitingRequest.getRestaurantId(), waitingRequest.getUserId(),
           waitingRequest.getPeopleCount(),
-          waitingRequest.getRestaurantName(),
-          nextWaitingNumber);
+          waitingRequest.getRestaurantName());
+
+      waiting.assignWaitingNumber(nextWaitingNumber);
 
       waitingService.save(waiting);
 
@@ -124,8 +126,8 @@ public class WaitingController {
   //웨이팅 리스트 조회
   @GetMapping("/api/waitings")
   @ResponseBody
-  public ResponseEntity<List<Waiting>> getList(){
-    List<Waiting> waitingList = waitingService.getWaitingList();
+  public ResponseEntity<List<Waiting>> getList(@RequestParam Long restaurantId) {
+    List<Waiting> waitingList = waitingService.getWaitingList(restaurantId);
 
     return  ResponseEntity.ok(waitingList);
   }

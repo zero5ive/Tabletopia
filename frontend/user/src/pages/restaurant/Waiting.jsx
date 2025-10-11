@@ -1,5 +1,6 @@
 window.global = window;
 
+import { useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import styles from './Waiting.module.css'
 import SockJS from 'sockjs-client';
@@ -15,7 +16,7 @@ export default function Waiting() {
   const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)
   const [isWaitingOpen, setIsWaitingOpen] = useState(false); //웨이팅 오픈
   const [waitingList, setWaitingList] = useState([]);
-
+  const {restaurantId} = useParams();
 
   
   const increment = () => {
@@ -28,7 +29,7 @@ export default function Waiting() {
 
   //웨이팅 리스트 조회 함수
   const fetchWaitingList = async() =>{
-      const response = await getWaitingList();
+      const response = await getWaitingList(2);
       console.log('웨이팅 리스트', response);
 
       setWaitingList(response.data);
@@ -149,8 +150,8 @@ export default function Waiting() {
           <div className={styles["waiting-status"]}>
           {isWaitingOpen ? (
              <>
-                <div>2인석 {team2}팀</div>
-                <div>4인석 {team4}팀</div>
+                <div>2인석 : {team2}팀</div>
+                <div>4인석 : {team4}팀</div>
               </>
              ) : '현재 웨이팅이 닫혀있습니다.'}
            
