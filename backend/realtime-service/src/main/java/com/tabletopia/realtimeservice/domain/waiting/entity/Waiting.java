@@ -80,5 +80,10 @@ public class Waiting {
     this.waitingNumber = waitingNumber;
   }
 
+  //waitingState 설정 메섣,
+  public void assignWaitingState(WaitingState waitingState) {
+    this.waitingState = waitingState;
+  }
+
 
 }

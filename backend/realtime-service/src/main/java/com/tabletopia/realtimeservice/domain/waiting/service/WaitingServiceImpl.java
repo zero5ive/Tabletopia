@@ -1,9 +1,14 @@
 package com.tabletopia.realtimeservice.domain.waiting.service;
 
+import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
+import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.realtimeservice.domain.waiting.repository.WaitingRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 /**
  * 웨이팅 서비스
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class WaitingServiceImpl implements WaitingService{
 
   private final WaitingRepository waitingRepository;
+  private final ModelMapper modelMapper;
 
   // 웨이팅 오픈 상태를 메모리에 저장
   private boolean waitingOpen = false;
@@ -37,13 +43,27 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
   @Override
-  public List<Waiting> getWaitingList(Long restaurantId) {
-    return waitingRepository.findByRestaurantId(restaurantId);
+  public Page<WaitingResponse> getWaitingList(Long restaurantId, WaitingState status,  Pageable pageable) {
+
+    Page<Waiting> waitingPage = waitingRepository.findByRestaurantIdAndWaitingState(
+        restaurantId, status, pageable);
+
+    // Entity를 DTO로 변환
+    return waitingPage.map(waiting -> modelMapper.map(waiting, WaitingResponse.class));
   }
 
   @Override
   public Integer getMaxWaitingNumber(Long restaurantId) {
     return waitingRepository.findMaxWaitingNumberByRestaurantId(restaurantId);
+  }
+
+  @Override
+  public void cancelWaiting(Long id, Long restaurantId) {
+    Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
+        .orElseThrow(()-> new RuntimeException("웨이팅을 찾을 수 없습니다."));
+
+    waiting.assignWaitingState(WaitingState.CANCELLED);
+    waitingRepository.save(waiting);
   }
 
 

@@ -2,19 +2,29 @@ package com.tabletopia.realtimeservice.domain.waiting.controller;
 
 import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingEvent;
 import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingRequest;
+import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
+import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.realtimeservice.domain.waiting.repository.WaitingRepository;
 import com.tabletopia.realtimeservice.domain.waiting.service.WaitingService;
+import jakarta.ws.rs.Path;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -124,12 +134,32 @@ public class WaitingController {
 
 
   //웨이팅 리스트 조회
-  @GetMapping("/api/waitings")
+  @GetMapping("/api/waitings/{restaurantId}")
   @ResponseBody
-  public ResponseEntity<List<Waiting>> getList(@RequestParam Long restaurantId) {
-    List<Waiting> waitingList = waitingService.getWaitingList(restaurantId);
+  public ResponseEntity<Page<WaitingResponse>> getList(@PathVariable Long restaurantId,
+      @RequestParam String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+    // String을 Enum으로 변환
+    WaitingState waitingState = WaitingState.valueOf(status);
+
+    Page<WaitingResponse> waitingList = waitingService.getWaitingList(restaurantId, waitingState, pageable);
 
     return  ResponseEntity.ok(waitingList);
+  }
+
+
+  //웨이팅 취소
+  @PutMapping("/api/waitings/{id}/cancel")
+  @ResponseBody
+  public ResponseEntity<String>cancelWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+
+    waitingService.cancelWaiting(id, restaurantId);
+
+    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
   }
 
 }
