@@ -1,11 +1,11 @@
-package com.tabletopia.restaurantservice.domain.service;
+package com.tabletopia.restaurantservice.domain.restaurantMenu.service;
 
-import com.tabletopia.restaurantservice.domain.dto.RestaurantMenuRequest;
-import com.tabletopia.restaurantservice.domain.dto.RestaurantMenuResponse;
-import com.tabletopia.restaurantservice.domain.entity.RestaurantMenu;
-import com.tabletopia.restaurantservice.domain.entity.Restaurant;
-import com.tabletopia.restaurantservice.domain.repository.RestaurantMenuRepository;
-import com.tabletopia.restaurantservice.domain.repository.RestaurantRepository;
+import com.tabletopia.restaurantservice.domain.restaurantMenu.dto.RestaurantMenuRequest;
+import com.tabletopia.restaurantservice.domain.restaurantMenu.dto.RestaurantMenuResponse;
+import com.tabletopia.restaurantservice.domain.restaurantMenu.entity.RestaurantMenu;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurantMenu.repository.RestaurantMenuRepository;
+import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
 import com.tabletopia.restaurantservice.util.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -88,6 +88,47 @@ public class RestaurantMenuService {
         .category(saved.getCategory())
         .imageFilename(saved.getImageFilename())
         .isSoldout(saved.isSoldout())
+        .build();
+  }
+
+  /**
+   * 메뉴 수정
+   * @param restaurantId 매장 ID
+   * @param menuId 메뉴 ID
+   * @param dto 요청 DTO (FormData 기반)
+   * @return 수정된 메뉴 응답 DTO
+   */
+  public RestaurantMenuResponse updateMenu(Long restaurantId, Long menuId, RestaurantMenuRequest dto) {
+    // 수정할 메뉴 찾기
+    RestaurantMenu menu = menuRepository.findById(menuId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 메뉴를 찾을 수 없습니다. ID=" + menuId));
+
+    // 값 수정
+    menu.setName(dto.getName());
+    menu.setPrice(dto.getPrice());
+    menu.setDescription(dto.getDescription());
+    menu.setCategory(dto.getCategory());
+    menu.setSoldout(dto.isSoldout());
+
+    // 이미지 새로 등록 시 갱신
+    if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+      String savedName = fileStorageService.save(dto.getImage());
+      menu.setImageFilename(savedName);
+    }
+
+    // DB 반영
+    RestaurantMenu updated = menuRepository.save(menu);
+
+    // 응답 DTO 생성
+    return RestaurantMenuResponse.builder()
+        .id(updated.getId())
+        .restaurantId(restaurantId)
+        .name(updated.getName())
+        .price(updated.getPrice())
+        .description(updated.getDescription())
+        .category(updated.getCategory())
+        .imageFilename(updated.getImageFilename())
+        .isSoldout(updated.isSoldout())
         .build();
   }
 

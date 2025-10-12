@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { createMenu } from "../../api/MenuApi";
+import { useEffect, useState } from "react";
+import { createMenu, updateMenu } from "../../api/MenuApi";
 
-export default function AddMenuModal({ restaurantId, onSuccess }) {
+export default function AddMenuModal({ restaurantId, onSuccess, editTarget }) {
   const [menuData, setMenuData] = useState({
     name: "",
     description: "",
@@ -11,6 +11,25 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
     image: null,
     imagePreview: "",
   });
+
+  // 수정 모드일 경우 기존 데이터 채우기
+  useEffect(() => {
+    if (editTarget) {
+      setMenuData({
+        name: editTarget.name || "",
+        description: editTarget.description || "",
+        price: editTarget.price || "",
+        category: editTarget.category || "",
+        isSoldout: editTarget.isSoldout || false,
+        image: null,
+        imagePreview: editTarget.imageFilename
+          ? `http://localhost:10022/uploads/menus/${editTarget.imageFilename}`
+          : "",
+      });
+    } else {
+      resetForm();
+    }
+  }, [editTarget]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,21 +55,43 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
     formData.append("description", menuData.description);
     formData.append("price", Number(menuData.price));
     formData.append("category", menuData.category);
-    // ✅ boolean은 문자열로 변환해야 Spring이 잘 받음
-    formData.append("isSoldout", menuData.isSoldout ? "true" : "false");
+    // ✅ boolean 그대로 append
+    formData.append("isSoldout", menuData.isSoldout);
     if (menuData.image) {
       formData.append("image", menuData.image);
     }
 
     try {
-      await createMenu(restaurantId, formData);
-      alert("✅ 메뉴가 등록되었습니다!");
-      onSuccess?.();
+      if (editTarget) {
+        await updateMenu(restaurantId, editTarget.id, formData);
+        alert("메뉴가 수정되었습니다!");
+      } else {
+        await createMenu(restaurantId, formData);
+        alert("새 메뉴가 등록되었습니다!");
+      }
+
+      // 모달 닫기
       document.getElementById("addMenuModalClose").click();
+      onSuccess?.();
+      resetForm();
     } catch (err) {
-      console.error("❌ 메뉴 등록 실패:", err);
-      alert("등록 중 오류가 발생했습니다.");
+      console.error("메뉴 저장 실패:", err);
+      alert("저장 중 오류가 발생했습니다.");
     }
+  };
+
+  const resetForm = () => {
+    setMenuData({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      isSoldout: false,
+      image: null,
+      imagePreview: "",
+    });
+    const fileInput = document.getElementById("menuImageInput");
+    if (fileInput) fileInput.value = "";
   };
 
   return (
@@ -65,7 +106,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title" id="addMenuModalLabel">
-              메뉴 추가
+              {editTarget ? "메뉴 수정" : "메뉴 추가"}
             </h5>
             <button
               type="button"
@@ -78,6 +119,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
 
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="modal-body row">
+              {/* 왼쪽 - 이미지 미리보기 */}
               <div className="col-md-5 d-flex flex-column align-items-center">
                 <div className="border rounded p-2 w-100 text-center">
                   {menuData.imagePreview ? (
@@ -96,6 +138,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
                   )}
                 </div>
                 <input
+                  id="menuImageInput"
                   type="file"
                   accept="image/*"
                   className="form-control mt-3"
@@ -103,6 +146,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
                 />
               </div>
 
+              {/* 오른쪽 - 입력폼 */}
               <div className="col-md-7">
                 <div className="mb-3">
                   <label className="form-label">메뉴 이름</label>
@@ -171,6 +215,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
               </div>
             </div>
 
+            {/* 하단 버튼 */}
             <div className="modal-footer">
               <button
                 type="button"
@@ -180,7 +225,7 @@ export default function AddMenuModal({ restaurantId, onSuccess }) {
                 닫기
               </button>
               <button type="submit" className="btn btn-primary">
-                추가
+                {editTarget ? "수정 완료" : "추가"}
               </button>
             </div>
           </form>

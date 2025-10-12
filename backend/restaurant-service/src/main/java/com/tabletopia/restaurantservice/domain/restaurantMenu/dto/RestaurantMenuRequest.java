@@ -1,4 +1,4 @@
-package com.tabletopia.restaurantservice.domain.dto;
+package com.tabletopia.restaurantservice.domain.restaurantMenu.dto;
 
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,4 +33,12 @@ public class RestaurantMenuRequest {
 
   /** 업로드 이미지 (FormData 전송용) */
   private MultipartFile image;
+
+  public void setIsSoldout(Object value) {
+    if (value instanceof Boolean) {
+      this.isSoldout = (Boolean) value;
+    } else if (value instanceof String) {
+      this.isSoldout = Boolean.parseBoolean((String) value);
+    }
+  }
 }
