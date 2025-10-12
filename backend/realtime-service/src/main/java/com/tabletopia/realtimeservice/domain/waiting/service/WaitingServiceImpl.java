@@ -4,6 +4,7 @@ import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
 import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.realtimeservice.domain.waiting.repository.WaitingRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -45,16 +46,20 @@ public class WaitingServiceImpl implements WaitingService{
   @Override
   public Page<WaitingResponse> getWaitingList(Long restaurantId, WaitingState status,  Pageable pageable) {
 
-    Page<Waiting> waitingPage = waitingRepository.findByRestaurantIdAndWaitingState(
-        restaurantId, status, pageable);
+    // 오늘 0시 계산
+    LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay();
 
+    Page<Waiting> waitingPage = waitingRepository.findByRestaurantIdAndWaitingStateAndCreatedAtAfter(
+        restaurantId, status, todayStart, pageable);
     // Entity를 DTO로 변환
     return waitingPage.map(waiting -> modelMapper.map(waiting, WaitingResponse.class));
   }
 
   @Override
   public Integer getMaxWaitingNumber(Long restaurantId) {
-    return waitingRepository.findMaxWaitingNumberByRestaurantId(restaurantId);
+    // 오늘 날짜 기준으로 최대 웨이팅 번호 조회
+    return waitingRepository.findMaxWaitingNumberByRestaurantIdToday(restaurantId);
+
   }
 
   @Override
