@@ -79,12 +79,12 @@ export default function MenuManagementTab({ selectedRestaurant }) {
       className="tab-pane fade"
       id="menu-management"
       style={{
-        height: "100%",
+        minHeight: "calc(100vh - 150px)",
         background: "#f8f9fa",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        overflow: "hidden",
+        display: "block",
+        overflowY: "auto",
+        boxSizing: "border-box",
+        padding: "20px"
       }}
     >
       {/* 헤더 */}
