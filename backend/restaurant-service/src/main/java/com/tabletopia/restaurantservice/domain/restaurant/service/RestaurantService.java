@@ -1,7 +1,7 @@
-package com.tabletopia.restaurantservice.domain.service;
+package com.tabletopia.restaurantservice.domain.restaurant.service;
 
-import com.tabletopia.restaurantservice.domain.entity.Restaurant;
-import com.tabletopia.restaurantservice.domain.repository.RestaurantRepository;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

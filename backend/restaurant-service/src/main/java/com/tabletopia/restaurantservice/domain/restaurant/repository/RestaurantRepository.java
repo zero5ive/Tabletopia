@@ -1,6 +1,6 @@
-package com.tabletopia.restaurantservice.domain.repository;
+package com.tabletopia.restaurantservice.domain.restaurant.repository;
 
-import com.tabletopia.restaurantservice.domain.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

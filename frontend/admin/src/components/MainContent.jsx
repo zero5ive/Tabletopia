@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import './MainContent.css';
 import './Waiting.css';
 
-// Tabs import
 import DashboardTab from './tabs/DashboardTab';
 import RestaurantInfoTab from './tabs/RestaurantInfoTab';
 import RestaurantListTab from './tabs/RestaurantListTab';
@@ -14,43 +13,40 @@ import ReviewsTab from './tabs/ReviewsTab';
 import WaitingTab from './tabs/WaitingTab';
 
 export default function MainContent() {
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // ✅ 기존 클릭 이벤트 (직접 클릭 시에도 초기화)
+  // 매장 등록 탭을 클릭했을 때만 초기화
   const handleTabClick = (e) => {
     const href = e.target.getAttribute("href");
-    if (href === "#restaurant-info") {
+    if (href === "#restaurant-info" && !isEditing) {
       setSelectedRestaurant(null);
     }
   };
 
-  // ✅ 추가: Bootstrap 탭 전환 감지 (Tab.show()로 전환될 때도 초기화되게)
+  // 부트스트랩 탭 전환 이벤트 감지
   useEffect(() => {
-    const tabElements = document.querySelectorAll('a[data-bs-toggle="tab"]');
-
     const handleShown = (event) => {
-      const target = event.target.getAttribute("href");
-      if (target === "#restaurant-info") {
-        setSelectedRestaurant(null); // 탭 전환 시에도 선택 초기화
+      const href = event.target.getAttribute("href");
+      if (href === "#restaurant-info") {
+        if (!isEditing) {
+          setSelectedRestaurant(null);
+        }
+        setIsEditing(false);
       }
     };
 
-    tabElements.forEach((tab) =>
-      tab.addEventListener("shown.bs.tab", handleShown)
-    );
+    const tabs = document.querySelectorAll('a[data-bs-toggle="tab"]');
+    tabs.forEach((tab) => tab.addEventListener("shown.bs.tab", handleShown));
 
     return () => {
-      tabElements.forEach((tab) =>
-        tab.removeEventListener("shown.bs.tab", handleShown)
-      );
+      tabs.forEach((tab) => tab.removeEventListener("shown.bs.tab", handleShown));
     };
-  }, []);
+  }, [isEditing]);
 
   return (
     <div className="col-md-9 col-lg-10">
       <div className="main-content" onClick={handleTabClick}>
-        {/* ✅ Header Section */}
         <div className="header-section">
           <div className="container-fluid">
             <div className="d-flex justify-content-between align-items-center">
@@ -59,7 +55,6 @@ export default function MainContent() {
                 <p className="text-muted mb-0">정미스시 매장 정보를 관리하세요</p>
               </div>
 
-              {/* ✅ 현재 선택된 매장 표시 */}
               {selectedRestaurant ? (
                 <div className="selected-restaurant-badge">
                   <i className="fas fa-store me-2 text-primary"></i>
@@ -75,19 +70,20 @@ export default function MainContent() {
           </div>
         </div>
 
-        {/* ✅ 탭별 내용 */}
         <div className="container-fluid">
           <div className="tab-content">
             <DashboardTab />
             <RestaurantInfoTab
               selectedRestaurant={selectedRestaurant}
               clearSelection={() => setSelectedRestaurant(null)}
-              onSaved={() => setActiveTab("restaurant-list")}
             />
             <RestaurantListTab
-              onEdit={setSelectedRestaurant}
+              onEdit={(restaurant) => {
+                setSelectedRestaurant(restaurant);
+                setIsEditing(true);
+              }}
               onSelectRestaurant={setSelectedRestaurant}
-              onChangeTab={setActiveTab}
+              selectedRestaurant={selectedRestaurant}
             />
             <MenuManagementTab selectedRestaurant={selectedRestaurant} />
             <OperatingHoursTab />

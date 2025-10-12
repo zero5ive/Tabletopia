@@ -1,4 +1,4 @@
-export default function MenuItemCard({ title, desc, price, status, image, onDelete }) {
+export default function MenuItemCard({ title, desc, price, status, image, onEdit, onDelete }) {
   return (
     <div
       className="card text-center shadow-sm"
@@ -35,7 +35,12 @@ export default function MenuItemCard({ title, desc, price, status, image, onDele
         </div>
 
         <div className="mt-2">
-          <button className="btn btn-sm btn-outline-primary me-2">수정</button>
+          <button
+            className="btn btn-sm btn-outline-primary me-2"
+            onClick={onEdit}
+          >
+            수정
+          </button>
           <button
             className="btn btn-sm btn-outline-danger"
             onClick={onDelete}

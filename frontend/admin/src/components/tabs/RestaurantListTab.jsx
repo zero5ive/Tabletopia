@@ -11,7 +11,7 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
     const handler = (e) => {
       const href = e.target.getAttribute("href");
       if (href === "#restaurant-list") {
-        setSelectedId(null); // 탭 다시 보여질 때 초기화
+        setSelectedId(null);
       }
     };
     document.addEventListener("shown.bs.tab", handler);
@@ -23,7 +23,7 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
       const res = await getAllRestaurants();
       setRestaurants(res.data);
     } catch (error) {
-      console.error("❌ 매장 목록 로딩 실패:", error);
+      console.error("매장 목록 로딩 실패:", error);
       alert("목록을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
@@ -51,19 +51,22 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
         alert("삭제 완료!");
         loadRestaurants();
       } catch (error) {
-        console.error("❌ 삭제 오류:", error);
+        console.error("삭제 오류:", error);
         alert("삭제 중 문제가 발생했습니다.");
       }
     }
   };
 
+  // ✨ 수정 버튼 클릭 시 — 렌더 반영 후 탭 전환되도록 setTimeout 사용
   const handleEdit = (restaurant) => {
     onEdit(restaurant);
-    const tabTrigger = document.querySelector('a[href="#restaurant-info"]');
-    if (tabTrigger) {
-      const tab = new Tab(tabTrigger);
-      tab.show();
-    }
+    setTimeout(() => {
+      const tabTrigger = document.querySelector('a[href="#restaurant-info"]');
+      if (tabTrigger) {
+        const tab = new Tab(tabTrigger);
+        tab.show();
+      }
+    }, 0);
   };
 
   const handleSelect = (restaurant) => {
@@ -71,7 +74,7 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
     onSelectRestaurant(restaurant);
   };
 
-  if (loading) return <p className="text-center mt-4">⏳ 불러오는 중...</p>;
+  if (loading) return <p className="text-center mt-4">불러오는 중...</p>;
 
   return (
     <div className="tab-pane fade" id="restaurant-list">
@@ -118,8 +121,9 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                       <td>{r.description}</td>
                       <td>
                         <button
-                          className={`btn btn-sm me-2 ${selectedId === r.id ? "btn-success" : "btn-secondary"
-                            }`}
+                          className={`btn btn-sm me-2 ${
+                            selectedId === r.id ? "btn-success" : "btn-secondary"
+                          }`}
                           onClick={() => handleSelect(r)}
                         >
                           {selectedId === r.id ? "선택됨" : "선택"}

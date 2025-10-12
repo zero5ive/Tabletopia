@@ -1,5 +1,6 @@
-package com.tabletopia.restaurantservice.domain.dto;
+package com.tabletopia.restaurantservice.domain.restaurantMenu.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 /**
@@ -23,5 +24,7 @@ public class RestaurantMenuResponse {
   private String description;
   private String category;
   private String imageFilename;
+  @JsonProperty("isSoldout")
   private boolean isSoldout;
+
 }

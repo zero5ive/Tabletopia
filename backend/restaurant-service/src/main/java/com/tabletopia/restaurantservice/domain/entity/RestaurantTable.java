@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.entity;
 
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
 
