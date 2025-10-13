@@ -1,15 +1,20 @@
-package com.tabletopia.restaurantservice.domain.entity;
+package com.tabletopia.restaurantservice.domain.restaurantcaCategory.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,6 +53,12 @@ public class RestaurantCategory {
 
   @Column(nullable = false)
   private LocalDateTime updatedAt;
+
+  /** 이 카테고리에 속한 레스토랑 목록 */
+  @OneToMany(mappedBy = "restaurantCategory", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurantCategory")
+  @Builder.Default
+  private List<Restaurant> restaurants = new ArrayList<>();
 
   /**
    * 엔티티 최초 저장 시 자동 시간 세팅
