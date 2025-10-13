@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../hooks/useWebSocket';
-
-// 소켓 관련 코드
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
-
 import styles from './SelectTable.module.css';
 import axios from 'axios';
 
 const TableSelection = () => {
+  const navigate = useNavigate();
+
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoadingTableStatus, setIsLoadingTableStatus] = useState(false);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(null);
 
@@ -23,11 +21,19 @@ const TableSelection = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapRef = useRef(null);
 
+
+  // ✅ 컴포넌트 마운트 상태 추적
+  const isMountedRef = useRef(true);
+
+  // 테이블 상태 조회 완료 여부 체크
+  const hasLoadedInitialStatus = useRef(false);
+
   const reservationStep1 = JSON.parse(localStorage.getItem('reservationStep1'));
   const reservationPeople = reservationStep1?.peopleCount || 1;
   const maxSeats = 1;
   const restaurantId = reservationStep1?.restaurantId || 1;
-  const time = reservationStep1.time;
+
+  const navigateRef = useRef(navigate);
 
   if (!reservationStep1) {
     alert('예약 정보가 없습니다. 처음부터 다시 시작해주세요.');
@@ -35,74 +41,151 @@ const TableSelection = () => {
     return null;
   }
 
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
   /**
    * 웹소켓 테이블 상태 업데이트 핸들러
+   * @author 김예진
+   * @since 2025-10-08
    */
-  const handleTableStatusUpdate = useCallback((data) => {
-    console.log('테이블 업데이트: ', data);
 
-    // 데이터가 배열로 올 경우 전체 테이블 상태 업데이트
-    if (Array.isArray(data)) {
+  const handleTableStatusUpdate = useCallback((data, currentSessionId) => {
+    if (!isMountedRef.current) return;
+     // ✅ 세션 ID가 없으면 처리 중단
+  if (!currentSessionId) {
+    console.log('⏳ 세션 ID 대기 중... (메시지 무시)');
+    return;
+  }
+
+    console.log('테이블 상태 업데이트 수신:', data);
+
+    // 1. 여러 테이블 상태를 한꺼번에 갱신하는 경우
+    if (data.success && Array.isArray(data.tables)) {
       setTableData(prevTables => {
-        prevTables.map(table => {
-          const updatedTable = data.find(d => d.id === `T${table.originalId}`);
-          if (updatedTable) {
+        return prevTables.map(table => {
+          const updated = data.tables.find(t => t.tableId === table.originalId);
+          if (updated) {
             return {
               ...table,
-              occupied: updatedTable.status !== 'AVAILABLE',
-              selectedBy: updatedTable.sessionId,
-              selectionStatus: updatedTable.status,
-              selectedAt: updatedTable.selectedAt
+              status: updated.status,
+              occupied: updated.status !== 'AVAILABLE',
+              selectedBy: updated.selectedBy,
+              selectedAt: updated.selectedAt,
+              expiryTime: updated.expiryTime
+            };
+          }
+          return table;
+        });
+      });
+      setIsLoadingTableStatus(false);
+      return;
+    }
+
+    // 2. 단일 테이블 갱신
+    if (data.tableId) {
+      setTableData(prevTables =>
+        prevTables.map(table => {
+          if (table.originalId === data.tableId) {
+            const statusObj = data.tableStatus || {};
+            return {
+              ...table,
+              status: statusObj.status || 'AVAILABLE',
+              occupied: statusObj.status !== 'AVAILABLE',
+              selectedBy: statusObj.selectedBy,
+              selectedAt: statusObj.selectedAt,
+              expiryTime: statusObj.expiryTime
             };
           }
           return table;
         })
-      });
-    } else {
-      // 데이터가 객체로 올 경우 개별 테이블 상태 업데이트
-      if (data.success) {
-        const tableId = data.tableId;
-        const selectionInfo = data.selectionInfo;
+      );
 
-        setTableData(prevTables =>
-          prevTables.map(table =>
-            `T${table.originalId}` === tableId
-              ? {
-                ...table,
-                occupied: selectionInfo ? selectionInfo.status !== 'AVAILABLE' : false,
-                selectedBy: selectionInfo?.sessionId,
-                selectionStatus: selectionInfo?.status || 'AVAILABLE',
-                selectedAt: selectionInfo?.selectedAt
-              }
-              : table
-          )
-        );
 
-        // 성공/실패 메시지 표시
-        setShowAlert({
-          type: data.success ? 'success' : 'error',
-          message: data.message
+      // 3. 선점 성공 처리
+      if (data.success === true) {
+        const activeSelectionStr = sessionStorage.getItem('activeTableSelection');
+        if (!activeSelectionStr) {
+          console.log('⚠️ activeTableSelection 없음');
+          return;
+        }
+
+        const activeSelection = JSON.parse(activeSelectionStr);
+        const tableStatus = data.tableStatus || {};
+
+        // ✅ 세션 ID 비교 - 현재 사용자가 선점자인지 확인
+        const isMine = tableStatus.selectedBy === currentSessionId;
+
+        console.log('🔐 세션 검증:', {
+          내세션: currentSessionId,
+          선점자: tableStatus.selectedBy,
+          일치여부: isMine,
+          테이블: data.tableId
         });
-      } else {
-        // 실패 메시지 표시
-        setShowAlert({ type: 'error', message: data.message });
 
-        // 선택 실패 시 로컬 선택 상태 초기화
-        setSelectedSeats([]);
+        if (isMine) {
+          // ✅ 내가 선점한 경우만 다음 단계로 이동
+          console.log('✅ 선점 성공! 다음 단계로 이동');
+
+          activeSelection.isConfirmed = true;
+          sessionStorage.setItem('activeTableSelection', JSON.stringify(activeSelection));
+
+          const step1 = JSON.parse(localStorage.getItem('reservationStep1'));
+          const finalData = {
+            ...step1,
+            restaurantTableNameSnapshot: activeSelection.tableName,
+            restaurantTableId: activeSelection.tableId,
+            price: step1.peopleCount * 2000
+          };
+          localStorage.setItem('finalReservationData', JSON.stringify(finalData));
+
+          navigateRef.current('/reservations/confirm-info');
+        } else {
+          // ❌ 다른 사용자가 먼저 선점한 경우
+          console.log('❌ 다른 사용자가 먼저 선점함');
+
+          setShowAlert({
+            type: 'error',
+            message: `해당 테이블은 이미 다른 사용자가 선택했습니다.`
+          });
+          setSelectedSeats([]);
+          sessionStorage.removeItem('activeTableSelection');
+        }
       }
     }
-  }, []); // 의존성 배열 추가
+  }, []); // 의존성 배열 비움
 
-  // 웹소켓 연결
+
+
   const {
     isConnected,
     connectionError,
+    mySessionId,
+    getTableStatus,
     selectTable,
-    releaseTable,
-    startPayment
+    cancelTable,
   } = useWebSocket(restaurantId, handleTableStatusUpdate);
 
-  // Alert 자동 숨김 효과
+  
+// ✅ 개발용 - 세션 ID를 window에 노출
+useEffect(() => {
+  if (mySessionId) {
+    window.__MY_SESSION_ID__ = mySessionId;
+    console.log('🔑 내 세션 ID:', mySessionId);
+  }
+}, [mySessionId]);
+
+  // 컴포넌트 마운트/언마운트 추적
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      console.log('컴포넌트 언마운트');
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Alert 자동 숨김
   useEffect(() => {
     if (showAlert) {
       const timer = setTimeout(() => setShowAlert(null), 3000);
@@ -110,229 +193,267 @@ const TableSelection = () => {
     }
   }, [showAlert]);
 
-
-  /**
-   * API에서 테이블 데이터 가져오기
-   */
-  const fetchTableData = async () => {
-  try {
-    setLoading(true);
-    console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
-
-    const response = await axios.get(`http://localhost:10022/restaurant/${restaurantId}/tables`);
-    const data = response.data;
-
-    console.log('API 응답:', data);
-
-    //  배열인지 확인하고 바로 사용
-    if (Array.isArray(data) && data.length > 0) {
-      const transformedTables = data.map((table, index) => ({
-        id: `T${table.id}`,
-        name: table.name,
-        minCapacity: table.minCapacity,
-        maxCapacity: table.maxCapacity,
-        occupied: Math.random() > 0.7, // TODO 여기 실제 예약 상태 반영
-        type: determineTableType(table),
-        xPosition: typeof table.xposition === 'number' && !isNaN(table.xposition)
-          ? table.xposition
-          : 100 + (index * 120),
-        yPosition: typeof table.yposition === 'number' && !isNaN(table.yposition)
-          ? table.yposition
-          : 100 + Math.floor(index / 3) * 100,
-        shape: table.shape,
-        originalId: table.id
-      }));
-
-      console.log('변환된 테이블 데이터:', transformedTables);
-      setTableData(transformedTables);
-      setError(null);
-      initializeMapView(transformedTables);
-    } else {
-      throw new Error('테이블 데이터가 없습니다.');
-    }
-  } catch (err) {
-    console.error('테이블 데이터 조회 실패:', err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  /**
-   * 맵 초기화
-   */
-  const initializeMapView = (tables) => {
-    if (tables.length === 0)
+  // 웹소켓 연결 후 테이블 상태 조회 (한 번만 실행)
+  useEffect(() => {
+    // 이미 조회했거나, 연결되지 않았거나, 예약 정보가 없으면 스킵
+    if (hasLoadedInitialStatus.current || !isConnected || !reservationStep1) {
       return;
+    }
 
-    console.log('테이블 좌표:', tables.map(t => ({
-      name: t.name,
-      x: t.xPosition,
-      y: t.yPosition
-    })));
+    console.log('테이블 상태 최초 조회 시작');
+    setIsLoadingTableStatus(true);
 
-    // 좌표값 검증 및 기본값 설정
+    // 약간의 딜레이를 줘서 연결이 완전히 되도록 함
+    const timer = setTimeout(() => {
+      if (isMountedRef.current && isConnected) {
+        getTableStatus(reservationStep1.date, reservationStep1.time);
+        hasLoadedInitialStatus.current = true;
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isConnected]); // getTableStatus를 의존성에서 제거
+
+  /**
+   * 맵 초기 뷰 설정
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const initializeMapView = useCallback((tables) => {
+    if (tables.length === 0) return;
+
     const validTables = tables.filter(t =>
       typeof t.xPosition === 'number' && !isNaN(t.xPosition) &&
       typeof t.yPosition === 'number' && !isNaN(t.yPosition)
     );
 
     if (validTables.length === 0) {
-      console.warn('유효한 좌표를 가진 테이블이 없습니다.');
       setPosition({ x: 50, y: 50 });
       setScale(1);
       return;
     }
 
-    // 테이블들의 경계 계산
     const positions = validTables.map(t => ({ x: t.xPosition, y: t.yPosition }));
     const minX = Math.min(...positions.map(p => p.x));
     const maxX = Math.max(...positions.map(p => p.x));
     const minY = Math.min(...positions.map(p => p.y));
     const maxY = Math.max(...positions.map(p => p.y));
 
-    const tableWidth = Math.max(maxX - minX, 100); // 최소 100px
-    const tableHeight = Math.max(maxY - minY, 100); // 최소 100px
-    const mapWidth = 400; // CSS의 interactiveMap 너비
-    const mapHeight = 400; // CSS의 interactiveMap 높이
+    const tableWidth = Math.max(maxX - minX, 100);
+    const tableHeight = Math.max(maxY - minY, 100);
+    const mapWidth = 400;
+    const mapHeight = 400;
 
-    console.log('테이블 영역:', { minX, maxX, minY, maxY, tableWidth, tableHeight });
-
-    // NaN 방지를 위한 계산
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
-
-    // 맵 중앙에서 테이블 영역 중앙을 뺀 값
     const offsetX = (mapWidth / 2) - centerX;
     const offsetY = (mapHeight / 2) - centerY;
 
-    // 스케일 계산 시 0으로 나누기 방지
     const scaleX = tableWidth > 0 ? (mapWidth * 0.6) / tableWidth : 1;
     const scaleY = tableHeight > 0 ? (mapHeight * 0.6) / tableHeight : 1;
     const initialScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.3), 1.5);
 
-    console.log('초기 설정:', { offsetX, offsetY, initialScale, centerX, centerY });
-
-    // NaN 체크 후 설정
-    const finalX = isNaN(offsetX) ? 0 : offsetX;
-    const finalY = isNaN(offsetY) ? 0 : offsetY;
-    const finalScale = isNaN(initialScale) ? 1 : initialScale;
-
-    setPosition({ x: finalX, y: finalY });
-    setScale(finalScale);
-  };
+    setPosition({ x: isNaN(offsetX) ? 0 : offsetX, y: isNaN(offsetY) ? 0 : offsetY });
+    setScale(isNaN(initialScale) ? 1 : initialScale);
+  }, []);
 
   /**
    * 테이블 타입 결정
+   * @author 김예진
+   * @since 2025-10-08
    */
-  const determineTableType = (table) => {
-    const name = table.name.toLowerCase();
+  const determineTableType = useCallback((table) => {
+
+    const name = table.name;
     if (name.includes('카운터') || name.includes('counter')) return 'counter';
     if (name.includes('창가') || name.includes('window')) return 'window';
     if (name.includes('프라이빗') || name.includes('private')) return 'private';
     if (table.maxCapacity <= 2) return 'table2';
     if (table.maxCapacity <= 4) return 'table4';
     return 'table2';
-  };
+  }, []);
 
+  /**
+   * API에서 테이블 기본 정보 가져오기
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const fetchTableData = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
+
+      const response = await axios.get(`http://localhost:10022/restaurant/${restaurantId}/tables`);
+      const data = response.data;
+
+      if (Array.isArray(data) && data.length > 0) {
+        const transformedTables = data.map((table, index) => ({
+          id: `T${table.id}`,
+          name: table.name,
+          minCapacity: table.minCapacity,
+          maxCapacity: table.maxCapacity,
+          status: null,
+          occupied: false,
+          type: determineTableType(table),
+          xPosition: typeof table.xposition === 'number' && !isNaN(table.xposition)
+            ? table.xposition
+            : 100 + (index * 120),
+          yPosition: typeof table.yposition === 'number' && !isNaN(table.yposition)
+            ? table.yposition
+            : 100 + Math.floor(index / 3) * 100,
+          shape: table.shape,
+          originalId: table.id
+        }));
+
+        console.log('변환된 테이블 데이터:', transformedTables);
+        setTableData(transformedTables);
+        setError(null);
+        initializeMapView(transformedTables);
+      } else {
+        throw new Error('테이블 데이터가 없습니다.');
+      }
+    } catch (err) {
+      console.error('테이블 데이터 조회 실패:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [restaurantId, determineTableType, initializeMapView]);
+
+  // 컴포넌트 마운트 시 1회만 실행
   useEffect(() => {
     fetchTableData();
-  }, [restaurantId]);
+  }, [fetchTableData]);
 
   // 줌 컨트롤
-  const handleZoomIn = () => {
-    setScale(prev => Math.min(prev * 1.2, 3));
-  };
-
-  const handleZoomOut = () => {
-    setScale(prev => Math.max(prev / 1.2, 0.5));
-  };
-
+  const handleZoomIn = () => setScale(prev => Math.min(prev * 1.2, 3));
+  const handleZoomOut = () => setScale(prev => Math.max(prev / 1.2, 0.5));
   const handleZoomReset = () => {
     setScale(1);
-    if (tableData.length > 0) {
-      initializeMapView(tableData);
-    } else {
-      setPosition({ x: 0, y: 0 });
-    }
+    tableData.length > 0 ? initializeMapView(tableData) : setPosition({ x: 0, y: 0 });
   };
 
-  // 전체 맵을 테이블들이 잘 보이도록 맞추는 함수
-  const handleFitToView = () => {
-    if (tableData.length > 0) {
-      initializeMapView(tableData);
-    }
-  };
-
-  // 드래그 시작
+  // 드래그 핸들러
   const handleMouseDown = (e) => {
     setIsDragging(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
-  // 드래그 중
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
+    setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
 
-  // 드래그 종료
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
-  // 휠 줌
   const handleWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     setScale(prev => Math.max(0.5, Math.min(3, prev * delta)));
   };
 
-  // 테이블 클릭 처리
+  /**
+   * 테이블 클릭 처리
+   * @author 김예진
+   * @since 2025-10-08
+   */
   const handleTableClick = (table, e) => {
     e.stopPropagation();
 
-    if (!isTableAvailable(table)) {
-      if (reservationPeople < table.minCapacity) {
-        alert(`${table.name}은(는) 최소 ${table.minCapacity}명부터 이용 가능합니다.`);
+    if (!isTableSelectable(table)) {
+      if (table.status === 'RESERVED') {
+        setShowAlert({
+          type: 'error',
+          message: `${table.name}은(는) 이미 예약된 테이블입니다.`
+        });
+      } else if (table.status === 'SELECTED') {
+        setShowAlert({
+          type: 'error',
+          message: `${table.name}은(는) 다른 사용자가 선택 중입니다.`
+        });
+      } else if (reservationPeople < table.minCapacity) {
+        setShowAlert({
+          type: 'error',
+          message: `${table.name}은(는) 최소 ${table.minCapacity}명부터 이용 가능합니다.`
+        });
       } else if (reservationPeople > table.maxCapacity) {
-        alert(`${table.name}은(는) 최대 ${table.maxCapacity}명까지 이용 가능합니다.`);
+        setShowAlert({
+          type: 'error',
+          message: `${table.name}은(는) 최대 ${table.maxCapacity}명까지 이용 가능합니다.`
+        });
       }
       return;
     }
 
     const isSelected = selectedSeats.some(seat => seat.id === table.id);
-
     if (isSelected) {
       setSelectedSeats([]);
-    } else {
-      setSelectedSeats([table]);
+      sessionStorage.removeItem('activeTableSelection');
+      return;
+    }
+
+    setSelectedSeats([table]);
+
+    const reservationData = JSON.parse(localStorage.getItem('reservationStep1'));
+    sessionStorage.setItem('activeTableSelection', JSON.stringify({
+      restaurantId: restaurantId,
+      tableId: table.originalId,
+      tableName: table.name,
+      date: reservationData.date,
+      time: reservationData.time,
+      isConfirmed: false
+    }));
+  };
+
+  /**
+   * 테이블 선택 가능 여부 판단
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const isTableSelectable = (table) => {
+    if (table.status === null) return false;
+    if (table.status === 'RESERVED') return false;
+    if (table.status === 'SELECTED') return false;
+    if (reservationPeople < table.minCapacity || reservationPeople > table.maxCapacity) {
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * 테이블 상태에 따른 색상 결정
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const getTableColor = (table) => {
+    const isSelected = selectedSeats.some(seat => seat.id === table.id);
+
+    if (isSelected) return '#4ecdc4';
+
+    if (table.status === null) {
+      return '#e0e0e0';
+    }
+
+    switch (table.status) {
+      case 'RESERVED':
+        return '#a0a0a0';
+      case 'SELECTED':
+        return '#ff6b6b';
+      case 'AVAILABLE':
+        if (reservationPeople < table.minCapacity || reservationPeople > table.maxCapacity) {
+          return '#ffa726';
+        }
+        return '#4CAF50';
+      default:
+        return '#e0e0e0';
     }
   };
 
-  const isTableAvailable = (table) => {
-    return !table.occupied &&
-      reservationPeople >= table.minCapacity &&
-      reservationPeople <= table.maxCapacity;
-  };
-
-  const getTableColor = (table) => {
-    const isSelected = selectedSeats.some(seat => seat.id === table.id);
-    const isAvailable = isTableAvailable(table);
-
-    if (table.occupied) return '#a0a0a0ff';
-    if (isSelected) return '#4ecdc4';
-    if (!isAvailable) return '#ffa726';
-    return '#4CAF50';
-  };
-
+  /**
+   * 테이블 크기 결정
+   * @author 김예진
+   * @since 2025-10-08
+   */
   const getTableSize = (table) => {
     if (table.maxCapacity <= 1) return { width: 40, height: 25 };
     if (table.maxCapacity <= 2) return { width: 50, height: 35 };
@@ -340,28 +461,56 @@ const TableSelection = () => {
     return { width: 80, height: 55 };
   };
 
-  // 테이블 확정
-  const handleConfirmSeats = () => {
-    if (selectedSeats.length === maxSeats) {
-      const tableInfo = selectedSeats[0];
-      const totalPrice = reservationPeople * 2000;
-
-      const finalReservationData = {
-        ...reservationStep1,
-        restaurantTableId: tableInfo.originalId,
-        restaurantTableNameSnapshot: tableInfo.name,
-        price: totalPrice
-      };
-
-      localStorage.setItem('finalReservationData', JSON.stringify(finalReservationData));
-      alert(`테이블이 확정되었습니다!\n\n선택한 테이블: ${tableInfo.name}\n수용인원: ${tableInfo.minCapacity}~${tableInfo.maxCapacity}명\n테이블 요금: ${totalPrice.toLocaleString()}원`);
-      window.location.href = '/reservations/confirm-info';
-    }
+  /**
+   * 테이블 상태 텍스트 가져오기
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const getTableStatusText = (table) => {
+    if (table.status === 'RESERVED') return ' (예약됨)';
+    if (table.status === 'SELECTED') return ' (선택중)';
+    if (reservationPeople < table.minCapacity) return ` (${table.minCapacity}명 이상)`;
+    if (reservationPeople > table.maxCapacity) return ` (${table.maxCapacity}명 이하)`;
+    return '';
   };
+
+  /**
+   * 테이블 확정 (다음 단계로 이동)
+   * @author 김예진
+   * @since 2025-10-08
+   */
+  const handleConfirmSeats = () => {
+    if (selectedSeats.length !== maxSeats) return;
+
+    // ⚠️ isSelectingRef.current = true; 로직 제거됨
+
+    const tableInfo = selectedSeats[0];
+
+    const selection = sessionStorage.getItem('activeTableSelection');
+    if (selection) {
+      const data = JSON.parse(selection);
+      data.isConfirmed = false;
+      sessionStorage.setItem('activeTableSelection', JSON.stringify(data));
+    }
+
+    // 테이블 선점 요청 (비동기)
+    selectTable(
+      tableInfo.originalId,
+      'customerName',
+      reservationStep1.date,
+      reservationStep1.time,
+      reservationPeople
+    );
+  };
+
+  // ------------------------
+  // ⚠️ 선점 취소 로직(sendCancelRequestSafe 및 관련 useEffect)이 모두 제거되었습니다.
+  // ------------------------
 
   const totalPrice = reservationPeople * 2000;
 
-  if (loading) {
+  // 로딩 중
+  if (loading || isLoadingTableStatus) {
     return (
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
@@ -372,6 +521,8 @@ const TableSelection = () => {
     );
   }
 
+
+  // 에러 발생
   if (error && tableData.length === 0) {
     return (
       <div className={styles.container}>
@@ -388,6 +539,20 @@ const TableSelection = () => {
 
   return (
     <div className={styles.container}>
+      {/* 알림 메시지 */}
+      {showAlert && (
+        <div className={`${styles.alert} ${styles[`alert${showAlert.type.charAt(0).toUpperCase() + showAlert.type.slice(1)}`]}`}>
+          {showAlert.message}
+        </div>
+      )}
+
+      {/* 웹소켓 연결 상태 표시 */}
+      {!isConnected && (
+        <div className={styles.connectionStatus}>
+          실시간 연결 중... {connectionError && `(${connectionError})`}
+        </div>
+      )}
+
       {/* 진행 단계 바 */}
       <div className={styles.progressBar}>
         <div className={styles.progressStep}>
@@ -418,22 +583,12 @@ const TableSelection = () => {
                 <span className={styles.zoomLevel}>{Math.round(scale * 100)}%</span>
                 <button onClick={handleZoomOut} className={styles.controlBtn}>🔍-</button>
               </div>
-
               <div className={styles.mapInfo}>
                 <span>총 {tableData.length}개 테이블 | 드래그하여 이동, 휠로 확대/축소</span>
               </div>
             </div>
 
-            {/* 디버그
-            {process.env.NODE_ENV === 'development' && (
-              <div className={styles.debugInfo}>
-                <small>
-                  디버그: Scale={scale.toFixed(2)}, Position=({position.x.toFixed(0)}, {position.y.toFixed(0)})
-                </small>
-              </div>
-            )} */}
-
-            {/* 범례 */}
+            {/* 범례 - 상태별로 업데이트 */}
             <div className={styles.legend}>
               <div className={styles.legendTitle}>좌석 안내</div>
               <div className={styles.legendItems}>
@@ -446,11 +601,15 @@ const TableSelection = () => {
                   <span>선택됨</span>
                 </div>
                 <div className={styles.legendItem}>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#ff6b6b' }}>⏱</div>
+                  <span>다른 사용자 선택중</span>
+                </div>
+                <div className={styles.legendItem}>
                   <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#ffa726' }}>△</div>
                   <span>인원수 불일치</span>
                 </div>
                 <div className={styles.legendItem}>
-                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#a0a0a0ff' }}>×</div>
+                  <div className={`${styles.legendIcon}`} style={{ backgroundColor: '#a0a0a0' }}>×</div>
                   <span>예약됨</span>
                 </div>
               </div>
@@ -478,7 +637,7 @@ const TableSelection = () => {
                 {tableData.map(table => {
                   const size = getTableSize(table);
                   const isSelected = selectedSeats.some(seat => seat.id === table.id);
-                  const isAvailable = isTableAvailable(table);
+                  const isSelectable = isTableSelectable(table);
 
                   return (
                     <div
@@ -493,7 +652,7 @@ const TableSelection = () => {
                         backgroundColor: getTableColor(table),
                         borderRadius: table.shape === 'CIRCLE' ? '50%' : '8px',
                         border: isSelected ? '3px solid #2196F3' : '2px solid #fff',
-                        cursor: isAvailable ? 'pointer' : 'not-allowed',
+                        cursor: isSelectable ? 'pointer' : 'not-allowed',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -502,10 +661,11 @@ const TableSelection = () => {
                         color: 'white',
                         textShadow: '1px 1px 1px rgba(0,0,0,0.7)',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        opacity: isSelectable ? 1 : 0.6
                       }}
                       onClick={(e) => handleTableClick(table, e)}
-                      title={`${table.name} (${table.minCapacity}-${table.maxCapacity}명) ${table.occupied ? '- 예약됨' : ''}`}
+                      title={`${table.name} (${table.minCapacity}-${table.maxCapacity}명)${getTableStatusText(table)}`}
                     >
                       {table.name.length > 8 ? `${table.name.substring(0, 6)}...` : table.name}
                     </div>
@@ -570,8 +730,8 @@ const TableSelection = () => {
 
             <button
               className={`${styles.confirmBtn} ${selectedSeats.length === maxSeats
-                  ? styles.confirmBtnActive
-                  : styles.confirmBtnDisabled
+                ? styles.confirmBtnActive
+                : styles.confirmBtnDisabled
                 }`}
               onClick={handleConfirmSeats}
               disabled={selectedSeats.length !== maxSeats}

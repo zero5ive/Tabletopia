@@ -32,20 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
   private final ReservationService reservationService;
 
-  /**
-   * 예약 등록
-   *
-   * @author 김예진
-   * @since 2025-09-24
-   */
-  @PostMapping("/reservation")
-  public void registerReservation(@RequestBody ReservationRequest request){
-    log.debug("예약 정보 - {}", request);
 
-    Long reservationId = reservationService.createReservation(request);
-
-    log.debug("예약 등록 id - {}", reservationId);
-  }
 
 
 

@@ -35,7 +35,7 @@
 
 .searchBox {
     width: 100%;
-    padding: 16px 24px;
+    padding: 12px 24px;
     border: 2px solid #e9ecef;
     border-radius: 50px;
     font-size: 16px;
@@ -50,18 +50,48 @@
     box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
 }
 
-.locationSelector {
-    background: white;
+.searchButton {
     border: 1px solid #dee2e6;
     padding: 12px 20px;
     border-radius: 8px;
     margin-right: 20px;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.locationSelector:hover {
+.searchButton:hover {
     background: #f8f9fa;
+}
+
+.searchButton:hover .searchIcon {
+    border-color: #ff6b35;
+}
+
+.searchButton:hover .searchIcon::after {
+    background: #ff6b35;
+}
+
+.searchIcon {
+    width: 16px;
+    height: 16px;
+    border: 2px solid darkgrey; /* 돋보기 원 */
+    border-radius: 50%;
+    position: relative;
+}
+
+.searchIcon::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 2px;
+    background: darkgrey; /* 손잡이 */
+    top: 12px;
+    left: 12px;
+    transform: rotate(45deg);
+    transform-origin: top left;
 }
 
 .userActions {
@@ -154,4 +184,17 @@
 .linkNoDeco{
     text-decoration: none;
     color: inherit;
+}
+
+.iconButton {
+    background: transparent;
+    border: none;
+    color: #495057;
+    font-size: 22px; /* Adjust icon size */
+    padding: 10px 12px; /* Adjust padding for a more square look */
+}
+
+.iconButton:hover {
+    background: transparent;
+    color: #ff6b35;
 }

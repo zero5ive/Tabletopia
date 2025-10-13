@@ -11,7 +11,7 @@ export default function Header({children}){
                 <div className={styles.headerContent}>
                     <Link to="/" className={styles.logo}>테이블토피아</Link>
                     <MainHeader/>
-                    {/* { <DetailHeader/>} */}
+                    {/* <DetailHeader/> */}
                 </div>                      
             </header>
         </>

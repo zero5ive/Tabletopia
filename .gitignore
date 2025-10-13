@@ -183,6 +183,8 @@ Thumbs.db
 .history/
 .vite/
 gemini.md
+CLAUDE.md
+summary*.md
 
 # =============================
 # AWS / 클라우드 관련

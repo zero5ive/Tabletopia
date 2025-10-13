@@ -68,6 +68,20 @@ public class ReservationService {
 
 
   /**
+   * 테이블이 이미 예약되어있는지 조회
+   */
+  public boolean isTableReserved(Long restaurantId, Long restaurantTableId, String reservationAt) {
+    return reservationRepository
+        .findReservationByRestaurantIdAndRestaurantTableIdAndReservationAt(
+            restaurantId, restaurantTableId, LocalDateTime.parse(reservationAt)
+        ) != null;
+  }
+
+
+
+
+
+  /**
    * 예약 전체 조회
    *
    * @author 김예진
@@ -89,7 +103,7 @@ public class ReservationService {
 
 
   /**
-   * 특정 시간대의 예약 목록 조회
+   * 레스토랑의 시간대의 예약 목록 조회
    *
    * @author 김예진
    * @since 2025-09-23

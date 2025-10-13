@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
+    "@types/sockjs-client": "^1.5.4",
     "concurrently": "^8.2.2"
   },
   "scripts": {
@@ -13,7 +14,10 @@
   "dependencies": {
     "@stomp/stompjs": "^7.2.0",
     "axios": "^1.12.2",
+    "bootstrap": "^5.3.8",
+    "jwt-decode": "^4.0.0",
     "react-router-dom": "^7.9.1",
-    "sockjs-client": "^1.6.1"
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3"
   }
 }

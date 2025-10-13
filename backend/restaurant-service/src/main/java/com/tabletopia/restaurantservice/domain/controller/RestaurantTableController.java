@@ -24,7 +24,7 @@ public class RestaurantTableController {
    * @param restaurantId 조회할 레스토랑의 고유 ID
    * @return List<RestaurantTableDTO> 레스토랑의 테이블 정보 목록
    * @throws IllegalArgumentException restaurantId가 null이거나 존재하지 않는 경우
-   * @author [작성자 이름]
+   * @author 김지민
    * @since 2025-09-26
    */
   @GetMapping
