@@ -193,7 +193,7 @@
   font-weight: 600;
 }
 
-.waiting-filterButton.전체.active {
+.waiting-filterButton.웨이팅.active {
   background: #333;
 }
 
@@ -472,6 +472,69 @@
   border-top: 4px solid #4CAF50;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.demo-section {
+    margin: 40px 0;
+    text-align: center;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pagination-btn {
+    border: none;
+    background: transparent;
+    color: #64748b;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.pagination-btn.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.pagination-btn.disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.pagination-btn.arrow {
+    padding: 8px;
+}
+
+.pagination-btn.arrow svg {
+    width: 20px;
+    height: 20px;
 }
 
 @keyframes spin {

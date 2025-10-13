@@ -1,5 +1,6 @@
-package com.tabletopia.restaurantservice.domain.entity;
+package com.tabletopia.restaurantservice.domain.restaurantMenu.entity;
 
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

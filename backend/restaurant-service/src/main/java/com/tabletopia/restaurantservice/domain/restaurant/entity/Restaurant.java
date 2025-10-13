@@ -1,6 +1,8 @@
-package com.tabletopia.restaurantservice.domain.entity;
+package com.tabletopia.restaurantservice.domain.restaurant.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tabletopia.restaurantservice.domain.entity.RestaurantAccount;
+import com.tabletopia.restaurantservice.domain.entity.RestaurantCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;

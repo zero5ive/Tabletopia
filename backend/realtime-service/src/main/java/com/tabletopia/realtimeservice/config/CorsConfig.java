@@ -1,4 +1,4 @@
-package com.tabletopia.realtimeservice.domain.waiting.config;
+package com.tabletopia.realtimeservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

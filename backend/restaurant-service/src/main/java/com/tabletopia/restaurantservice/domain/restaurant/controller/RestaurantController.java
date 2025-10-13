@@ -1,7 +1,7 @@
-package com.tabletopia.restaurantservice.domain.controller;
+package com.tabletopia.restaurantservice.domain.restaurant.controller;
 
-import com.tabletopia.restaurantservice.domain.entity.Restaurant;
-import com.tabletopia.restaurantservice.domain.service.RestaurantService;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

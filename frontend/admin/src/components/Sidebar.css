@@ -14,8 +14,3 @@
             background: #495057;
             color: white;
         }
-
-        /* Sidebar.css */
-        .sidebar a[href="#menu-management"] {
-            display: none !important;
-        }

@@ -64,4 +64,36 @@
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
     color: #333;
 }
+.tab-content {
+  display: block !important;
+  min-height: auto !important;
+}
 
+.tab-pane {
+  display: none !important;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.tab-pane.active.show {
+  display: block !important;
+  opacity: 1;
+}
+
+.selected-restaurant-badge {
+  background: #e9f5ff;
+  color: #0d6efd;
+  border: 1px solid #b6d8ff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.selected-restaurant-badge i {
+  color: #0d6efd;
+}
