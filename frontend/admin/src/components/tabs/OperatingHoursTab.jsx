@@ -127,7 +127,13 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
   if (!selectedRestaurant) {
     return (
       <div className="tab-pane fade" id="operating-hours">
-        <p className="text-center mt-3 text-muted">먼저 매장을 선택해주세요.</p>
+        <div className="card text-center mt-4 border-danger">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
+            <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">영업시간을 설정하려면 먼저 매장을 선택해주세요.</p>
+          </div>
+        </div>
       </div>
     );
   }
