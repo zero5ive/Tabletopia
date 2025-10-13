@@ -10,6 +10,7 @@ import OperatingHoursTab from './tabs/OperatingHoursTab';
 import FacilitiesTab from './tabs/FacilitiesTab';
 import ImagesTab from './tabs/ImagesTab';
 import ReviewsTab from './tabs/ReviewsTab';
+import SpecialHoursTab from "./tabs/SpecialHoursTab";
 import WaitingTab from './tabs/WaitingTab';
 
 export default function MainContent() {
@@ -86,11 +87,12 @@ export default function MainContent() {
               selectedRestaurant={selectedRestaurant}
             />
             <MenuManagementTab selectedRestaurant={selectedRestaurant} />
-            <OperatingHoursTab />
-            <FacilitiesTab />
-            <ImagesTab />
-            <ReviewsTab />
-            <WaitingTab />
+            <OperatingHoursTab selectedRestaurant={selectedRestaurant} />
+            <SpecialHoursTab selectedRestaurant={selectedRestaurant} />
+            <FacilitiesTab selectedRestaurant={selectedRestaurant} />
+            <ImagesTab selectedRestaurant={selectedRestaurant} />
+            <ReviewsTab selectedRestaurant={selectedRestaurant} />
+            <WaitingTab selectedRestaurant={selectedRestaurant} />
           </div>
         </div>
       </div>

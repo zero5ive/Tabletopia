@@ -34,15 +34,11 @@ export default function MenuManagementTab({ selectedRestaurant }) {
     }
   };
 
-  // ✅ 수정 버튼 눌렀을 때 모달 띄우기
   const handleEdit = (menu) => {
     setEditTarget(menu);
-    console.log("🟡 수정버튼 클릭됨:", menu);
-
     setTimeout(() => {
-    const modalEl = document.getElementById("addMenuModal");
-    console.log("🟢 modalEl 확인:", modalEl);
-  }, 300);
+      const modalEl = document.getElementById("addMenuModal");
+    }, 300);
 
     // React DOM이 업데이트된 뒤 안전하게 모달 열기
     setTimeout(async () => {
@@ -154,34 +150,41 @@ export default function MenuManagementTab({ selectedRestaurant }) {
         )}
       </div>
 
-      {/* 페이지네이션 */}
-      <div className="d-flex justify-content-center align-items-center mt-3">
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-          className="btn btn-light btn-sm mx-1"
-        >
-          ‹
-        </button>
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`btn btn-sm mx-1 ${
-              currentPage === i + 1 ? "btn-primary" : "btn-outline-primary"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-        <button
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages}
-          className="btn btn-light btn-sm mx-1"
-        >
-          ›
-        </button>
-      </div>
+      {/* 페이지네이션 (‹ ›만 사용, 디자인 통일 버전) */}
+      <nav className="mt-3">
+        <ul className="pagination justify-content-center">
+          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
+              &lsaquo;
+            </button>
+          </li>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((page) => {
+              const groupStart = Math.floor((currentPage - 1) / 5) * 5 + 1;
+              const groupEnd = groupStart + 4;
+              return page >= groupStart && page <= groupEnd;
+            })
+            .map((page) => (
+              <li
+                key={page}
+                className={`page-item ${page === currentPage ? "active" : ""}`}
+              >
+                <button className="page-link" onClick={() => setCurrentPage(page)}>
+                  {page}
+                </button>
+              </li>
+            ))}
+
+          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
+              &rsaquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+
 
       {/* 모달 */}
       <AddMenuModal

@@ -1,0 +1,36 @@
+.operating-card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+}
+
+.card-header {
+  background: linear-gradient(90deg, #007bff, #339af0);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+}
+
+.table thead th {
+  background: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+.active-day {
+  background-color: #e9f5ff;
+}
+
+.holiday-row {
+  opacity: 0.6;
+}
+
+.holiday-row input,
+.holiday-row select {
+  background-color: #f1f3f1;
+}
