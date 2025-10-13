@@ -17,6 +17,7 @@
     "bootstrap": "^5.3.8",
     "jwt-decode": "^4.0.0",
     "react-router-dom": "^7.9.1",
+    "react-time-picker": "^8.0.2",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3"
   }

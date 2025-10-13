@@ -6,6 +6,8 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const handler = (e) => {
@@ -57,7 +59,6 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
     }
   };
 
-  // ✨ 수정 버튼 클릭 시 — 렌더 반영 후 탭 전환되도록 setTimeout 사용
   const handleEdit = (restaurant) => {
     onEdit(restaurant);
     setTimeout(() => {
@@ -72,6 +73,15 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
   const handleSelect = (restaurant) => {
     setSelectedId(restaurant.id);
     onSelectRestaurant(restaurant);
+  };
+
+  // 페이지 관련 계산
+  const totalPages = Math.ceil(restaurants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = restaurants.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   if (loading) return <p className="text-center mt-4">불러오는 중...</p>;
@@ -100,7 +110,7 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
               <table className="table table-striped text-center align-middle">
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>No</th>
                     <th>매장명</th>
                     <th>주소</th>
                     <th>전화번호</th>
@@ -109,21 +119,17 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                   </tr>
                 </thead>
                 <tbody>
-                  {restaurants.map((r) => (
-                    <tr
-                      key={r.id}
-                      className={selectedId === r.id ? "table-primary" : ""}
-                    >
-                      <td>{r.id}</td>
+                  {currentItems.map((r, index) => (
+                    <tr key={r.id} className={selectedId === r.id ? "table-primary" : ""}>
+                      <td>{startIndex + index + 1}</td>
                       <td>{r.name}</td>
                       <td>{r.address}</td>
                       <td>{r.phoneNumber}</td>
                       <td>{r.description}</td>
                       <td>
                         <button
-                          className={`btn btn-sm me-2 ${
-                            selectedId === r.id ? "btn-success" : "btn-secondary"
-                          }`}
+                          className={`btn btn-sm me-2 ${selectedId === r.id ? "btn-success" : "btn-secondary"
+                            }`}
                           onClick={() => handleSelect(r)}
                         >
                           {selectedId === r.id ? "선택됨" : "선택"}
@@ -147,6 +153,55 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                   ))}
                 </tbody>
               </table>
+
+              {/* 페이지네이션 */}
+              <nav>
+                <ul className="pagination justify-content-center">
+
+                  {/* 이전 버튼 */}
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                      &lt;
+                    </button>
+                  </li>
+
+                  {/* 현재 페이지 기준 5개씩 묶어서 표시 */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      const groupStart = Math.floor((currentPage - 1) / 5) * 5 + 1;
+                      const groupEnd = Math.min(groupStart + 4, totalPages);
+                      return page >= groupStart && page <= groupEnd;
+                    })
+                    .map((page) => (
+                      <li
+                        key={page}
+                        className={`page-item ${page === currentPage ? "active" : ""}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+
+                  {/* 다음 버튼 */}
+                  <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                      &gt;
+                    </button>
+                  </li>
+
+                </ul>
+              </nav>
+
             </>
           )}
         </div>
