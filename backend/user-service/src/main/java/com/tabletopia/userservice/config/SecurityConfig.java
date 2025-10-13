@@ -49,6 +49,8 @@ public class SecurityConfig {
                                 "/login",   //프론트 로그인 요청 받기
                                 "/api/user/register",   // 회원가입 API
                                 "/register",   // 회원가입 API 요청받기
+                                "/refresh", // 리프레시 토큰 재발급
+                                "/logout", // 로그아웃
                                 "/oauth2/**",           // OAuth2 인증 프로세스
                                 "/login/oauth2/**"      // OAuth2 인증 프로세스
                         ).permitAll()

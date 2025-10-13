@@ -103,8 +103,10 @@ const Login = () => {
             });
             
             const data = await response.json();
+            console.log(data);
             
             if (data.success && data.accessToken) {
+                console.log("로그인 성공점에 진입 합");
                 localStorage.setItem('accessToken', data.accessToken);
                 navigate('/');
             } else {
