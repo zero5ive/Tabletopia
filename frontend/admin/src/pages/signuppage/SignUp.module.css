@@ -1,20 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* * {
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-}
-
-html,
-body,
-#root {
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-} */
-
 .loginPage {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     background: #f7f9fc !important;
@@ -28,8 +13,10 @@ body,
     top: 0 !important;
     left: 0 !important;
     z-index: 1000 !important;
+    padding: 20px 0 !important;
 }
 
+/* 배경 애니메이션 */
 .bgAnimation {
     position: absolute !important;
     top: 0 !important;
@@ -43,19 +30,12 @@ body,
 }
 
 @keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
+/* 파티클 효과 */
 .particles {
     position: absolute !important;
     top: 0 !important;
@@ -72,30 +52,29 @@ body,
     height: 3px !important;
     background: rgba(25, 118, 210, 0.3) !important;
     border-radius: 50% !important;
+    animation: particleFloat 8s ease-in-out infinite !important;
 }
 
 @keyframes particleFloat {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: translateY(0) translateX(0) rotate(0deg);
         opacity: 0;
     }
-
     50% {
         transform: translateY(-120px) translateX(50px) rotate(180deg);
         opacity: 1;
     }
 }
 
-.loginContainer {
+/* 회원가입 컨테이너 */
+.signupContainer {
     background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(30px) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     border-radius: 24px !important;
-    padding: 48px 40px !important;
+    padding: 40px 36px !important;
     width: 100% !important;
-    max-width: 420px !important;
+    max-width: 480px !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
     position: relative !important;
     overflow: hidden !important;
@@ -108,14 +87,14 @@ body,
         opacity: 0;
         transform: translateY(30px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.loginContainer::before {
+/* 글로우 효과 */
+.signupContainer::before {
     content: '' !important;
     position: absolute !important;
     top: -2px !important;
@@ -129,43 +108,45 @@ body,
     transition: opacity 0.3s ease !important;
 }
 
-.loginContainer:hover::before {
+.signupContainer:hover::before {
     opacity: 0.1 !important;
 }
 
-.loginHeader {
+/* 헤더 */
+.signupHeader {
     text-align: center !important;
-    margin-bottom: 40px !important;
+    margin-bottom: 32px !important;
 }
 
-.loginTitle {
-    font-size: 32px !important;
+.signupTitle {
+    font-size: 30px !important;
     font-weight: 700 !important;
     background: linear-gradient(135deg, #1976d2, #42a5f5) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 6px !important;
     letter-spacing: -0.02em !important;
 }
 
-.loginSubtitle {
+.signupSubtitle {
     color: #546e7a !important;
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-weight: 400 !important;
 }
 
+/* 폼 그룹 */
 .formGroup {
-    margin-bottom: 24px !important;
+    margin-bottom: 20px !important;
     position: relative !important;
 }
 
 .formLabel {
     display: block !important;
     color: #37474f !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     font-weight: 500 !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 6px !important;
     transition: color 0.3s ease !important;
 }
 
@@ -174,9 +155,9 @@ body,
     background: rgba(255, 255, 255, 0.8) !important;
     border: 2px solid rgba(25, 118, 210, 0.2) !important;
     border-radius: 12px !important;
-    padding: 16px 20px !important;
+    padding: 14px 18px !important;
     color: #263238 !important;
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-family: inherit !important;
     transition: all 0.3s ease !important;
     outline: none !important;
@@ -193,261 +174,37 @@ body,
     transform: translateY(-1px) !important;
 }
 
+.formInput.error {
+    border-color: #d32f2f !important;
+}
+
+.formInput.valid {
+    border-color: #1976d2 !important;
+}
+
 .formGroup.focused .formLabel {
     color: #1976d2 !important;
 }
 
+/* 아이콘 효과 */
 .inputIcon {
     position: absolute !important;
-    right: 16px !important;
+    right: 14px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     color: #78909c !important;
     transition: color 0.3s ease !important;
-    display: flex !important;
-    align-items: center !important;
 }
 
 .formInput:focus ~ .inputIcon {
     color: #1976d2 !important;
 }
 
-.formOptions {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    margin-bottom: 32px !important;
-    font-size: 14px !important;
-}
-
-.checkboxGroup {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-.checkbox {
-    width: 18px !important;
-    height: 18px !important;
-    border: 2px solid rgba(25, 118, 210, 0.3) !important;
-    border-radius: 4px !important;
-    background: transparent !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.checkbox:checked {
-    background: linear-gradient(135deg, #1976d2, #42a5f5) !important;
-    border-color: #1976d2 !important;
-}
-
-.checkboxLabel {
-    color: #546e7a !important;
-    cursor: pointer !important;
-    user-select: none !important;
-}
-
-.forgotPassword {
-    color: #1976d2 !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
-    transition: color 0.3s ease !important;
-}
-
-.forgotPassword:hover {
-    color: #1565c0 !important;
-}
-
-.loginButton {
-    width: 100% !important;
-    background: linear-gradient(135deg, #1976d2, #42a5f5, #64b5f6) !important;
-    background-size: 200% 200% !important;
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    position: relative !important;
-    overflow: hidden !important;
-    animation: gradientFlow 3s ease infinite !important;
-}
-
-@keyframes gradientFlow {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-.loginButton:hover:not(:disabled) {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 10px 30px rgba(25, 118, 210, 0.3) !important;
-}
-
-.loginButton:active:not(:disabled) {
-    transform: translateY(0) !important;
-}
-
-.loginButton:disabled {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-.divider {
-    display: flex !important;
-    align-items: center !important;
-    margin: 32px 0 !important;
-    color: #90a4ae !important;
-    font-size: 14px !important;
-}
-
-.divider::before,
-.divider::after {
-    content: '' !important;
-    flex: 1 !important;
-    height: 1px !important;
-    background: linear-gradient(90deg, transparent, rgba(25, 118, 210, 0.3), transparent) !important;
-}
-
-.divider span {
-    padding: 0 16px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-}
-
-.socialLogin {
-    display: flex !important;
-    gap: 12px !important;
-}
-
-.socialButton {
-    flex: 1 !important;
-    padding: 12px !important;
-    border: 2px solid rgba(0, 0, 0, 0.1) !important;
-    border-radius: 10px !important;
-    background: rgba(255, 255, 255, 0.8) !important;
-    color: #546e7a !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    text-align: center !important;
-}
-
-.socialButton:hover {
-    border-color: rgba(25, 118, 210, 0.3) !important;
-    background: rgba(25, 118, 210, 0.05) !important;
-    color: #1976d2 !important;
-    transform: translateY(-1px) !important;
-}
-
-.google {
-    background: #ffffff !important;
-    border-color: #4285F4 !important;
-    color: #4285F4 !important;
-}
-
-.google:hover {
-    background: #e8f0fe !important;
-}
-
-.naver {
-    background: #03C75A !important;
-    border-color: #03C75A !important;
-    color: #ffffff !important;
-}
-
-.naver:hover {
-    background: #02b350 !important;
-}
-
-.kakao {
-    background: #FEE500 !important;
-    border-color: #FEE500 !important;
-    color: #3C1E1E !important;
-}
-
-.kakao:hover {
-    background: #f2da00 !important;
-}
-
-.signupLink {
-    text-align: center !important;
-    margin-top: 32px !important;
-    color: #546e7a !important;
-    font-size: 14px !important;
-}
-
-.signupLink a {
-    color: #1976d2 !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
-    transition: color 0.3s ease !important;
-}
-
-.signupLink a:hover {
-    color: #1565c0 !important;
-}
-
-@media (max-width: 480px) {
-    .loginContainer {
-        margin: 20px !important;
-        padding: 32px 24px !important;
-    }
-
-    .loginTitle {
-        font-size: 28px !important;
-    }
-}
-
-.typingEffect {
-    animation: typing 0.1s ease !important;
-}
-
-@keyframes typing {
-    0% {
-        transform: scale(1.02);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.errorMessage {
-    color: #d32f2f !important;
-    font-size: 14px !important;
-    margin-bottom: 20px !important;
-    text-align: center !important;
-    padding: 12px !important;
-    background: rgba(211, 47, 47, 0.1) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(211, 47, 47, 0.2) !important;
-}
-
-.fieldError {
-    color: #d32f2f !important;
-    font-size: 12px !important;
-    margin-top: 8px !important;
-    padding: 8px !important;
-    background: rgba(211, 47, 47, 0.1) !important;
-    border-radius: 6px !important;
-    border: 1px solid rgba(211, 47, 47, 0.2) !important;
-}
-
-.focused {
-    /* 이미 .formGroup.focused .formLabel에서 처리됨 */
+/* 반열 레이아웃 */
+.formRow {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
 }
 
 /* 이메일 입력 스타일 */
@@ -455,7 +212,6 @@ body,
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
-    position: relative;
 }
 
 .emailLocal {
@@ -491,4 +247,153 @@ body,
 
 .emailDomainSelect.error {
     border-color: #d32f2f !important;
+}
+
+/* 비밀번호 강도 표시기 */
+.passwordStrength {
+    margin-top: 6px !important;
+    height: 4px !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 2px !important;
+    overflow: hidden !important;
+}
+
+.strengthBar {
+    height: 100% !important;
+    transition: all 0.3s ease !important;
+    border-radius: 2px !important;
+}
+
+.strengthWeak {
+    background: #d32f2f !important;
+    width: 33% !important;
+}
+
+.strengthMedium {
+    background: #f57c00 !important;
+    width: 66% !important;
+}
+
+.strengthStrong {
+    background: #1976d2 !important;
+    width: 100% !important;
+}
+
+/* 비밀번호 확인 */
+.passwordMatch {
+    font-size: 12px !important;
+    margin-top: 4px !important;
+    transition: all 0.3s ease !important;
+}
+
+.passwordMatch.valid {
+    color: #1976d2 !important;
+}
+
+.passwordMatch.invalid {
+    color: #d32f2f !important;
+}
+
+/* 회원가입 버튼 */
+.signupButton {
+    width: 100% !important;
+    background: linear-gradient(135deg, #1976d2, #42a5f5, #64b5f6) !important;
+    background-size: 200% 200% !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    animation: gradientFlow 3s ease infinite !important;
+    margin-top: 8px !important;
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.signupButton:hover:not(:disabled) {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 30px rgba(25, 118, 210, 0.3) !important;
+}
+
+.signupButton:active:not(:disabled) {
+    transform: translateY(0) !important;
+}
+
+.signupButton:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 로그인 링크 */
+.loginLink {
+    text-align: center !important;
+    margin-top: 24px !important;
+    color: #546e7a !important;
+    font-size: 14px !important;
+}
+
+.loginLink a {
+    color: #1976d2 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: color 0.3s ease !important;
+}
+
+.loginLink a:hover {
+    color: #1565c0 !important;
+}
+
+/* 에러 메시지 */
+.errorMessage {
+    color: #d32f2f !important;
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+    text-align: center !important;
+    padding: 12px !important;
+    background: rgba(211, 47, 47, 0.1) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(211, 47, 47, 0.2) !important;
+}
+
+.fieldError {
+    color: #d32f2f !important;
+    font-size: 12px !important;
+    margin-top: 8px !important;
+    padding: 8px !important;
+    background: rgba(211, 47, 47, 0.1) !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(211, 47, 47, 0.2) !important;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+    .signupContainer {
+        margin: 10px !important;
+        padding: 28px 20px !important;
+        max-height: 95vh !important;
+    }
+
+    .signupTitle {
+        font-size: 26px !important;
+    }
+
+    .formRow {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
+
+    .loginPage {
+        padding: 10px 0 !important;
+    }
 }
