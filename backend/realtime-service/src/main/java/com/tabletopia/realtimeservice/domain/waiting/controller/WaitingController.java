@@ -8,6 +8,7 @@ import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.realtimeservice.domain.waiting.repository.WaitingRepository;
 import com.tabletopia.realtimeservice.domain.waiting.service.WaitingService;
 import jakarta.ws.rs.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -158,6 +159,8 @@ public class WaitingController {
   public ResponseEntity<String>cancelWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
     waitingService.cancelWaiting(id, restaurantId);
+    simpMessagingTemplate.convertAndSend("/topic/cancel",
+        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
 
     return ResponseEntity.ok("웨이팅이 취소되었습니다.");
   }

@@ -152,6 +152,14 @@ export default function WaitingTab() {
           }
         });
 
+        //웨이팅 취소 구독
+        client.subscribe('/topic/cancel', (msg) => {
+          const alert = JSON.parse(msg.body);
+          if(alert.type === "CANCEL") {
+            fetchWaitingList();
+          }
+        });
+
       },
 
       onStompError: (frame) => {
