@@ -22,7 +22,7 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:10022/api/hours/special/${selectedRestaurant.id}`
+        `http://localhost:8002/api/hours/special/${selectedRestaurant.id}`
       );
       const formatted = res.data.map((h) => ({
         ...h,
@@ -85,7 +85,7 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:10022/api/hours/special/${selectedRestaurant.id}`,
+        `http://localhost:8002/api/hours/special/${selectedRestaurant.id}`,
         payload
       );
       alert("특별 운영시간이 성공적으로 저장되었습니다.");

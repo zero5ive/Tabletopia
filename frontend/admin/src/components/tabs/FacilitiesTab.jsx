@@ -12,8 +12,8 @@ export default function FacilitiesTab({ selectedRestaurant }) {
 
   const loadFacilities = async () => {
     const [allRes, assignedRes] = await Promise.all([
-      axios.get("http://localhost:10022/api/facilities"),
-      axios.get(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`)
+      axios.get("http://localhost:8002/api/facilities"),
+      axios.get(`http://localhost:8002/api/facilities/${selectedRestaurant.id}`)
     ]);
 
     setFacilities(allRes.data);
@@ -28,9 +28,9 @@ export default function FacilitiesTab({ selectedRestaurant }) {
     setCheckedFacilities(prev => ({ ...prev, [facilityId]: isChecked }));
 
     if (isChecked) {
-      await axios.post(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`, { facilityId });
+      await axios.post(`http://localhost:8002/api/facilities/${selectedRestaurant.id}`, { facilityId });
     } else {
-      await axios.delete(`http://localhost:10022/api/facilities/${selectedRestaurant.id}/${facilityId}`);
+      await axios.delete(`http://localhost:8002/api/facilities/${selectedRestaurant.id}/${facilityId}`);
     }
   };
 
