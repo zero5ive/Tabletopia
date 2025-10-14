@@ -21,9 +21,7 @@ const Login = () => {
         'naver.com',
         'daum.net',
         'kakao.com',
-        'yahoo.com',
-        'hotmail.com',
-        'outlook.com'
+        'yahoo.com'
     ];
 
     useEffect(() => {
@@ -140,7 +138,7 @@ const Login = () => {
 
             <div className={styles.loginContainer}>
                 <div className={styles.loginHeader}>
-                    <h1 className={styles.loginTitle}>Welcome Back</h1>
+                    <h1 className={styles.loginTitle}>TableTopia</h1>
                     <p className={styles.loginSubtitle}>로그인하여 시작하세요</p>
                 </div>
 
