@@ -1,6 +1,9 @@
 import styles from '../Main.module.css'
+import { getRestaurantList } from '../../utils/RestaurantApi'
 
 export default function LocationCategory(){
+
+
     return(
         <>
                 <section>
@@ -14,27 +17,19 @@ export default function LocationCategory(){
                         </a>
                         <div className={styles.categoryItem}>
                             <div className={styles.categoryIcon}>🏠</div>
-                            <div className={styles.categoryName}>대전</div>
+                            <div className={styles.categoryName}>경기</div>
                         </div>
                         <div className={styles.categoryItem}>
                             <div className={styles.categoryIcon}>❤️</div>
-                            <div className={styles.categoryName}>부산</div>
+                            <div className={styles.categoryName}>인천</div>
                         </div>
                         <div className={styles.categoryItem}>
                             <div className={styles.categoryIcon}>🍷</div>
-                            <div className={styles.categoryName}>와인 바</div>
+                            <div className={styles.categoryName}>부산</div>
                         </div>
                         <div className={styles.categoryItem}>
                             <div className={styles.categoryIcon}>🌍</div>
-                            <div className={styles.categoryName}>이국 요리</div>
-                        </div>
-                        <div className={styles.categoryItem}>
-                            <div className={styles.categoryIcon}>⏰</div>
-                            <div className={styles.categoryName}>브런치</div>
-                        </div>
-                        <div className={styles.categoryItem}>
-                            <div className={styles.categoryIcon}>🍣</div>
-                            <div className={styles.categoryName}>스시/사시미</div>
+                            <div className={styles.categoryName}>충청</div>
                         </div>
                     </div>
                 </section>
