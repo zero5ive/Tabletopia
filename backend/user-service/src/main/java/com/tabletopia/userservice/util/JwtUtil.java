@@ -3,10 +3,12 @@ package com.tabletopia.userservice.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -17,11 +19,15 @@ import java.util.function.Function;
  * @author 이세형
  * @since 2025-10-01
  */
+
 @Component
 public class JwtUtil {
 
-    // TODO: Should be externalized
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("secretsecretsecretsecretsecretsecretsecretsecret".getBytes());
+    private final SecretKey secretKey;
+
+    public JwtUtil(@Value("${jwt.signature.secretkey}") String secret) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -37,7 +43,11 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -53,9 +63,12 @@ public class JwtUtil {
     }
 
     private String createToken(String subject) {
-        return Jwts.builder().subject(subject).issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) //30분으로 설정
-                .signWith(SECRET_KEY, Jwts.SIG.HS256).compact();
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .signWith(secretKey)
+                .compact();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
