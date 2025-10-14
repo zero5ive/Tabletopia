@@ -85,5 +85,7 @@ public class Waiting {
     this.waitingState = waitingState;
   }
 
+  //calledAt 설정 메서드
+  public void setCalledAt(LocalDateTime calledAt) {this.calledAt = calledAt;}
 
 }

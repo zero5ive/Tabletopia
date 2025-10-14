@@ -26,4 +26,9 @@ public interface WaitingService {
   //웨이팅 취소
   public void cancelWaiting(Long id, Long restaurantId);
 
+  //웨이팅 호출
+  public Waiting callWaiting(Long id, Long restaurantId);
+
+  //웨이팅 착석
+  public Waiting seatedWaiting(Long id, Long restaurantId);
 }

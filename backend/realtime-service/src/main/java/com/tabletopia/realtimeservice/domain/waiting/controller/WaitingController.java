@@ -6,6 +6,7 @@ import com.tabletopia.realtimeservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
 import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.realtimeservice.domain.waiting.repository.WaitingRepository;
+import com.tabletopia.realtimeservice.domain.waiting.service.WaitingNotificationService;
 import com.tabletopia.realtimeservice.domain.waiting.service.WaitingService;
 import jakarta.ws.rs.Path;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -44,6 +46,7 @@ import java.util.Map;
 public class WaitingController {
 
   private final WaitingService waitingService;
+  private final WaitingNotificationService waitingNotificationService;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   //어드민 : 웨이팅 오픈
@@ -106,7 +109,7 @@ public class WaitingController {
       waitingEvent.setContent("웨이팅 등록");
       waitingEvent.setSender(waitingRequest.getUserId());
       waitingEvent.setContent(
-          waitingRequest.getRestaurantName() + " 에" + waitingRequest.getPeopleCount() + " 명 등록");
+          waitingRequest.getRestaurantName() +  "에 " + waitingRequest.getPeopleCount() + "명 등록");
 
       simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
 
@@ -165,4 +168,31 @@ public class WaitingController {
     return ResponseEntity.ok("웨이팅이 취소되었습니다.");
   }
 
+  /**
+   * 웨이팅 호출
+   *
+   * @author 서예닮
+   * @since 2025-10-13
+   */
+  //웨이팅 호출
+  @PutMapping("/api/waitings/{id}/called")
+  @ResponseBody
+  public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+    Waiting  waiting  =waitingService.callWaiting(id, restaurantId);
+
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/call");
+
+    return ResponseEntity.ok("웨이팅이 호출되었습니다.");
+  }
+
+  //웨이팅 착석
+  @PutMapping("/api/waitings/{id}/seated")
+  @ResponseBody
+  public  ResponseEntity<String> seatedWaiting(@PathVariable Long id, @RequestParam Long restaurantId){
+    Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId);
+
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/seated");
+
+    return ResponseEntity.ok("착석되었습니다.");
+  }
 }

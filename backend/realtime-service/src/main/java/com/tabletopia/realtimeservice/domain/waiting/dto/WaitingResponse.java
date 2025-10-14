@@ -1,5 +1,6 @@
 package com.tabletopia.realtimeservice.domain.waiting.dto;
 
+import com.tabletopia.realtimeservice.domain.waiting.entity.Waiting;
 import com.tabletopia.realtimeservice.domain.waiting.enums.WaitingState;
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -26,4 +27,19 @@ public class WaitingResponse {
   private LocalDateTime createdAt; // 등록 시간
 
   private String waitingTime; // "15분 대기" 같은 계산된 값
+
+  public static WaitingResponse from(Waiting waiting, Long restaurantId) {
+    WaitingResponse response = new WaitingResponse();
+
+    response.setRestaurantId(restaurantId);
+    response.setRestaurantName(waiting.getRestaurantNameSnapshot());
+    response.setCreatedAt(LocalDateTime.now());
+    response.setWaitingNumber(waiting.getWaitingNumber());
+    response.setPeopleCount(waiting.getPeopleCount());
+    response.setUserId(waiting.getUserId());
+    response.setWaitingState(waiting.getWaitingState());
+
+    return response;
+  }
+
 }

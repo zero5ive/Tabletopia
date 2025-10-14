@@ -91,4 +91,9 @@ public class RestaurantService {
   public void deleteRestaurant(Long id) {
     restaurantRepository.deleteById(id);
   }
+
+  //지역 별 레스토랑 조회
+  public List<Restaurant> getRestaurantsByRegionCode() {
+    return restaurantRepository.findAll();
+  }
 }

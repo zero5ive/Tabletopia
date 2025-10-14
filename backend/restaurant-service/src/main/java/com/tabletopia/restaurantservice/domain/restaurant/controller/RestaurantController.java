@@ -35,7 +35,7 @@ public class RestaurantController {
   /** 전체 레스토랑 조회 */
   @GetMapping
   public ResponseEntity<List<Restaurant>> getAll() {
-    return ResponseEntity.ok(restaurantService.getAllRestaurants());
+      return ResponseEntity.ok(restaurantService.getAllRestaurants());
   }
 
   /** 단일 레스토랑 조회 */
