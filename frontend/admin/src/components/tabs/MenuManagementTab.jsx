@@ -146,7 +146,7 @@ export default function MenuManagementTab({ selectedRestaurant }) {
               status={menu.isSoldout ? "품절" : "판매중"}
               image={
                 menu.imageFilename
-                  ? `http://localhost:10022/uploads/menus/${menu.imageFilename}`
+                  ? `http://localhost:8003/uploads/menus/${menu.imageFilename}`
                   : "https://placehold.co/300x180/9ACD32/ffffff?text=Img"
               }
               onDelete={() => handleDelete(menu.id)}
