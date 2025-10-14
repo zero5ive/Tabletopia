@@ -212,4 +212,9 @@ tmp/
 
 # npm config files
 package.json
+package-lock.jsonpackage.json
 package-lock.json
+frontend/admin/package.json
+frontend/admin/package-lock.json
+frontend/user/package.json
+frontend/user/package-lock.json
