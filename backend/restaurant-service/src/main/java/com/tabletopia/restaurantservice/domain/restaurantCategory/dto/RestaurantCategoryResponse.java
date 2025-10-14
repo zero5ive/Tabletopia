@@ -1,11 +1,11 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.dto;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.dto;
 
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+
 /**
  * 레스토랑 카테고리 디티오
  *

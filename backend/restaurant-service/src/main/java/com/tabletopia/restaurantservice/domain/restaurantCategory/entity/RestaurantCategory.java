@@ -1,4 +1,4 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.entity;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;

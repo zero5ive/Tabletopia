@@ -1,8 +1,7 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.service;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.service;
 
-import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.entity.RestaurantCategory;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.repository.RestaurnatCategoryRepository;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.repository.RestaurnatCategoryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
