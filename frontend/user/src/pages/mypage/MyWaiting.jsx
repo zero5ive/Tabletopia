@@ -52,7 +52,7 @@ export default function MyReservation() {
 
                             <div className={styles['card-actions']}>
                                 <button className={`${styles.btn} ${styles['btn-secondary']}`}>대기 취소</button>
-                                <button className={`${styles.btn} ${styles['btn-primary']}`}>📊 실시간 현황</button>
+                                <button className={`${styles.btn} ${styles['btn-primary']}`}>미루기</button>
                             </div>
                         </div>
 

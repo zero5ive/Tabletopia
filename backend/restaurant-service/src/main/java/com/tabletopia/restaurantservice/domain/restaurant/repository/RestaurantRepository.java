@@ -1,6 +1,7 @@
 package com.tabletopia.restaurantservice.domain.restaurant.repository;
 
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +14,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+
 }
