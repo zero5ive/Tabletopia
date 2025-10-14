@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:10022/api/restaurants";
+const BASE_URL = "http://localhost:8002/api/restaurants";
 
 export const createRestaurant = (data) => axios.post(BASE_URL, data);
 export const getAllRestaurants = () => axios.get(BASE_URL);

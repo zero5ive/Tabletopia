@@ -17,7 +17,7 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:10022/api/hours/opening/${selectedRestaurant.id}`
+        `http://localhost:8002/api/hours/opening/${selectedRestaurant.id}`
       );
 
       if (res.data.length === 0) {
@@ -95,7 +95,7 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:10022/api/hours/opening/${selectedRestaurant.id}`,
+        `http://localhost:8002/api/hours/opening/${selectedRestaurant.id}`,
         payload
       );
       alert("운영시간이 성공적으로 저장되었습니다.");
@@ -115,7 +115,7 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
     try {
       const today = new Date().toISOString().split("T")[0];
       const res = await axios.get(
-        `http://localhost:10022/api/hours/opening/effective/${selectedRestaurant.id}?date=${today}`
+        `http://localhost:8002/api/hours/opening/effective/${selectedRestaurant.id}?date=${today}`
       );
       setPreview(res.data);
     } catch (err) {

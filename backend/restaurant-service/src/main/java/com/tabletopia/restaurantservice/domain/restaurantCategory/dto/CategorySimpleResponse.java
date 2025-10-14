@@ -1,4 +1,4 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.dto;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
