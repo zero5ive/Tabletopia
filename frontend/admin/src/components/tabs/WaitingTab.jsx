@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { getWaitingList } from '../../utils/WaitingApi';
-import { waitingCancel } from '../../utils/WaitingApi';
+import { getWaitingList, waitingCancel, waitingCall, waitingSeated } from '../../utils/WaitingApi';
 import { useParams } from "react-router-dom";
 
 
@@ -64,6 +63,37 @@ export default function WaitingTab() {
   //웨이팅 open관련
   const [isWaitingOpen, setIsWaitingOpen] = useState(false);
   const [stompClient, setStompClient] = useState(null);
+
+  //웨이팅 상태 변경
+  const handleStatusChange = async (waitingId, newStatus) => {
+    try {
+      let response;
+      let message;
+
+      switch (newStatus) {
+        case '호출':
+          response = await waitingCall(waitingId, restaurantId);
+          message = response.data;
+          break;
+        case '착석':
+          response = await waitingSeated(waitingId, restaurantId);
+          message = response.data;
+          break;
+        default:
+          return;
+      }
+
+      window.alert(message);
+
+      // 상태 변경 후 새로고침
+      const status = statusMap[activeFilter];
+      fetchWaitingList(currentPage, status);
+
+    } catch (error) {
+      console.error('상태 변경 실패:', error);
+      window.alert("상태 변경 중 오류가 발생했습니다.");
+    }
+  };
 
   //웨이팅 취소
   const handleCancelChange = async (waitingId) => {

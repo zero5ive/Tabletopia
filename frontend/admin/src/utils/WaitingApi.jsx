@@ -11,3 +11,11 @@ export const getWaitingList = (restaurantId, page = 0, size = 10, status = 'WAIT
 export const waitingCancel = (id, restaurantId) =>
     axios.put(`${URL}/${id}/cancel?restaurantId=${restaurantId}`)
 
+//웨이팅 호출
+export const waitingCall = (id, restaurantId) =>
+    axios.put(`${URL}/${id}/called?restaurantId=${restaurantId}`)
+
+//웨이팅 착석
+export const waitingSeated = (id, restaurantId) =>
+    axios.put(`${URL}/${id}/seated?restaurantId=${restaurantId}`)
+
