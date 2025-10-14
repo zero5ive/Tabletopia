@@ -209,3 +209,7 @@ summary*.md
 # Lambda / ECS / SDK 로그 / 임시 파일
 *.log
 tmp/
+
+# npm config files
+package.json
+package-lock.json
