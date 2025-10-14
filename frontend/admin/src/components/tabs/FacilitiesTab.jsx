@@ -1,12 +1,53 @@
-export default function FacilitiesTab(){
-  const facilities = [
-    {icon:"fa-car", name:"발렛파킹", desc:"무료 발렛파킹 서비스 제공"},
-    {icon:"fa-wheelchair", name:"휠체어 접근", desc:"휠체어 이용 가능"},
-    {icon:"fa-wine-glass-alt", name:"주류 판매", desc:"다양한 주류 판매"},
-    {icon:"fa-wifi", name:"무료 WiFi", desc:"고속 무료 인터넷"},
-    {icon:"fa-birthday-cake", name:"기념일 서비스", desc:"생일, 기념일 케이크 서비스"},
-    {icon:"fa-users", name:"단체석", desc:"10인 이상 단체 이용 가능"},
-  ]
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+export default function FacilitiesTab({ selectedRestaurant }) {
+  const [facilities, setFacilities] = useState([]);
+  const [checkedFacilities, setCheckedFacilities] = useState({});
+
+  useEffect(() => {
+    if (!selectedRestaurant) return;
+    loadFacilities();
+  }, [selectedRestaurant]);
+
+  const loadFacilities = async () => {
+    const [allRes, assignedRes] = await Promise.all([
+      axios.get("http://localhost:10022/api/facilities"),
+      axios.get(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`)
+    ]);
+
+    setFacilities(allRes.data);
+
+    const assigned = {};
+    assignedRes.data.forEach(f => assigned[f.facilityId] = true);
+    setCheckedFacilities(assigned);
+  };
+
+  const toggleFacility = async (facilityId) => {
+    const isChecked = !checkedFacilities[facilityId];
+    setCheckedFacilities(prev => ({ ...prev, [facilityId]: isChecked }));
+
+    if (isChecked) {
+      await axios.post(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`, { facilityId });
+    } else {
+      await axios.delete(`http://localhost:10022/api/facilities/${selectedRestaurant.id}/${facilityId}`);
+    }
+  };
+
+  if (!selectedRestaurant) {
+    return (
+      <div className="tab-pane fade" id="facilities">
+        <div className="card text-center mt-4 border-danger">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
+            <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">편의시설을 관리하려면 먼저 매장을 선택해주세요.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tab-pane fade" id="facilities">
       <div className="card">
@@ -14,24 +55,30 @@ export default function FacilitiesTab(){
           <i className="fas fa-cogs me-2"></i>편의시설 관리
         </div>
         <div className="card-body">
-          <div className="row">
-            {facilities.map(f=>(
-              <div key={f.name} className="col-md-4 mb-3">
-                <div className="card text-center">
-                  <div className="card-body">
-                    <i className={`fas ${f.icon} fa-3x text-primary mb-3`}></i>
+          {facilities.length === 0 ? (
+            <p className="text-center text-muted mt-3">등록된 편의시설이 없습니다.</p>
+          ) : (
+            <div className="row">
+              {facilities.map(f => (
+                <div key={f.id} className="col-md-3 mb-3">
+                  <div className="card text-center p-2">
+                    <i className="fas fa-check-circle fa-2x text-primary mb-2"></i>
                     <h6>{f.name}</h6>
                     <div className="form-check form-switch d-flex justify-content-center">
-                      <input className="form-check-input" type="checkbox" defaultChecked/>
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={!!checkedFacilities[f.id]}
+                        onChange={() => toggleFacility(f.id)}
+                      />
                     </div>
-                    <small className="text-muted">{f.desc}</small>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }

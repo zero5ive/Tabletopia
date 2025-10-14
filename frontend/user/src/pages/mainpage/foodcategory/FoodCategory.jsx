@@ -1,54 +1,48 @@
 import styles from '../Main.module.css'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useEffect } from 'react';
+import { getCategoryList } from '../../utils/RestaurantCategory'
+
 
 export default function FoodCategory(){
+
+    const [categoryList, setCategoryList] = useState([]);
+    
+
+    //카레고리 리스트 함수
+    const fetchCategoryList = async() =>{
+        const response = await getCategoryList();
+        console.log('카테고리 리스트', response);
+
+        setCategoryList(response.data);
+    }
+
+  
+
+
+    
+
+    useEffect(()=>{
+        fetchCategoryList();
+    }, [])
+
     return(
         <>
             <section>
                 <h2 className={styles.sectionTitle}>어떤 음식이 드시고 싶으세요?</h2>
                 <div className={styles.categoriesGrid}>
-                    <Link to="/restaurant/list" className={styles.noUnderline}>
+                    {categoryList.map(category=>(
+                    <Link key={category.id} to={`/restaurant/list?categoryId=${category.id}`} className={styles.noUnderline}>
+                        
                     <div className={styles.categoryItem}>
                         <div className={styles.categoryIcon}>🛍️</div>
-                        <div className={styles.categoryName}>전체</div>
-                        <div className={styles.categoryDesc}>특별한 날의 선택</div>
+                        <div className={styles.categoryName}>{category.name}</div>
                     </div>
                     </Link>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>🛍️</div>
-                        <div className={styles.categoryName}>한식</div>
-                        <div className={styles.categoryDesc}>특별한 날의 선택</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>🏠</div>
-                        <div className={styles.categoryName}>양식</div>
-                        <div className={styles.categoryDesc}>우리 동네 숨은 맛집</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>❤️</div>
-                        <div className={styles.categoryName}>중식</div>
-                        <div className={styles.categoryDesc}>로맨틱한 분위기</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>🍷</div>
-                        <div className={styles.categoryName}>와인 바</div>
-                        <div className={styles.categoryDesc}>특별한 와인과 함께</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>🌍</div>
-                        <div className={styles.categoryName}>이국 요리</div>
-                        <div className={styles.categoryDesc}>세계의 맛을 경험</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>⏰</div>
-                        <div className={styles.categoryName}>브런치</div>
-                        <div className={styles.categoryDesc}>여유로운 오후</div>
-                    </div>
-                    <div className={styles.categoryItem}>
-                        <div className={styles.categoryIcon}>🍣</div>
-                        <div className={styles.categoryName}>스시/사시미</div>
-                        <div className={styles.categoryDesc}>신선한 일식</div>
-                    </div>
+
+                    ))}
+                    
                 </div>
             </section>
         </>

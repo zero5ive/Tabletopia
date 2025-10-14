@@ -6,7 +6,7 @@ import styles from './Waiting.module.css'
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
-import { getWaitingList } from "./utils/WaitingApi";
+import { getWaitingList } from '../utils/WaitingApi';
 
 export default function Waiting() {
 

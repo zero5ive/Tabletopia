@@ -30,6 +30,10 @@ export default function Sidebar() {
             <i className="fas fa-clock me-2"></i>운영시간
           </a>
 
+          <a className="nav-link" data-bs-toggle="tab" href="#special-hours">
+            <i className="fas fa-calendar-day me-2"></i>특별 운영시간
+          </a>
+
           <a className="nav-link" href="#facilities" data-bs-toggle="tab">
             <i className="fas fa-cogs me-2"></i>편의시설
           </a>
