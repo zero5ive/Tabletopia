@@ -27,7 +27,7 @@ public interface RestaurantServiceClient {
    * @param restaurantId 레스토랑 ID
    * @return 테이블 정보 리스트
    */
-  @GetMapping("/restaurant/{restaurantId}/tables")
+  @GetMapping("/api/restaurants/{restaurantId}/tables")
   List<RestaurantTableDto> getRestaurantTables(@PathVariable("restaurantId") Long restaurantId);
 
   /**
@@ -36,7 +36,7 @@ public interface RestaurantServiceClient {
    * @param restaurantId 레스토랑 ID
    * @return 운영시간 DTO 리스트
    */
-  @GetMapping("/restaurant/opening-hours/{restaurantId}")
+  @GetMapping("/api/restaurants/opening-hours/{restaurantId}")
   List<OpeningHourResponse> getOpeningHours(@PathVariable("restaurantId") Long restaurantId);
 
   /**
@@ -46,7 +46,7 @@ public interface RestaurantServiceClient {
    * @param dayOfWeek 요일 (0: 일요일 ~ 6: 토요일)
    * @return {시작 시간, 끝 시간}
    */
-  @GetMapping("/restaurant/reservations/{restaurantId}/{dayOfWeek}")
+  @GetMapping("/api/restaurants/reservations/{restaurantId}/{dayOfWeek}")
   public List<TimeSlotResponse> getSlots(
       @PathVariable Long restaurantId,
       @PathVariable int dayOfWeek
