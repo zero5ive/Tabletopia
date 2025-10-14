@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2025-10-13
  */
 
+
 @RestController
 @RequestMapping("/api/restaurantcategories")
 @RequiredArgsConstructor
