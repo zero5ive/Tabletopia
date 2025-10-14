@@ -209,3 +209,11 @@ summary*.md
 # Lambda / ECS / SDK 로그 / 임시 파일
 *.log
 tmp/
+
+# 패키지 파일 추적 안 함
+frontend/admin/package-lock.json
+frontend/admin/package.json
+frontend/user/package-lock.json
+frontend/user/package.json
+package-lock.json
+package.json

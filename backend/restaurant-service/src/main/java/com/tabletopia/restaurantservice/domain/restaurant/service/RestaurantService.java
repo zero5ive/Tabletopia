@@ -78,7 +78,7 @@ public class RestaurantService {
     existing.setPhoneNumber(updatedData.getPhoneNumber());
     existing.setDescription(updatedData.getDescription());
     existing.setRestaurantCategory(updatedData.getRestaurantCategory());
-    existing.setRestaurantAccount(updatedData.getRestaurantAccount());
+//    existing.setRestaurantAccount(updatedData.getRestaurantAccount());
 
     return existing; // @Transactional 덕분에 자동 flush
   }
@@ -90,5 +90,10 @@ public class RestaurantService {
   @Transactional
   public void deleteRestaurant(Long id) {
     restaurantRepository.deleteById(id);
+  }
+
+  //지역 별 레스토랑 조회
+  public List<Restaurant> getRestaurantsByRegionCode() {
+    return restaurantRepository.findAll();
   }
 }
