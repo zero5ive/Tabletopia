@@ -12,5 +12,15 @@
     "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\""
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.2.0",
+    "axios": "^1.12.2",
+    "bootstrap": "^5.3.8",
+    "date-fns": "^4.1.0",
+    "jwt-decode": "^4.0.0",
+    "react-datepicker": "^8.7.0",
+    "react-router-dom": "^7.9.1",
+    "react-time-picker": "^8.0.2",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3"
   }
 }
