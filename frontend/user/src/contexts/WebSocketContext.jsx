@@ -14,8 +14,46 @@ export const useWebSocket = () => {
 
 export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null)
-    const [notifications, setNotifications] = useState([])
     const [isConnected, setIsConnected] = useState(false)
+
+    // localStorage에서 알림 불러오기 및 24시간 지난 알림 제거
+    const [notifications, setNotifications] = useState(() => {
+        try {
+            const saved = localStorage.getItem('notifications')
+            if (saved) {
+                const parsed = JSON.parse(saved)
+                const now = Date.now()
+                const oneDayMs = 24 * 60 * 60 * 1000
+                // 24시간 이내의 알림만 유지
+                return parsed.filter(notif => (now - notif.timestamp) < oneDayMs)
+            }
+        } catch (error) {
+            console.error('알림 불러오기 실패:', error)
+        }
+        return []
+    })
+
+    // notifications가 변경될 때마다 localStorage에 저장
+    useEffect(() => {
+        try {
+            localStorage.setItem('notifications', JSON.stringify(notifications))
+        } catch (error) {
+            console.error('알림 저장 실패:', error)
+        }
+    }, [notifications])
+
+    // 24시간마다 오래된 알림 자동 제거
+    useEffect(() => {
+        const cleanupInterval = setInterval(() => {
+            const now = Date.now()
+            const oneDayMs = 24 * 60 * 60 * 1000
+            setNotifications(prev =>
+                prev.filter(notif => (now - notif.timestamp) < oneDayMs)
+            )
+        }, 60 * 60 * 1000) // 1시간마다 체크
+
+        return () => clearInterval(cleanupInterval)
+    }, [])
 
     useEffect(() => {
         const socket = new SockJS('http://localhost:8002/ws')
@@ -37,6 +75,7 @@ export const WebSocketProvider = ({ children }) => {
                             name: alert.restaurantName,
                             message: `고객님 차례입니다. 매장으로 입장해 주세요.`,
                             time: alert.createdAt,
+                            timestamp: Date.now(),
                             read: false,
                             userId: alert.userId
                         })
@@ -54,6 +93,7 @@ export const WebSocketProvider = ({ children }) => {
                             name: alert.restaurantName,
                             message: `고객님 웨이팅이 취소되었습니다`,
                             time: alert.createdAt,
+                            timestamp: Date.now(),
                             read: false,
                             userId: alert.userId
                         })
@@ -70,6 +110,7 @@ export const WebSocketProvider = ({ children }) => {
                             title: '웨이팅 상태 변경',
                             message: alert.message,
                             time: '방금 전',
+                            timestamp: Date.now(),
                             read: false,
                             userId: alert.userId
                         })
@@ -89,6 +130,7 @@ export const WebSocketProvider = ({ children }) => {
                             id: Date.now(),
                             title: '웨이팅 등록',
                             message: alert.content,
+                            timestamp: Date.now(),
                             read: false,
                         })
                     }
@@ -119,11 +161,30 @@ export const WebSocketProvider = ({ children }) => {
         setNotifications(prev => [notification, ...prev])
     }
 
+    const removeNotification = (notificationId) => {
+        setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
+    }
+
+    const clearAllNotifications = () => {
+        setNotifications([])
+    }
+
+    const markAsRead = (notificationId) => {
+        setNotifications(prev =>
+            prev.map(notif =>
+                notif.id === notificationId ? { ...notif, read: true } : notif
+            )
+        )
+    }
+
     const value = {
         stompClient,
         notifications,
         isConnected,
-        addNotification
+        addNotification,
+        removeNotification,
+        clearAllNotifications,
+        markAsRead
     }
 
     return (
