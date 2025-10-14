@@ -15,15 +15,18 @@ export default function FacilitiesTab({ selectedRestaurant }) {
       axios.get("http://localhost:10022/api/facilities"),
       axios.get(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`)
     ]);
+
     setFacilities(allRes.data);
+
     const assigned = {};
-    assignedRes.data.forEach(f => assigned[f.id] = true);
+    assignedRes.data.forEach(f => assigned[f.facilityId] = true);
     setCheckedFacilities(assigned);
   };
 
   const toggleFacility = async (facilityId) => {
     const isChecked = !checkedFacilities[facilityId];
     setCheckedFacilities(prev => ({ ...prev, [facilityId]: isChecked }));
+
     if (isChecked) {
       await axios.post(`http://localhost:10022/api/facilities/${selectedRestaurant.id}`, { facilityId });
     } else {
@@ -59,7 +62,7 @@ export default function FacilitiesTab({ selectedRestaurant }) {
               {facilities.map(f => (
                 <div key={f.id} className="col-md-3 mb-3">
                   <div className="card text-center p-2">
-                    <img src={f.iconUrl} alt={f.name} width={48} height={48} className="mx-auto mb-2" />
+                    <i className="fas fa-check-circle fa-2x text-primary mb-2"></i>
                     <h6>{f.name}</h6>
                     <div className="form-check form-switch d-flex justify-content-center">
                       <input
@@ -69,7 +72,6 @@ export default function FacilitiesTab({ selectedRestaurant }) {
                         onChange={() => toggleFacility(f.id)}
                       />
                     </div>
-                    <small className="text-muted">{f.info || ""}</small>
                   </div>
                 </div>
               ))}

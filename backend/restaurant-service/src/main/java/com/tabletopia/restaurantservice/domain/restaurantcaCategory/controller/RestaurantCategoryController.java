@@ -13,6 +13,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+/**
+ * 레스토랑 카테고리 컨트롤러
+ *
+ * @author 성유진
+ * @since 2025-10-13
+ */
+
 
 @RestController
 @RequestMapping("/api/restaurantcategories")

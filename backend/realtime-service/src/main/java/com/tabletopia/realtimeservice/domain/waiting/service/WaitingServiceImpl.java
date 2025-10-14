@@ -71,5 +71,25 @@ public class WaitingServiceImpl implements WaitingService{
     waitingRepository.save(waiting);
   }
 
+  @Override
+  public Waiting callWaiting(Long id, Long restaurantId) {
+    Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
+        .orElseThrow(()-> new RuntimeException("웨이팅을 찾을 수 없습니다."));
 
+    waiting.assignWaitingState(WaitingState.CALLED);
+    waiting.setCalledAt(LocalDateTime.now());  // 호출 시간 설정
+
+    return waitingRepository.save(waiting);
+
+  }
+
+  @Override
+  public Waiting seatedWaiting(Long id, Long restaurantId) {
+    Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
+        .orElseThrow(()-> new RuntimeException("웨이팅을 찾을 수 없습니다."));
+
+    waiting.assignWaitingState(WaitingState.SEATED);
+
+    return waitingRepository.save(waiting);
+  }
 }
