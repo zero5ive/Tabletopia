@@ -1,8 +1,8 @@
 package com.tabletopia.restaurantservice.domain.reservation.entity;
 
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
-import com.tabletopia.restaurantservice.dto.RestaurantSnapshot;
-import com.tabletopia.restaurantservice.dto.TableSnapshot;
+import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
+import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

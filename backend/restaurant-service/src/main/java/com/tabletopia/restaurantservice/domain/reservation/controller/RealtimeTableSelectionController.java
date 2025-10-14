@@ -13,7 +13,8 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.UserConnectedResp
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.service.RedisTableSelectionService;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
-import com.tabletopia.restaurantservice.dto.RestaurantTableDto;
+import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
+import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class RealtimeTableSelectionController {
   private final SimpMessagingTemplate messagingTemplate;
   private final ReservationService reservationService;
   private final RedisTableSelectionService redisTableSelectionService;
+  private final RestaurantTableService restaurantTableService;
 
   // =============== 메모리 캐시 =============== //
   // Redis로 개선 중
@@ -216,7 +218,7 @@ public class RealtimeTableSelectionController {
 
     try {
       // TODO 레스토랑 테이블 목록 조회
-      List<RestaurantTableDto> tables = new ArrayList<>();
+      List<RestaurantTable> tables = restaurantTableService.getTablesByRestaurant(restaurantId);
 
       // 테이블 및 선점 상태를 저장할 배열
       List<TableStatus> tableStatuses = new ArrayList<>();
@@ -225,7 +227,7 @@ public class RealtimeTableSelectionController {
       String timeSlot = formatTimeSlot(request.getDate(), request.getTime());
 
       // 각 테이블별 상태 확인
-      for (RestaurantTableDto table : tables) {
+      for (RestaurantTable table : tables) {
         Long tableId = table.getId();
 
         // 각 테이블마다 현재 상태를 계산해서 저장할 배열

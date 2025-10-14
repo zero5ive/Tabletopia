@@ -283,7 +283,7 @@ useEffect(() => {
       setLoading(true);
       console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
 
-      const response = await axios.get(`http://localhost:10022/api/restaurants/${restaurantId}/tables`);
+      const response = await axios.get(`http://localhost:8002/api/tables/${restaurantId}`);
       const data = response.data;
 
       if (Array.isArray(data) && data.length > 0) {
