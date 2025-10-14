@@ -1,6 +1,6 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.repository;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.repository;
 
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.entity.RestaurantCategory;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

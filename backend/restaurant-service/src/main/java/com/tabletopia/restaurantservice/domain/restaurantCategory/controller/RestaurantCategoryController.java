@@ -1,11 +1,10 @@
-package com.tabletopia.restaurantservice.domain.restaurantcaCategory.controller;
+package com.tabletopia.restaurantservice.domain.restaurantCategory.controller;
 
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse;
-import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.dto.CategorySimpleResponse;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.dto.RestaurantCategoryResponse;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.entity.RestaurantCategory;
-import com.tabletopia.restaurantservice.domain.restaurantcaCategory.service.RestaurantCategoryService;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.dto.CategorySimpleResponse;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.dto.RestaurantCategoryResponse;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.service.RestaurantCategoryService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
