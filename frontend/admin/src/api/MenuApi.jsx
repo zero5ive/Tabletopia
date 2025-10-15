@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:10022/api/restaurants";
+const BASE_URL = "http://localhost:8002/api/restaurants";
 
 export const getMenusByRestaurant = (restaurantId) =>
   axios.get(`${BASE_URL}/${restaurantId}/menus`);

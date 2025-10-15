@@ -44,10 +44,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리용
+
 
     // Dev tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -56,10 +56,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
-    // 마이크로 서비스 간 통신 처리
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.3.0")
 }
 
 dependencyManagement {

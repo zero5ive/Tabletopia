@@ -48,16 +48,6 @@ export function MainHeader() {
 
     return (
         <>
-            <div className={styles.searchContainer}>
-                <input
-                    type="text"
-                    className={styles.searchBox}
-                    placeholder="지역, 음식 또는 레스토랑명을 검색해보세요"
-                />
-            </div>
-            <div className={styles.searchButton}>
-                <div className={styles.searchIcon}></div>
-            </div>
             <div className={styles.userActions}>
                 {isLoggedIn ? (
                     <>

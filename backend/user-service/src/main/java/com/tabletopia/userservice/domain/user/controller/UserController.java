@@ -118,7 +118,6 @@ public class UserController {
                 .maxAge(0)
                 .path("/")
                 .build();
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
                 .body(Map.of("success", true, "message", "로그아웃 성공"));

@@ -8,9 +8,8 @@ import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import { getWaitingList } from '../utils/WaitingApi';
 
-export default function Waiting() {
+export default function Waiting({ reservationType }) {
 
-  const [reservationType, setReservationType] = useState("waiting");
   const [people, setPeople] = useState(1); // 초기 인원 수
   const [stompClient, setStompClient] = useState(null);
   const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)

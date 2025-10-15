@@ -31,30 +31,30 @@ const SignUpSuccess = () => {
         }
     };
 
-    // 자동 리다이렉트 타이머 (선택사항)
-    useEffect(() => {
-        createParticles();
+    // // 자동 리다이렉트 타이머 (선택사항)
+    // useEffect(() => {
+    //     createParticles();
 
-        // 자동 리다이렉트를 원한다면 주석 해제
-        const timer = setTimeout(() => {
-          setShowRedirectTimer(true);
-        }, 3000);
+    //     // 자동 리다이렉트를 원한다면 주석 해제
+    //     const timer = setTimeout(() => {
+    //       setShowRedirectTimer(true);
+    //     }, 3000);
 
-        const redirectTimer = setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              window.location.href = '/users/loginform';
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
+    //     const redirectTimer = setInterval(() => {
+    //       setCountdown(prev => {
+    //         if (prev <= 1) {
+    //           window.location.href = '/users/loginform';
+    //           return 0;
+    //         }
+    //         return prev - 1;
+    //       });
+    //     }, 1000);
 
-        return () => {
-          clearTimeout(timer);
-          clearInterval(redirectTimer);
-        };
-    }, []);
+    //     return () => {
+    //       clearTimeout(timer);
+    //       clearInterval(redirectTimer);
+    //     };
+    // }, []);
 
     const handleLoginClick = () => {
         window.location.href = '/users/loginform';
@@ -132,7 +132,7 @@ const SignUpSuccess = () => {
                     </div>
                 </div>
 
-                {/* 자동 리다이렉트 타이머 (선택사항) */}
+                {/* 자동 리다이렉트 타이머 (선택사항)
                 {showRedirectTimer && (
                     <div className={styles.redirectTimer}>
                         <div className={styles.timerCircle}></div>
@@ -140,7 +140,7 @@ const SignUpSuccess = () => {
                             {countdown}초 후 로그인 페이지로 이동합니다...
                         </span>
                     </div>
-                )}
+                )} */}
             </div>
         </div>
     );

@@ -1,9 +1,10 @@
 package com.tabletopia.restaurantservice.domain.restaurant.repository;
 
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
-import java.util.List;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 /**
  * RestaurantRepository
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Repository;
  * @author 김지민
  * @since 2025-10-09
  */
-@Repository
-public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+//@Repository
+public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, RestaurantRepositoryCustom {
+
+  Page<Restaurant> findByRestaurantCategory(RestaurantCategory category, Pageable pageable);
+
 
 }

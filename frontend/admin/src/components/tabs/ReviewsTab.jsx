@@ -1,26 +1,79 @@
-import ReviewCard from '../cards/ReviewCard'
+import { useEffect, useState } from "react"
+import axios from "axios"
 
-export default function ReviewsTab(){
-  const reviews = [
-    {user:"김**님", score:5, content:"최고의 오마카세였습니다!", date:"2025.08.28"},
-    {user:"이**님", score:5, content:"생일 기념으로 방문했는데 정말 만족스러웠어요.", date:"2025.08.25"},
-    {user:"박**님", score:4, content:"음식은 훌륭했지만 조금 비쌌어요.", date:"2025.08.22"},
-  ]
-  return (
-    <div className="tab-pane fade" id="reviews">
-      <div className="row mb-4">
-        <div className="col-md-8"><h4>리뷰 관리</h4></div>
-        <div className="col-md-4">
-          <select className="form-select">
-            <option>전체 리뷰</option><option>5점 리뷰</option>
-            <option>4점 리뷰</option><option>3점 리뷰</option>
-            <option>2점 리뷰</option><option>1점 리뷰</option>
-          </select>
+export default function ReviewsTab({ selectedRestaurant }) {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (selectedRestaurant) loadReviews()
+    else setReviews([])
+  }, [selectedRestaurant])
+
+  const loadReviews = async () => {
+    if (!selectedRestaurant) return
+    setLoading(true)
+    try {
+      const res = await axios.get(`http://localhost:8002/api/reviews/${selectedRestaurant.id}`)
+      setReviews(res.data)
+    } catch (err) {
+      console.error("리뷰 목록 로드 실패:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!selectedRestaurant) {
+    return (
+      <div className="tab-pane fade" id="reviews">
+        <div className="card text-center mt-4 border-danger">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
+            <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">리뷰를 보려면 먼저 매장을 선택해주세요.</p>
+          </div>
         </div>
       </div>
-      {reviews.map((r, idx)=>(
-        <ReviewCard key={idx} {...r}/>
-      ))}
+    )
+  }
+
+  return (
+    <div
+      className="tab-pane fade"
+      id="reviews"
+      style={{
+        minHeight: "calc(100vh - 150px)",
+        background: "#f8f9fa",
+        padding: "20px",
+      }}
+    >
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="m-0">{selectedRestaurant.name} 리뷰 목록</h4>
+        <button className="btn btn-outline-secondary" onClick={loadReviews}>
+          새로고침
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-center mt-5">
+          <div className="spinner-border text-primary" role="status"></div>
+          <p className="mt-2 text-muted">로딩 중...</p>
+        </div>
+      ) : reviews.length === 0 ? (
+        <p className="text-center text-muted mt-3">등록된 리뷰가 없습니다.</p>
+      ) : (
+        <div className="list-group">
+          {reviews.map((r) => (
+            <div key={r.id} className="list-group-item">
+              <div className="fw-bold">
+                ⭐ {r.rating}점 <span className="text-muted ms-2">({r.sourceType})</span>
+              </div>
+              <div className="text-muted small mb-2">작성일: {r.createdAt}</div>
+              <p className="mb-0">{r.comment}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

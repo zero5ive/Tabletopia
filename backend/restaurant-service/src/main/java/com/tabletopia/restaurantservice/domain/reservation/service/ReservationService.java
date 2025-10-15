@@ -4,9 +4,10 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationReques
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
-import com.tabletopia.restaurantservice.dto.RestaurantSnapshot;
-import com.tabletopia.restaurantservice.dto.RestaurantTableDto;
-import com.tabletopia.restaurantservice.dto.TableSnapshot;
+import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
+import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
+import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
+import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class ReservationService {
 
   private final ReservationRepository reservationRepository;
-//  private final RestaurantServiceClient restaurantServiceClient;
+  private final RestaurantTableService restaurantTableService;
 
   /**
    * 예약 등록
@@ -134,12 +135,11 @@ public class ReservationService {
    * @author 김예진
    * @since 2025-09-23
    */
-  public List<RestaurantTableDto> getTablesAt(Long restaurantId) {
+  public List<RestaurantTable> getTablesAt(Long restaurantId) {
+    List<RestaurantTable> tables;
     try {
-      // TODO 프로젝트에서 받아오게 수정
-//      tables = restaurantServiceClient.getRestaurantTables(restaurantId);
-//      return tables;
-      return null;
+      tables = restaurantTableService.getTablesByRestaurant(restaurantId);
+      return tables;
     } catch (Exception e) {
       log.error("레스토랑 정보 조회 실패 - restaurantId: {}", restaurantId, e);
       return null;
