@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router';
 
 export default function OperatingInfoTab() {
 
-    const [openHour, setOpenHour] = useState([]);
+    const [openHour, setOpenHour] = useState(null);
     const [effectiveHour, steEffectiveHour] = useState([]);
     const [searchParams] = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');

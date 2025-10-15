@@ -239,78 +239,65 @@ export default function RestaurantList() {
                     </div>
 
                     <div className={styles["restaurant-grid"]}>
+                        {restaurants.map(restaurant => (
+                            <Link key={restaurant.id} to={`/restaurant/detail?restaurantId=${restaurant.id}`} className={styles.noUnderline}>
+                                <div className={styles["restaurant-card"]}>
+                                    <div className={styles["card-image"]}>
+                                        <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=200&fit=crop" alt={restaurant.name} />
+                                        <button className={styles["bookmark-btn"]}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                            </svg>
+                                        </button>
+                                        <div className={styles["quick-info"]}>
+                                            <span className={styles["info-badge"]}>영업중</span>
+                                            <span className={styles["info-badge"]}>예약가능</span>
+                                        </div>
+                                    </div>
 
-
-                        {restaurants.length === 0 ? (
-                            <div className={styles["no-results"]}>
-                                검색 결과가 없습니다.
-                            </div>
-                        ) : (
-                            restaurants.map(restaurant => (
-                                <Link
-                                    key={restaurant.id}
-                                    to={`/restaurant/detail/${restaurant.id}`}  // 상세 페이지 ID 전달
-                                    className={styles.noUnderline}
-                                >
-                                    <div className={styles["restaurant-card"]}>
-                                        <div className={styles["card-image"]}>
-                                            <img
-                                                src={restaurant.mainImageUrl || "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=200&fit=crop"}
-                                                alt={restaurant.name}
-                                            />
-                                            {/* <button className={styles["bookmark-btn"]}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                                </svg>
-                                            </button> */}
-                                            <div className={styles["quick-info"]}>
-                                                {/* <span className={styles["info-badge"]}>영업중</span>
-                                                <span className={styles["info-badge"]}>예약가능</span> */}
-
+                                    <div className={styles["card-content"]}>
+                                        <h3 className={styles["restaurant-name"]}>{restaurant.name}</h3>
+                                        <div className={styles["restaurant-info"]}>
+                                            <div className={styles["rating"]}>
+                                                <span className={styles["star"]}>⭐</span>
+                                                <span className={styles["score"]}>
+                                                    {restaurant.averageRating ? restaurant.averageRating.toFixed(1) : '0.0'}
+                                                </span>
+                                                <span className={styles["reviews"]}>
+                                                    ({restaurant.reviewCount || 0})
+                                                </span>
+                                            </div>
+                                            <div className={styles["location"]}>
+                                                <span>📍</span>
+                                                <span>{restaurant.regionCode}</span>
                                             </div>
                                         </div>
-                                        <div className={styles["card-content"]}>
-                                            <h3 className={styles["restaurant-name"]}>{restaurant.name}</h3>
-                                            <div className={styles["restaurant-info"]}>
-                                                <div className={styles["rating"]}>
-                                                    <span className={styles["star"]}>⭐</span>
-                                                    <span className={styles["score"]}>
-                                                        {restaurant.averageRating ? restaurant.averageRating.toFixed(1) : '0.0'}
-                                                    </span>
-                                                    <span className={styles["reviews"]}>
-                                                        ({restaurant.reviewCount || 0})
-                                                    </span>
+                                        <div className={styles["restaurant-tags"]}>
+                                            <span className={`${styles["tag"]} ${styles["cuisine"]}`}>
+                                                {restaurant.restaurantCategoryName}
+                                            </span>
+                                            {restaurant.facilityNames && restaurant.facilityNames.length > 0 && (
+                                                <div className={styles.features}>
+                                                    {restaurant.facilityNames.map((name, index) => (
+                                                        <span key={index} className={`${styles["tag"]} ${styles["feature"]}`}>
+                                                            {name}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                                <div className={styles["location"]}>
-                                                    <span>📍</span>
-                                                    <span>{restaurant.regionCode}</span>
-                                                </div>
-                                            </div>
-                                            <div className={styles["restaurant-tags"]}>
-                                                <span className={`${styles["tag"]} ${styles["cuisine"]}`}>
-                                                    {restaurant.restaurantCategoryName}
-                                                </span>
-                                                {restaurant.facilityNames && restaurant.facilityNames.length > 0 && (
-                                                    <div className={styles.features}>
-                                                        {restaurant.facilityNames.map((name, index) => (
-                                                            <span key={index} className={`${styles["tag"]} ${styles["feature"]}`}>
-                                                                {name}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                            )}
 
-                                            </div>
-                                            <div className={styles["availability-section"]}>
-                                                <div className={styles["availability-title"]}>
-                                                    오늘 영업시간: {restaurant.todayOpeningHours || '정보 없음'}
-                                                </div>
+                                        </div>
+                                        <div className={styles["availability-section"]}>
+                                            <div className={styles["availability-title"]}>
+                                                오늘 영업시간: {restaurant.todayOpeningHours || '정보 없음'}
                                             </div>
                                         </div>
                                     </div>
-                                </Link>
-                            ))
-                        )}
+
+                                </div>
+                            </Link>
+                        ))
+                        }
                     </div>
 
                     {/* 페이징 */}

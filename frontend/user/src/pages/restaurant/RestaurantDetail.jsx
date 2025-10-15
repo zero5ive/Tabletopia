@@ -248,7 +248,7 @@ export default function RestaurantList() {
                         </div>
 
                         {/* <!-- Waiting Content --> */}
-                       <Waiting />
+                       <Waiting reservationType={reservationType} />
 
 
                     </div>
