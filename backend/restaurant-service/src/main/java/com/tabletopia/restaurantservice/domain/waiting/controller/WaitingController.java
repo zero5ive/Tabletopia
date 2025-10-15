@@ -189,4 +189,38 @@ public class WaitingController {
 
     return ResponseEntity.ok("착석되었습니다.");
   }
+
+  /**
+   * 내 앞에 대기 중인 팀 수 조회
+   *
+   * @author 서예닮
+   * @since 2025-10-14
+   */
+  @GetMapping("/api/waitings/teams-ahead")
+  @ResponseBody
+  public ResponseEntity<Map<String, Integer>> getTeamsAhead(
+      @RequestParam Long restaurantId,
+      @RequestParam Integer waitingNumber) {
+    Integer teamsAhead = waitingService.getTeamsAheadCount(restaurantId, waitingNumber);
+    return ResponseEntity.ok(Map.of("teamsAhead", teamsAhead));
+  }
+
+  /**
+   * 사용자의 웨이팅 내역 조회 (앞 대기팀 수 포함)
+   *
+   * @author 서예닮
+   * @since 2025-10-15
+   */
+  @GetMapping("/api/waitings/user/{userId}")
+  @ResponseBody
+  public ResponseEntity<Page<WaitingResponse>> getUserWaitingList(
+      @PathVariable Long userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);
+
+    return ResponseEntity.ok(waitingList);
+  }
 }
