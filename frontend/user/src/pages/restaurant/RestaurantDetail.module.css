@@ -224,16 +224,21 @@
         }
 
         .menu-image {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            width: 300px;
+            /* 원하는 너비 */
+            height: 180px;
+            /* 원하는 높이 */
+            overflow: hidden;
+            /* 넘치는 부분 숨기기 */
             border-radius: 8px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
+            /* 선택사항 */
+        }
+
+        .menu-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 👈 핵심! 비율 유지하며 꽉 채움 */
         }
 
         .menu-info {

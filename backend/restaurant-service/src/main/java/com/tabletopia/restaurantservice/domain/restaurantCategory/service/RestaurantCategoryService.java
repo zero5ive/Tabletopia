@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RestaurantCategoryService {
 
-  private final RestaurantCategoryRepository restaurnatCategoryRepository;
+  private final RestaurantCategoryRepository restaurantCategoryRepository;
 
 
   public List<CategorySimpleResponse> getRestaurantCategories() {
-    List<RestaurantCategory> categoryList = restaurnatCategoryRepository.findAllByOrderByDisplayOrderAsc();
+    List<RestaurantCategory> categoryList = restaurantCategoryRepository.findAllByOrderByDisplayOrderAsc();
 
     return categoryList.stream()
         .map(category -> new CategorySimpleResponse(
