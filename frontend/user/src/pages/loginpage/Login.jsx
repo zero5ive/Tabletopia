@@ -94,13 +94,12 @@ const Login = () => {
         const fullEmail = `${formData.emailLocal}@${formData.emailDomain}`;
 
         try {
-            const response = await fetch('/api/user/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: fullEmail, password: formData.password })
+            const response = await axios.post('http://localhost:8002/api/user/login', {
+                email: fullEmail,
+                password: formData.password
             });
             
-            const data = await response.json();
+            const data = response.data;
             console.log(data);
             
             if (data.success && data.accessToken) {
@@ -111,13 +110,19 @@ const Login = () => {
                 setGlobalError(data.message || '로그인 정보가 올바르지 않습니다.');
             }
         } catch (error) {
-            setGlobalError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+            if (error.response) {
+                setGlobalError(error.response.data.message || '로그인 정보가 올바르지 않습니다.');
+            } else if (error.request) {
+                setGlobalError('서버에서 응답이 없습니다. 네트워크를 확인해주세요.');
+            } else {
+                setGlobalError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+            }
         }
     };
 
-    const socialLogin = (provider) => {
-        window.location.href = `http://localhost:10022/api/user/oauth2/authorization/${provider}`;
-    }
+    // const socialLogin = (provider) => {
+    //     window.location.href = `http://localhost:10022/api/user/oauth2/authorization/${provider}`;
+    // }
 
     const UserIcon = () => (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
