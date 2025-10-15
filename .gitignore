@@ -217,3 +217,8 @@ frontend/user/package-lock.json
 frontend/user/package.json
 package-lock.json
 package.json
+
+### Querydsl ###
+# Q타입 생성 디렉토리
+src/main/generated/
+/generated/

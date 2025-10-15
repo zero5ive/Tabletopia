@@ -174,20 +174,47 @@ const ReservationConfirm = () => {
     try {
       // 예약정보 등록
       const response = await axios.post(
-        'http://localhost:10022/api/realtime/reservation',
+        'http://localhost:8002/api/realtime/reservation',
         finalData
       );
 
-      console.log('예약 등록 성공:', response.data);
+      console.log('예약 등록 응답:', response.data);
 
-      // ✅ 정상 이동 플래그 설정
-      // isNavigatingRef.current = true;
+      // 응답 검증
+      if (response.data && response.data.success) {
+        console.log('예약 등록 성공:', response.data.reservationId);
 
-      // 결제 페이지로 이동
-      window.location.href = '/reservations/payment';
+        // ✅ 정상 이동 플래그 설정
+        isNavigatingRef.current = true;
+
+        // 예약 선점 정보 제거
+        sessionStorage.removeItem('activeTableSelection');
+        hasCleanedUpRef.current = true;
+
+        // 결제 페이지로 이동
+        window.location.href = '/reservations/payment';
+      } else {
+        // 성공 응답이지만 success: false인 경우
+        const errorMessage = response.data?.message || '예약 등록에 실패했습니다.';
+        console.error('예약 등록 실패:', errorMessage);
+        alert(errorMessage);
+      }
     } catch (error) {
       console.error('예약 등록 실패:', error);
-      alert('예약 등록 중 오류가 발생했습니다.');
+
+      // 서버 응답이 있는 경우
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else if (error.response) {
+        // 서버에서 응답은 왔지만 에러인 경우
+        alert(`예약 등록 중 오류가 발생했습니다. (상태 코드: ${error.response.status})`);
+      } else if (error.request) {
+        // 요청은 보냈지만 응답을 받지 못한 경우
+        alert('서버와 통신할 수 없습니다. 네트워크 연결을 확인해주세요.');
+      } else {
+        // 요청 설정 중 오류가 발생한 경우
+        alert('예약 등록 중 오류가 발생했습니다.');
+      }
     }
   };
 
