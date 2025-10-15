@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.exception;
 
+import com.tabletopia.restaurantservice.domain.admin.exception.AdminNotFoundException;
 import com.tabletopia.restaurantservice.dto.ErrorResponse;
 import com.tabletopia.restaurantservice.domain.user.exception.UserAlreadyExistsException;
 import com.tabletopia.restaurantservice.domain.user.exception.UserNotFoundException;
@@ -98,11 +99,11 @@ public class GlobalExceptionHandler {
      * @author 이세형
      * @since 2025-10-14
      */
-//    @ExceptionHandler(UserNotFoundException.class)
-//    public ResponseEntity<ErrorResponse> handleAdminNotFoundException(UserNotFoundException e) {
-//        log.warn("admin 로그인 실패: {}", e.getMessage());
-//        return ResponseEntity
-//                .badRequest()
-//                .body(ErrorResponse.of(e.getMessage(), "USER_NOT_FOUND"));
-//    }
+    @ExceptionHandler(AdminNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAdminNotFoundException(UserNotFoundException e) {
+        log.warn("admin 로그인 실패: {}", e.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(ErrorResponse.of(e.getMessage(), "USER_NOT_FOUND"));
+    }
 }
