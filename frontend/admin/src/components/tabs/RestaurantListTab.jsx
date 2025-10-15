@@ -79,6 +79,7 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
   const totalPages = Math.ceil(restaurants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = restaurants.slice(startIndex, startIndex + itemsPerPage);
+  console.log(currentItems);
 
   console.log("currentItems: " +currentItems);
 
