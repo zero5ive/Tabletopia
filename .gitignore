@@ -220,5 +220,4 @@ package.json
 
 ### Querydsl ###
 # Q타입 생성 디렉토리
-src/main/generated/
-/generated/
+**/generated/
