@@ -12,6 +12,7 @@ import ImagesTab from './tabs/ImagesTab';
 import ReviewsTab from './tabs/ReviewsTab';
 import SpecialHoursTab from "./tabs/SpecialHoursTab";
 import WaitingTab from './tabs/WaitingTab';
+import ReservationTableTab from './tabs/ReservationTableTab';
 
 export default function MainContent() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -93,6 +94,7 @@ export default function MainContent() {
             <ImagesTab selectedRestaurant={selectedRestaurant} />
             <ReviewsTab selectedRestaurant={selectedRestaurant} />
             <WaitingTab selectedRestaurant={selectedRestaurant} />
+            <ReservationTableTab selectedRestaurant={selectedRestaurant} />
           </div>
         </div>
       </div>

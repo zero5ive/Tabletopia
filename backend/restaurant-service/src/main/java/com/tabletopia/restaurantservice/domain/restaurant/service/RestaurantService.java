@@ -2,6 +2,8 @@ package com.tabletopia.restaurantservice.domain.restaurant.service;
 
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantCategoryWithPage;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse;
+import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantSearchResponse;
+import com.tabletopia.restaurantservice.domain.restaurant.dto.SearchCondition;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.dto.RestaurantCategoryResponse;
@@ -10,7 +12,9 @@ import com.tabletopia.restaurantservice.domain.restaurantCategory.repository.Res
 import com.tabletopia.restaurantservice.domain.restaurantreview.entity.RestaurantReview;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,7 @@ import java.util.List;
  * @author 김지민
  * @since 2025-10-09
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -107,7 +112,7 @@ public class RestaurantService {
     return restaurantRepository.findAll();
   }
 
-  ///카테고리별 레스토랑 페이징
+  // 카테고리별 레스토랑 페이징
   public RestaurantCategoryResponse getRestaurantsByCategory(Long categoryId, Pageable pageable) {
     // 1. 카테고리 정보 가져오기
     RestaurantCategory category = restaurantCategoryRepository.findById(categoryId)
@@ -162,6 +167,27 @@ public class RestaurantService {
         category.getDisplayOrder(),
         restaurantResponses
     );
+  }
+
+  /**
+   * 레스토랑 동적 검색
+   *
+   * @param searchCondition 검색 조건
+   * @return 검색 결과 페이지
+   * @author 김예진
+   * @since 2025-10-15
+   */
+  public Page<Restaurant> searchRestaurants(SearchCondition searchCondition){
+    log.debug("레스토랑 검색: name={}, regionCode={}, categoryId={}",
+        searchCondition.getName(), searchCondition.getRegionCode(), searchCondition.getCategoryId());
+
+    // 보여줄 페이징 값
+    PageRequest pageRequest = PageRequest.of(
+        searchCondition.getPage() != null ? searchCondition.getPage() : 0,
+        searchCondition.getSize() != null ? searchCondition.getSize() : 10
+    );
+
+    return restaurantRepository.searchRestaurants(searchCondition, pageRequest);
   }
 
   private String getDayName(int dayOfWeek) {
