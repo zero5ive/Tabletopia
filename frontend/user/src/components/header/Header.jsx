@@ -9,7 +9,10 @@ export default function Header({children}){
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.headerContent}>
-                    <Link to="/" className={styles.logo}>테이블토피아</Link>
+                    <Link to="/" className={styles.logo}>
+                        <img src="/ChatGPT Image 2025년 10월 13일 오후 03_14_22-Photoroom.png" alt="Tabletopia Logo" className={styles.logoImage} />
+                        테이블토피아
+                    </Link>
                     <MainHeader/>
                     {/* {<DetailHeader/>} */}
                 </div>                      
