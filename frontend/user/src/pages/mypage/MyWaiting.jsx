@@ -1,7 +1,9 @@
 import styles from './MyWaiting.module.css'
 import { Link } from "react-router-dom";
-import { useState, useEffect } from 'react';
-import { getUserWaitingList ,waitingCancel} from '../utils/WaitingApi';
+import { useState, useEffect, useRef } from 'react';
+import { getUserWaitingList, waitingCancel } from '../utils/WaitingApi';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 export default function MyReservation() {
     const [allWaitingList, setAllWaitingList] = useState([]); // 전체 데이터
@@ -15,9 +17,20 @@ export default function MyReservation() {
     // 임시 유저아이디
     const userId = 1;
 
+    // WebSocket 클라이언트
+    const stompClient = useRef(null);
+
     // 전체 데이터 가져오기
     useEffect(() => {
         fetchAllWaitingList();
+        connectWebSocket();
+
+        // 컴포넌트 언마운트 시 WebSocket 연결 해제
+        return () => {
+            if (stompClient.current) {
+                stompClient.current.deactivate();
+            }
+        };
     }, []);
 
     // 탭이 바뀌면 필터링 및 1페이지로 리셋
@@ -102,6 +115,50 @@ export default function MyReservation() {
             default:
                 return { text: state, className: '' };
         }
+    };
+
+    // WebSocket 연결
+    const connectWebSocket = () => {
+        const client = new Client({
+            webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            onConnect: () => {
+                console.log('WebSocket 연결 성공');
+
+                // 웨이팅 호출 구독
+                client.subscribe('/topic/call', (message) => {
+                    console.log('웨이팅 호출:', message.body);
+                    handleWebSocketMessage(JSON.parse(message.body));
+                });
+
+                // 웨이팅 착석 구독
+                client.subscribe('/topic/seated', (message) => {
+                    console.log('웨이팅 착석:', message.body);
+                    handleWebSocketMessage(JSON.parse(message.body));
+                });
+
+                // 웨이팅 취소 구독
+                client.subscribe('/topic/cancel', (message) => {
+                    console.log('웨이팅 취소:', message.body);
+                    handleWebSocketMessage(JSON.parse(message.body));
+                });
+            },
+            onStompError: (frame) => {
+                console.error('STOMP 에러:', frame);
+            },
+        });
+
+        client.activate();
+        stompClient.current = client;
+    };
+
+    // WebSocket 메시지 처리
+    const handleWebSocketMessage = (message) => {
+        console.log('WebSocket 메시지 수신:', message);
+        // 데이터 새로고침
+        fetchAllWaitingList();
     };
 
     //대기 취소 함수
