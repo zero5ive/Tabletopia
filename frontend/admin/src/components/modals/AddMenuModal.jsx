@@ -23,7 +23,7 @@ export default function AddMenuModal({ restaurantId, onSuccess, editTarget }) {
         isSoldout: editTarget.isSoldout || false,
         image: null,
         imagePreview: editTarget.imageFilename
-          ? `http://localhost:10022/uploads/menus/${editTarget.imageFilename}`
+          ? `http://localhost:8002/uploads/menus/${editTarget.imageFilename}`
           : "",
       });
     } else {
