@@ -21,13 +21,14 @@ public class FileStorageService {
   @Value("${app.upload-dir}")
   private String uploadDir;
 
-  public String save(MultipartFile file) {
+  public String save(MultipartFile file, String subDir) {
     try {
       String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-      Path filePath = Paths.get(uploadDir, fileName);
-      Files.createDirectories(filePath.getParent());
+      Path dirPath = Paths.get(uploadDir, subDir);
+      Files.createDirectories(dirPath);
+      Path filePath = dirPath.resolve(fileName);
       file.transferTo(filePath.toFile());
-      return fileName;
+      return "/uploads/" + subDir + "/" + fileName;
     } catch (IOException e) {
       throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
     }
