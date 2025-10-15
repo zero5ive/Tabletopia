@@ -19,84 +19,24 @@
 .logo {
     font-size: 32px;
     font-weight: bold;
-    color: #ff6b35;
+    color: #ff7b4d;
     margin-right: 40px;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.logoImage {
+    height: 40px;
+    margin-right: 10px;
 }
 
 /* 메인페이지 css */
 
-.searchContainer {
-    flex: 1;
-    max-width: 600px;
-    position: relative;
-    margin-right: 40px;
-}
-
-.searchBox {
-    width: 100%;
-    padding: 12px 24px;
-    border: 2px solid #e9ecef;
-    border-radius: 50px;
-    font-size: 16px;
-    background: #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.searchBox:focus {
-    outline: none;
-    border-color: #ff6b35;
-    background: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
-}
-
-.searchButton {
-    border: 1px solid #dee2e6;
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-right: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.searchButton:hover {
-    background: #f8f9fa;
-}
-
-.searchButton:hover .searchIcon {
-    border-color: #ff6b35;
-}
-
-.searchButton:hover .searchIcon::after {
-    background: #ff6b35;
-}
-
-.searchIcon {
-    width: 16px;
-    height: 16px;
-    border: 2px solid darkgrey; /* 돋보기 원 */
-    border-radius: 50%;
-    position: relative;
-}
-
-.searchIcon::after {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 2px;
-    background: darkgrey; /* 손잡이 */
-    top: 12px;
-    left: 12px;
-    transform: rotate(45deg);
-    transform-origin: top left;
-}
-
 .userActions {
     display: flex;
     gap: 16px;
+    margin-left: auto;
 }
 
 .btn {

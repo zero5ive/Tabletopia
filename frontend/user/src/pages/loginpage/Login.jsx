@@ -232,6 +232,9 @@ const Login = () => {
                 <div className={styles.signupLink}>
                     계정이 없으신가요? <Link to='/users/signup'>회원가입</Link>
                 </div>
+                <div className={styles.signupLink}>
+                    <a href="/">홈페이지 메인화면으로 돌아가기</a>
+                </div>
             </div>
         </div>
     );
