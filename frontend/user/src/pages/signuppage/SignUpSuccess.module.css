@@ -2,7 +2,7 @@
 
 .signupSuccessPage {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    background: #f7f9fc !important;
+    background: #FFF8F2 !important;
     min-height: 100vh !important;
     width: 100vw !important;
     display: flex !important;
@@ -15,130 +15,46 @@
     z-index: 1000 !important;
 }
 
-/* 배경 애니메이션 */
-.bgAnimation {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: -1 !important;
-    background: linear-gradient(45deg, #f0f2f5, #e8f4f8, #f7f9fc, #e3f2fd) !important;
-    background-size: 400% 400% !important;
-    animation: gradientShift 15s ease infinite !important;
+.bgAnimation, .particles {
+    display: none !important;
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* 파티클 효과 */
-.particles {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: -1 !important;
-    pointer-events: none !important;
-}
-
-.particle {
-    position: absolute !important;
-    width: 3px !important;
-    height: 3px !important;
-    background: rgba(25, 118, 210, 0.3) !important;
-    border-radius: 50% !important;
-    animation: particleFloat 8s ease-in-out infinite !important;
-}
-
-@keyframes particleFloat {
-    0%, 100% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 0;
-    }
-    50% {
-        transform: translateY(-120px) translateX(50px) rotate(180deg);
-        opacity: 1;
-    }
-}
-
-/* 성공 컨테이너 */
 .successContainer {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(30px) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    background: #ffffff !important;
+    border: 1px solid #FFD6B8 !important;
     border-radius: 24px !important;
     padding: 48px 40px !important;
     width: 100% !important;
-    max-width: 420px !important;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    max-width: 450px !important;
+    box-shadow: 0 20px 40px rgba(255, 107, 0, 0.1) !important;
     position: relative !important;
-    overflow: hidden !important;
     animation: slideUp 0.8s ease-out !important;
     text-align: center !important;
     z-index: 10 !important;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* 글로우 효과 */
-.successContainer::before {
-    content: '' !important;
-    position: absolute !important;
-    top: -2px !important;
-    left: -2px !important;
-    right: -2px !important;
-    bottom: -2px !important;
-    background: linear-gradient(135deg, #1976d2, #42a5f5) !important;
-    border-radius: 24px !important;
-    z-index: -1 !important;
-    opacity: 0 !important;
-    transition: opacity 0.3s ease !important;
-}
-
-.successContainer:hover::before {
-    opacity: 0.1 !important;
-}
-
-/* 성공 아이콘 */
 .successIcon {
     width: 80px !important;
     height: 80px !important;
-    background: linear-gradient(135deg, #4caf50, #66bb6a) !important;
+    background: linear-gradient(135deg, #FF6B00, #FF8A33) !important;
     border-radius: 50% !important;
     margin: 0 auto 24px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     animation: bounceIn 0.6s ease-out 0.2s both !important;
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3) !important;
+    box-shadow: 0 8px 25px rgba(255, 107, 0, 0.25) !important;
 }
 
 @keyframes bounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 .successIcon svg {
@@ -153,62 +69,50 @@
     100% { transform: scale(1); }
 }
 
-/* 제목 */
 .successTitle {
     font-size: 32px !important;
     font-weight: 700 !important;
-    background: linear-gradient(135deg, #1976d2, #42a5f5) !important;
+    background: linear-gradient(135deg, #FF6B00, #FF8A33) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
     margin-bottom: 8px !important;
-    letter-spacing: -0.02em !important;
     animation: fadeInUp 0.6s ease-out 0.4s both !important;
 }
 
-/* 부제목 */
 .successSubtitle {
-    color: #546e7a !important;
+    color: #7a7a7a !important;
     font-size: 15px !important;
-    font-weight: 400 !important;
     margin-bottom: 24px !important;
     animation: fadeInUp 0.6s ease-out 0.6s both !important;
 }
 
-/* 사용자 정보 */
 .userInfo {
-    background: rgba(25, 118, 210, 0.05) !important;
+    background: #FFF8F2 !important;
     border-radius: 12px !important;
     padding: 16px !important;
     margin: 24px 0 !important;
-    border: 1px solid rgba(25, 118, 210, 0.1) !important;
+    border: 1px solid #FFD6B8 !important;
     animation: fadeInUp 0.6s ease-out 0.8s both !important;
 }
 
 .userId {
     font-size: 18px !important;
     font-weight: 600 !important;
-    color: #1976d2 !important;
+    color: #E56000 !important;
     margin-bottom: 4px !important;
 }
 
 .welcomeText {
     font-size: 14px !important;
-    color: #546e7a !important;
+    color: #7a7a7a !important;
 }
 
 @keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
-/* 액션 버튼들 */
 .actionButtons {
     display: flex !important;
     gap: 12px !important;
@@ -224,49 +128,36 @@
     font-weight: 600 !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    text-align: center !important;
-    border: none !important;
-    font-family: inherit !important;
+    border: 2px solid transparent !important;
 }
 
 .btnPrimary {
-    background: linear-gradient(135deg, #1976d2, #42a5f5, #64b5f6) !important;
-    background-size: 200% 200% !important;
+    background: #FF6B00 !important;
     color: white !important;
-    animation: gradientFlow 3s ease infinite !important;
-}
-
-@keyframes gradientFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
 }
 
 .btnPrimary:hover {
+    background: #E56000 !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 10px 30px rgba(25, 118, 210, 0.3) !important;
+    box-shadow: 0 10px 20px rgba(255, 107, 0, 0.2) !important;
 }
 
 .btnSecondary {
-    background: rgba(255, 255, 255, 0.8) !important;
-    color: #1976d2 !important;
-    border: 2px solid rgba(25, 118, 210, 0.2) !important;
+    background: #ffffff !important;
+    color: #FF6B00 !important;
+    border-color: #FFD6B8 !important;
 }
 
 .btnSecondary:hover {
-    background: rgba(25, 118, 210, 0.05) !important;
-    border-color: #1976d2 !important;
+    background: #FFF8F2 !important;
+    border-color: #FF6B00 !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 0 20px rgba(25, 118, 210, 0.15) !important;
 }
 
-/* 추가 정보 */
 .additionalInfo {
     margin-top: 32px !important;
     padding-top: 24px !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-top: 1px solid #FFD6B8 !important;
     animation: fadeInUp 0.6s ease-out 1.2s both !important;
 }
 
@@ -275,26 +166,20 @@
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
-    margin-bottom: 12px !important;
     font-size: 14px !important;
-    color: #546e7a !important;
-}
-
-.infoItem:last-child {
-    margin-bottom: 0 !important;
+    color: #7a7a7a !important;
 }
 
 .infoIcon {
     width: 16px !important;
     height: 16px !important;
-    fill: #1976d2 !important;
+    fill: #FF8A33 !important;
 }
 
-/* 자동 리다이렉트 타이머 */
 .redirectTimer {
     margin-top: 20px !important;
     font-size: 13px !important;
-    color: #78909c !important;
+    color: #aaa !important;
     animation: fadeInUp 0.6s ease-out 1.4s both !important;
     display: flex !important;
     align-items: center !important;
@@ -305,8 +190,8 @@
 .timerCircle {
     width: 12px !important;
     height: 12px !important;
-    border: 2px solid #e0e0e0 !important;
-    border-top: 2px solid #1976d2 !important;
+    border: 2px solid #FFD6B8 !important;
+    border-top: 2px solid #FF6B00 !important;
     border-radius: 50% !important;
     animation: spin 1s linear infinite !important;
 }
@@ -314,20 +199,4 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-/* 반응형 */
-@media (max-width: 480px) {
-    .successContainer {
-        margin: 20px !important;
-        padding: 32px 24px !important;
-    }
-
-    .successTitle {
-        font-size: 28px !important;
-    }
-
-    .actionButtons {
-        flex-direction: column !important;
-    }
 }
