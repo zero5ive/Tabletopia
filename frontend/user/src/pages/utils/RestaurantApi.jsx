@@ -13,3 +13,7 @@ export const getRestaurantByCategory = async (categoryId, page = 0, size = 1) =>
         }
     });
 };
+
+export const getRestaurant = (id) => {
+    return axios.get(`${URL}/${id}`);
+}

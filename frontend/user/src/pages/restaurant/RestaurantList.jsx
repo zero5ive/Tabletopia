@@ -151,7 +151,7 @@ export default function RestaurantList() {
 
                     <div className={styles["restaurant-grid"]}>
                         {restaurants.map(restaurant => (
-                            <Link key={restaurant.id} to="/restaurant/detail" className={styles.noUnderline}>
+                            <Link key={restaurant.id} to={`/restaurant/detail?restaurantId=${restaurant.id}`} className={styles.noUnderline}>
                                 <div className={styles["restaurant-card"]}>
                                     <div className={styles["card-image"]}>
                                         <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=200&fit=crop" alt={restaurant.name} />

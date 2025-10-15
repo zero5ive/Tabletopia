@@ -19,4 +19,6 @@ import org.springframework.stereotype.Repository;
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
   Page<Restaurant> findByRestaurantCategory(RestaurantCategory category, Pageable pageable);
+
+
 }
