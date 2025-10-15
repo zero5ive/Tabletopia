@@ -59,17 +59,23 @@ public class RestaurantImageService {
         .orElseThrow(() -> new IllegalArgumentException("매장 정보를 찾을 수 없습니다."));
 
     for (MultipartFile file : files) {
-      String savedFileName = fileStorageService.save(file, "restaurants");
+      String savedFilePath = fileStorageService.save(file, "restaurants");
 
-      // DB에는 파일명만 저장
-      String fileNameOnly = Paths.get(savedFileName).getFileName().toString();
+      // 전체 경로 중 마지막 파일명만 추출
+      String fileNameOnly = Paths.get(savedFilePath).getFileName().toString();
+
+      // 확실히 uploads/, restaurants/ 같은 상위 폴더 제거
+      if (fileNameOnly.contains("/")) {
+        fileNameOnly = fileNameOnly.substring(fileNameOnly.lastIndexOf("/") + 1);
+      }
 
       RestaurantImage img = RestaurantImage.builder()
           .restaurant(restaurant)
-          .imageUrl(fileNameOnly) // ← 파일명만 저장
+          .imageUrl(fileNameOnly)
           .build();
 
       imageRepository.save(img);
+
     }
   }
 
