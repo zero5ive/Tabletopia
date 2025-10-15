@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.restaurantFacility.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.facility.entity.Facility;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.*;
@@ -28,10 +29,12 @@ public class RestaurantFacility {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "restaurantFacilities"})
   private Restaurant restaurant;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "facility_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private Facility facility;
 
   @Column(name = "facility_info")

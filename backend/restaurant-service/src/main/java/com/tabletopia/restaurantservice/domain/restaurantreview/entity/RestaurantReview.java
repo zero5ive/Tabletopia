@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.restaurantreview.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "restaurant_review")
 @Getter
 @NoArgsConstructor
-public class RetaurantReview {
+public class RestaurantReview {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -30,6 +31,7 @@ public class RetaurantReview {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private Restaurant restaurant;
 
   @Column(nullable = false)
