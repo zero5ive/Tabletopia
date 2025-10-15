@@ -1,8 +1,8 @@
-package com.tabletopia.userservice.domain.user.service;
+package com.tabletopia.restaurantservice.domain.user.service;
 
-import com.tabletopia.userservice.domain.user.dto.UserDTO;
-import com.tabletopia.userservice.domain.user.entity.User;
-import com.tabletopia.userservice.domain.user.repository.JpaUserRepository;
+import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

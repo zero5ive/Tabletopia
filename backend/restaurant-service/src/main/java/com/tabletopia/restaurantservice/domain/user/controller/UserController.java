@@ -1,13 +1,12 @@
-package com.tabletopia.userservice.domain.user.controller;
+package com.tabletopia.restaurantservice.domain.user.controller;
 
-import com.tabletopia.userservice.domain.refreshtoken.service.RefreshTokenService;
-import com.tabletopia.userservice.domain.user.dto.AuthenticationRequest;
-import com.tabletopia.userservice.domain.user.dto.AuthenticationResponse;
-import com.tabletopia.userservice.domain.user.dto.RefreshTokenRequest;
-import com.tabletopia.userservice.domain.user.dto.UserDTO;
-import com.tabletopia.userservice.domain.user.service.CustomUserDetailsService;
-import com.tabletopia.userservice.domain.user.service.UserService;
-import com.tabletopia.userservice.util.JwtUtil;
+import com.tabletopia.restaurantservice.domain.refreshtoken.service.RefreshTokenService;
+import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationRequest;
+import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationResponse;
+import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
+import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsService;
+import com.tabletopia.restaurantservice.domain.user.service.UserService;
+import com.tabletopia.restaurantservice.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -17,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -35,6 +31,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;

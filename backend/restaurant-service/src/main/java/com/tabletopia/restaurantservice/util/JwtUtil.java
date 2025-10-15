@@ -1,4 +1,4 @@
-package com.tabletopia.userservice.util;
+package com.tabletopia.restaurantservice.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
