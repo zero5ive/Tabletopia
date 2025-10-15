@@ -1,4 +1,4 @@
-package com.tabletopia.restaurantservice.dto;
+package com.tabletopia.restaurantservice.domain.reservation.dto;
 
 import lombok.Data;
 

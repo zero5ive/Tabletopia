@@ -61,6 +61,7 @@ public class RedisTableSelectionService {
    */
   public TableSelectionInfo getTableSelection(String selectionKey) {
     String redisKey = TABLE_SELECTION_PREFIX + selectionKey;
+    log.debug("선점조회 시작");
 
     try {
       Object value = redisTemplate.opsForValue().get(redisKey);
