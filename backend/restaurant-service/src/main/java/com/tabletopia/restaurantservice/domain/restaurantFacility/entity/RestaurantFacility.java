@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.restaurantFacility.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.facility.entity.Facility;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import jakarta.persistence.*;
@@ -52,11 +53,13 @@ public class RestaurantFacility {
   /** 매장 정보 (N:1 관계) */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "restaurantFacilities"})
   private Restaurant restaurant;
 
   /** 편의시설 정보 (N:1 관계) */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "facility_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private Facility facility;
 
   /** 생성 일시 */

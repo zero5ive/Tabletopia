@@ -24,9 +24,9 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
     try {
       const res = await getAllRestaurants();
       setRestaurants(res.data);
+      console.log("레스토랑 리스트", res.data);
     } catch (error) {
       console.error("매장 목록 로딩 실패:", error);
-      alert("목록을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
@@ -79,6 +79,8 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
   const totalPages = Math.ceil(restaurants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = restaurants.slice(startIndex, startIndex + itemsPerPage);
+
+  console.log("currentItems: " +currentItems);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

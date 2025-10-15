@@ -11,7 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2025-10-13
  */
 
-public interface RestaurnatCategoryRepository extends JpaRepository<RestaurantCategory, Long> {
+public interface RestaurantCategoryRepository extends JpaRepository<RestaurantCategory, Long> {
+
 
   //OrderByDisplay 오름차순으로 리스트 찾기
   List<RestaurantCategory>findAllByOrderByDisplayOrderAsc();

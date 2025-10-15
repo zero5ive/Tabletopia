@@ -1,7 +1,8 @@
 package com.tabletopia.restaurantservice.domain.restaurantCategory.service;
 
+import com.tabletopia.restaurantservice.domain.restaurantCategory.dto.CategorySimpleResponse;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
-import com.tabletopia.restaurantservice.domain.restaurantCategory.repository.RestaurnatCategoryRepository;
+import com.tabletopia.restaurantservice.domain.restaurantCategory.repository.RestaurantCategoryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,15 +17,21 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RestaurantCategoryService {
 
-  private final RestaurnatCategoryRepository restaurnatCategoryRepository;
+  private final RestaurantCategoryRepository restaurnatCategoryRepository;
 
-  public List<RestaurantCategory> getRestaurantCategories() {
-    return restaurnatCategoryRepository.findAllByOrderByDisplayOrderAsc();
+
+  public List<CategorySimpleResponse> getRestaurantCategories() {
+    List<RestaurantCategory> categoryList = restaurnatCategoryRepository.findAllByOrderByDisplayOrderAsc();
+
+    return categoryList.stream()
+        .map(category -> new CategorySimpleResponse(
+            category.getId(),
+            category.getName(),
+            category.getDisplayOrder()
+        ))
+        .toList();
   }
 
-  public RestaurantCategory getRestaurantCategoryById(Long id) {
-    return restaurnatCategoryRepository.findById(id).orElseThrow(()->new RuntimeException("카테고리를 찾을 수 없습니다."));
-  }
 
 
 }

@@ -2,7 +2,12 @@ package com.tabletopia.restaurantservice.domain.restaurant.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
+import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.RestaurantFacility;
+import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.entity.RestaurantOpeningHour;
+import com.tabletopia.restaurantservice.domain.restaurantreview.entity.RestaurantReview;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -89,6 +94,18 @@ public class Restaurant {
   @JoinColumn(name = "restaurant_category_id", nullable = false)
   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private RestaurantCategory restaurantCategory;
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<RestaurantOpeningHour> openingHours = new ArrayList<>();
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<RestaurantFacility> restaurantFacilities = new ArrayList<>();
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<RestaurantReview> reviews = new ArrayList<>();
 
   /** 매장 소유 계정 (FK) */
 //  @ManyToOne(fetch = FetchType.LAZY)
