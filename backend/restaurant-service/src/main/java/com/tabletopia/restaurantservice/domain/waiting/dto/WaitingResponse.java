@@ -28,6 +28,8 @@ public class WaitingResponse {
 
   private String waitingTime; // "15분 대기" 같은 계산된 값
 
+  private Integer teamsAhead; // 내 앞에 대기 중인 팀 수
+
   public static WaitingResponse from(Waiting waiting, Long restaurantId) {
     WaitingResponse response = new WaitingResponse();
 

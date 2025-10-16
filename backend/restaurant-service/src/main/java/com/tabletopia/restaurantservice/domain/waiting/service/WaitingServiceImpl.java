@@ -91,4 +91,29 @@ public class WaitingServiceImpl implements WaitingService{
 
     return waitingRepository.save(waiting);
   }
+
+  @Override
+  public Integer getTeamsAheadCount(Long restaurantId, Integer myWaitingNumber) {
+    Integer count = waitingRepository.countTeamsAhead(restaurantId, myWaitingNumber);
+    return count != null ? count : 0;
+  }
+
+  @Override
+  public Page<WaitingResponse> getUserWaitingList(Long userId, Pageable pageable) {
+    Page<Waiting> waitingPage = waitingRepository.findByUserId(userId, pageable);
+
+    // Entity를 DTO로 변환하고 대기중인 경우 앞 대기팀 수 계산
+    return waitingPage.map(waiting -> {
+      WaitingResponse response = modelMapper.map(waiting, WaitingResponse.class);
+
+      // WAITING 상태이고 오늘 날짜인 경우에만 앞 대기팀 수 계산
+      LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay(); //오늘 0시
+      if (waiting.getWaitingState() == WaitingState.WAITING && waiting.getCreatedAt().isAfter(todayStart)) {
+            Integer teamsAhead = getTeamsAheadCount(waiting.getRestaurantId(), waiting.getWaitingNumber());
+            response.setTeamsAhead(teamsAhead);
+      }
+
+      return response;
+    });
+  }
 }

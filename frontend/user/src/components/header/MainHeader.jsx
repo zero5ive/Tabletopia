@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
 import { useEffect, useState } from 'react';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+import NotificationPopup from '../NotificationPopup'
 
 export function MainHeader() {
     const navigate = useNavigate();
@@ -46,11 +47,23 @@ export function MainHeader() {
         navigate('/mypage');
     };
 
+    // 알림팝업
+    const [showNotificationPopup, setShowNotificationPopup] = useState(false)
+
+    const handleNotificationClick = () => {
+        setShowNotificationPopup(true)
+    }
+
+    const handleCloseNotificationPopup = () => {
+        setShowNotificationPopup(false)
+    }
+
     return (
         <>
             <div className={styles.userActions}>
                 {isLoggedIn ? (
                     <>
+                        <button className="btn btn-outline" onClick={handleNotificationClick}>🔗 알림</button>
                         <button
                             className={`${styles.btn} ${styles.iconButton}`}
                             onClick={handleMyPage}
@@ -64,6 +77,11 @@ export function MainHeader() {
                         >
                             로그아웃
                         </button>
+
+                        <NotificationPopup
+                            show={showNotificationPopup}
+                            onClose={handleCloseNotificationPopup}
+                        />
                     </>
                 ) : (
                     <>

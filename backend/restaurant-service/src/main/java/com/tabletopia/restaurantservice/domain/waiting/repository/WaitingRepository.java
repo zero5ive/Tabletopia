@@ -35,4 +35,17 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
 
   //웨이팅 취소
   Optional<Waiting> findByIdAndRestaurantId(Long id, Long restaurantId);
+
+  //내 앞에 대기 중인 팀 수 계산
+  @Query("SELECT COUNT(w) FROM Waiting w " +
+      "WHERE w.restaurantId = :restaurantId " +
+      "AND w.waitingState = 'WAITING' " +
+      "AND w.waitingNumber < :myWaitingNumber " +
+      "AND DATE(w.createdAt) = CURRENT_DATE") //오늘 날짜인지 검사
+  Integer countTeamsAhead(@Param("restaurantId") Long restaurantId, @Param("myWaitingNumber") Integer myWaitingNumber);
+
+  //사용자의 모든 웨이팅 내역 조회
+  Page<Waiting> findByUserId(
+      Long userId,
+      Pageable pageable);
 }
