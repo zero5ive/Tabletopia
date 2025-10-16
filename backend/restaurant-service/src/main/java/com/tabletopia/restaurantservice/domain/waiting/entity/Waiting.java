@@ -1,5 +1,7 @@
 package com.tabletopia.restaurantservice.domain.waiting.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -26,7 +28,10 @@ public class Waiting {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private Long restaurantId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "restaurant_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "restaurantFacilities"})
+  private Restaurant restaurant;
 
   private Long userId;
 
@@ -57,12 +62,12 @@ public class Waiting {
   // ======================================
   // 생성자 (필수 값 초기화)
   // ======================================
-  public Waiting(Long restaurantId,
+  public Waiting(Restaurant restaurant,
       Long userId,
       Integer peopleCount,
       String restaurantNameSnapshot) {
 
-    this.restaurantId = restaurantId;
+    this.restaurant = restaurant;
     this.userId = userId;
     this.peopleCount = peopleCount;
     this.restaurantNameSnapshot = restaurantNameSnapshot;

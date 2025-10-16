@@ -1,6 +1,7 @@
 package com.tabletopia.restaurantservice.domain.restaurant.dto;
 
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,8 @@ public class RestaurantSearchResponse {
   private Double averageRating;       // 평점
   private Integer reviewCount;       // 리뷰수
   private String mainImageUrl; // 메인 이미지
+  private List<String>  imageUrls; //이미지 슬라이더
+  private String tel; // 전화번호
 
   /**
    * Entity -> DTO
@@ -43,9 +46,11 @@ public class RestaurantSearchResponse {
         .regionCode(restaurant.getRegionCode())
         .averageRating(calculateAverageRating(restaurant))
         .reviewCount(restaurant.getReviews().size())
-//        .mainImageUrl(getMainImageUrl(restaurant))
+        .mainImageUrl(getMainImageUrl(restaurant))
+        .imageUrls(getAllImageUrls(restaurant))
         .facilityNames(getFacilityNames(restaurant))
         .todayOpeningHours(getTodayOpeningHours(restaurant))
+        .tel(restaurant.getPhoneNumber())
         .build();
   }
 
@@ -112,5 +117,38 @@ public class RestaurantSearchResponse {
           return restaurantOpeningHour.getOpenTime() + " - " + restaurantOpeningHour.getCloseTime();
         })
         .orElse("영업시간 정보 없음");
+  }
+
+  /**
+   * 메인 이미지 URL 가져오기
+   */
+  public static String getMainImageUrl(Restaurant restaurant){
+    if (restaurant.getRestaurantImage()== null || restaurant.getRestaurantImage().isEmpty()){
+      return null; // 또는 기본 이미지 URL
+    }
+
+    return restaurant.getRestaurantImage().stream()
+        .filter(img -> img.isMain() && img.getImageUrl() != null) // 메인 이미지이면서 URL이 null이 아닌 것만
+        .findFirst()
+        .map(img -> img.getImageUrl())
+        .orElseGet(() -> restaurant.getRestaurantImage().stream()
+            .filter(img -> img.getImageUrl() != null)
+            .findFirst()
+            .map(img -> img.getImageUrl())
+            .orElse(null)); // 모든 이미지가 null이면 null 반환
+  }
+
+  /**
+   * 모든 이미지 URL 가져오기
+   */
+  public static List<String> getAllImageUrls(Restaurant restaurant){
+    if (restaurant.getRestaurantImage() == null){
+      return List.of();
+    }
+
+    return restaurant.getRestaurantImage().stream()
+        .map(img -> img.getImageUrl())
+        .filter(url -> url != null) // null URL 제외
+        .collect(Collectors.toList());
   }
 }

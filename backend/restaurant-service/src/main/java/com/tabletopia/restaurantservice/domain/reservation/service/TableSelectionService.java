@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RedisTableSelectionService {
+public class TableSelectionService {
 
   private final RedisTemplate<String, Object> redisTemplate;
 
@@ -35,18 +35,63 @@ public class RedisTableSelectionService {
   // =============== 테이블 선점 정보 관리 =============== //
 
   /**
+   * 테이블 선점 시도를 원자적 연산(오직 하나의 요청만 성공(키 생성)하고 나머지는 실패)으로 수행
+   * SETNX(SET if Not eXists) 방식으로 동시성 제어
+   *
+   * @param selectionKey 선점키
+   * @param tableSelectionInfo 선점정보
+   * @return true: 선점 성공, false: 이미 선점됨
+   * @author 김예진
+   * @since 2025-10-11
+   */
+  public boolean trySelectTable(String selectionKey, TableSelectionInfo tableSelectionInfo){
+    // Redis에 저장될 최종 키 생성
+    String redisKey = TABLE_SELECTION_PREFIX + selectionKey;
+
+    //  Redis SETNX + TTL을 한 번에 실행 (원자적 연산)
+    try {
+      Boolean success = redisTemplate.opsForValue().setIfAbsent( // 키가 존재하지 않을 때만 저장
+          redisKey, // 저장할 키
+          tableSelectionInfo, // 저장할 값
+          TABLE_SELECTION_TTL, // 만료 시간
+          TimeUnit.MINUTES // 시간 단위
+      );
+
+      if (Boolean.TRUE.equals(success)){ // null 체크
+        // 선점 성공: Redis에 키가 없으므로 새로 저장
+        log.debug("선점 성공: tableId={}, sessionId={}", tableSelectionInfo.getTableId(), tableSelectionInfo.getSessionId());
+        return true;
+      } else{
+        // 선점 실패: Redis에 이미 다른 유저가 먼저 선점한 키가 존재함
+        log.debug("선점 실패 (이미 선점됨): tableId={}", tableSelectionInfo.getTableId());
+        return false;
+      }
+    } catch (Exception e) {
+      // TODO Redis 연결 오류 등의 예외 처리 추가
+      log.error("선점 시도 중 오류: {}", redisKey, e);
+      return false; // 오류로 선점 실패
+    }
+  }
+
+  /**
    * 테이블 선점 정보 저장
+   * <p>
+   * 예약 완료 후 상태 변경을 위해 기존 값이 있어도 덮어쓰기가 이루어짐
    *
    * @author 김예진
    * @since 2025-10-11
    */
   public void saveTableSelection(String selectionKey, TableSelectionInfo selectionInfo) {
+    // Redis에 저장될 키 생성
     String redisKey = TABLE_SELECTION_PREFIX + selectionKey;
 
     try {
-      // Redis에 저장하고 5분 후 자동 삭제
-      redisTemplate.opsForValue().set(redisKey, selectionInfo, TABLE_SELECTION_TTL, TimeUnit.MINUTES);
-
+      redisTemplate.opsForValue().set( // SET으로 덮어쓰기 (예약 완료한 경우 상태를 CONFIRMED로 변경)
+          redisKey,
+          selectionInfo,
+          TABLE_SELECTION_TTL,
+          TimeUnit.MINUTES
+      );
       log.debug("Redis 저장: {} → {}", redisKey, selectionInfo);
     } catch (Exception e) {
       log.error("Redis 저장 실패: {}", redisKey, e);
@@ -68,11 +113,11 @@ public class RedisTableSelectionService {
 
       if (value instanceof TableSelectionInfo) {
         TableSelectionInfo info = (TableSelectionInfo) value;
-        log.debug("Redis 조회: {} → {}", redisKey, info);
+        log.debug("Redis 조회: {} -> {}", redisKey, info);
         return info;
       }
 
-      log.debug("Redis 조회: {} → null", redisKey);
+      log.debug("Redis 조회: {} -> null", redisKey);
       return null;
     } catch (Exception e) {
       log.error("Redis 조회 실패: {}", redisKey, e);
@@ -118,12 +163,15 @@ public class RedisTableSelectionService {
    * @author 김예진
    * @since 2025-10-11
    */
-  public void addConnectedUser(Long restaurantId, String sessionId) {
+  public void addConnectedUser(Long restaurantId, String userEmail, String sessionId) {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
       // Set에 추가 (중복 방지)
-      redisTemplate.opsForSet().add(redisKey, sessionId);
+//      redisTemplate.opsForSet().add(redisKey, sessionId, userEmail);
+
+      // Hash에 추가
+      redisTemplate.opsForHash().put(redisKey, sessionId, userEmail);
 
       // TTL 갱신 (30분)
       redisTemplate.expire(redisKey, CONNECTED_USERS_TTL, TimeUnit.MINUTES);
@@ -144,7 +192,7 @@ public class RedisTableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      redisTemplate.opsForSet().remove(redisKey, sessionId);
+      redisTemplate.opsForHash().delete(redisKey, sessionId);
       log.debug("접속자 제거: restaurantId={}, sessionId={}", restaurantId, sessionId);
     } catch (Exception e) {
       log.error("접속자 제거 실패: restaurantId={}, sessionId={}", restaurantId, sessionId, e);
@@ -152,7 +200,7 @@ public class RedisTableSelectionService {
   }
 
   /**
-   * 레스토랑의 전체 접속자 목록 조회
+   * 레스토랑의 전체 접속자 목록 조회 (세션ID 목록)
    *
    * @author 김예진
    * @since 2025-10-11
@@ -161,9 +209,9 @@ public class RedisTableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      Set<Object> users = redisTemplate.opsForSet().members(redisKey);
-      log.debug("접속자 조회: restaurantId={}, count={}", restaurantId, users != null ? users.size() : 0);
-      return users;
+      Set<Object> sessionIds = redisTemplate.opsForHash().keys(redisKey);
+      log.debug("접속자 조회: restaurantId={}, count={}", restaurantId, sessionIds != null ? sessionIds.size() : 0);
+      return sessionIds;
     } catch (Exception e) {
       log.error("접속자 조회 실패: restaurantId={}", restaurantId, e);
       return Set.of();
@@ -180,7 +228,7 @@ public class RedisTableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      Long count = redisTemplate.opsForSet().size(redisKey);
+      Long count = redisTemplate.opsForHash().size(redisKey);
       return count != null ? count : 0L;
     } catch (Exception e) {
       log.error("접속자 수 조회 실패: restaurantId={}", restaurantId, e);

@@ -39,10 +39,15 @@ public class RestaurantSpecialHourService {
   private final RestaurantRepository restaurantRepository;
 
   /** 매장의 특별 운영시간 전체 조회 */
-  @Transactional(readOnly = true)
   public List<RestaurantSpecialHourResponse> getSpecialHours(Long restaurantId) {
     return specialHourRepository.findByRestaurantId(restaurantId).stream()
         .map(RestaurantSpecialHourResponse::fromEntity)
+        .peek(dto -> {
+          if (Boolean.TRUE.equals(dto.getIsClosed())) {
+            dto.setOpenTime(null);
+            dto.setCloseTime(null);
+          }
+        })
         .collect(Collectors.toList());
   }
 

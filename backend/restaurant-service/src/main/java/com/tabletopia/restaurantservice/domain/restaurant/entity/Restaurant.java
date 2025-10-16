@@ -1,10 +1,13 @@
 package com.tabletopia.restaurantservice.domain.restaurant.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tabletopia.restaurantservice.domain.restaurantAccount.entity.RestaurantAccount;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
 import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.RestaurantFacility;
+import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.entity.RestaurantOpeningHour;
 import com.tabletopia.restaurantservice.domain.restaurantreview.entity.RestaurantReview;
+import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,9 +111,17 @@ public class Restaurant {
   @JsonIgnoreProperties("restaurant")
   private List<RestaurantReview> reviews = new ArrayList<>();
 
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<RestaurantImage> restaurantImage = new ArrayList<>();
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<Waiting>  waitings = new ArrayList<>();
+
   /** 매장 소유 계정 (FK) */
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "restaurant_account_id", nullable = false)
-//  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//  private RestaurantAccount restaurantAccount;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "restaurant_account_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+  private RestaurantAccount restaurantAccount;
 }

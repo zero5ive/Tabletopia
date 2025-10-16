@@ -677,8 +677,9 @@ useEffect(() => {
 
           {/* 예약 요약 */}
           <div className={styles.bookingSummary}>
-            <div className={styles.restaurantName}>정미스시</div>
+            <div className={styles.restaurantName}>{reservationStep1.restaurantName}</div>
             <div className={styles.bookingInfo}>
+              {reservationStep1.restaurantAddress}<br />
               {reservationStep1.date} {reservationStep1.time} • {reservationPeople}명
             </div>
 

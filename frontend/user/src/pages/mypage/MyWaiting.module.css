@@ -117,7 +117,7 @@
     background: linear-gradient(135deg, #d4edda, #c3e6cb); 
     color: #155724; 
 }
-.status-waiting { 
+.status-waiting,.status-pending { 
     background: linear-gradient(135deg, #fff3cd, #ffeaa7); 
     color: #856404; 
 }

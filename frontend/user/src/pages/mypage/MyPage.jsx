@@ -12,7 +12,7 @@ export default function MyPage() {
                         <div className={styles['feature-banner-icon']}>🎁</div>
                         <div className={styles['feature-banner-content']}>
                             <div className={styles['feature-banner-title']}>
-                                <a href="/html/mywaiting.html" className={styles['feature-banner-link']}>예약 내역 이동</a>
+                                <a href="/mypage/reservation" className={styles['feature-banner-link']}>예약 내역 이동</a>
                             </div>
                             <div className={styles['feature-banner-subtitle']}>최신 예약 정보를 확인하세요</div>
                         </div>

@@ -1,68 +1,97 @@
 import { useWebSocket } from '../contexts/WebSocketContext'
+import { useEffect } from 'react'
+import styles from './NotificationPopup.module.css'
 
 export default function NotificationPopup({ show, onClose }) {
-    const { notifications } = useWebSocket()
+    const { notifications, markAllAsRead } = useWebSocket()
+
+    // 알림 팝업을 열면 모든 알림을 읽음 처리
+    useEffect(() => {
+        if (show) {
+            markAllAsRead()
+        }
+    }, [show, markAllAsRead])
 
     if (!show) return null
 
+    const getNotificationIcon = (type) => {
+        switch (type) {
+            case 'WAITING_CALLED':
+                return '🔔'
+            case 'RESERVATION_CONFIRMED':
+                return '✅'
+            case 'RESERVATION_CANCELLED':
+                return '❌'
+            default:
+                return '📢'
+        }
+    }
+
     return (
-        <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">🔔 알림</h5>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            onClick={onClose}
-                        ></button>
-                    </div>
+        <div className={styles.overlay} onClick={onClose}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.header}>
+                    <h2 className={styles.title}>
+                        🔔 알림
+                    </h2>
+                    <button
+                        className={styles.closeButton}
+                        onClick={onClose}
+                    >
+                        ×
+                    </button>
+                </div>
 
-                    <div className="modal-body">
-                        {notifications.length === 0 ? (
-                            <div className="text-center text-muted py-4">
-                                새로운 알림이 없습니다.
-                            </div>
-                        ) : (
-                            <div className="notification-list">
-                                {notifications.map(notification => (
-                                    <div
-                                        key={notification.id}
-                                        className={`notification-item p-3 mb-2 rounded ${notification.type === 'WAITING_CALLED'
-                                                ? 'bg-primary bg-opacity-10'           // 웨이팅 호출만 파란색
-                                                : notification.read
-                                                    ? 'bg-light bg-opacity-10'         
-                                                    : 'bg-secondary bg-opacity-10'     
-                                            }`}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <div className="d-flex justify-content-between align-items-start">
-                                            <div className="flex-grow-1">
-                                                <h6 className="mb-1">
-                                                    {notification.title}
-                                                    {(
-                                                        <span className="badge bg-primary ms-2">{notification.name}</span>
-                                                    )}
-                                                </h6>
-                                                <p className="mb-1 text-muted">{notification.message}</p>
-                                                <small className="text-muted">{notification.time}</small>
-                                            </div>
-                                        </div>
+                <div className={styles.body}>
+                    {notifications.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>📭</div>
+                            <div className={styles.emptyText}>새로운 알림이 없습니다.</div>
+                        </div>
+                    ) : (
+                        <div className={styles.notificationList}>
+                            {notifications.map(notification => (
+                                <div
+                                    key={notification.id}
+                                    className={`${styles.notificationItem} ${
+                                        notification.type === 'WAITING_CALLED'
+                                            ? styles.called
+                                            : notification.read
+                                            ? styles.read
+                                            : styles.unread
+                                    }`}
+                                >
+                                    <div className={styles.notificationHeader}>
+                                        <h3 className={styles.notificationTitle}>
+                                            <span>{getNotificationIcon(notification.type)}</span>
+                                            {notification.title}
+                                            {notification.name && (
+                                                <span className={styles.badge}>{notification.name}</span>
+                                            )}
+                                        </h3>
+                                        {!notification.read && (
+                                            <div className={styles.unreadDot}></div>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                    <p className={styles.notificationMessage}>
+                                        {notification.message}
+                                    </p>
+                                    <div className={styles.notificationTime}>
+                                        {notification.time}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                    <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={onClose}
-                        >
-                            닫기
-                        </button>
-                    </div>
+                <div className={styles.footer}>
+                    <button
+                        className={`${styles.button} ${styles.buttonSecondary}`}
+                        onClick={onClose}
+                    >
+                        닫기
+                    </button>
                 </div>
             </div>
         </div>

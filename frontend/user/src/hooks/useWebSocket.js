@@ -53,6 +53,11 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
             // SockJS를 통한 WebSocket 연결
             webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
 
+            // JWT 인증 헤더 추가
+            connectHeaders: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            },
+
             // 디버그 모드 (프로덕션에서는 비활성화 권장)
             debug: function (str) {
                 console.log('STOMP:', str);
@@ -127,19 +132,19 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
                         }
                     );
 
-                    // ✅ 3. 예약 관련 토픽 구독
+                    // 3. 예약 관련 토픽 구독
                     const reservationSubscription = client.subscribe(
                         `/topic/reservation/${restaurantId}/table-status`,
                         function (message) {
                             console.log('예약 상태 메시지 수신:', message.body);
                             try {
                                 const data = JSON.parse(message.body);
-                                // ✅ USER_CONNECTED 메시지에서 newUser가 나라면, 그게 내 세션!
-                                if (data.type === 'USER_CONNECTED' && data.newUser && !sessionIdRef.current) {
-                                    // 내가 방금 접속한 거면 newUser가 내 세션 ID
-                                    console.log('🔑 내 세션 ID 수신:', data.newUser);
-                                    setMySessionId(data.newUser);
-                                    sessionIdRef.current = data.newUser;
+                                // USER_CONNECTED 메시지에서 sessionId가 나라면, 그게 내 세션!
+                                if (data.type === 'USER_CONNECTED' && data.sessionId && !sessionIdRef.current) {
+                                    // 내가 방금 접속한 거면 sessionId가 내 세션 ID
+                                    console.log('🔑 내 세션 ID 수신:', data.sessionId);
+                                    setMySessionId(data.sessionId);
+                                    sessionIdRef.current = data.sessionId;
                                 }
                                 // callbackRef.current(data, sessionIdRef.current);
                             } catch (e) {

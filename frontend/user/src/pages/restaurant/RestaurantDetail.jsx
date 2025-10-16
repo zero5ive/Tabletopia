@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../components/header/Header";
 import styles from './RestaurantDetail.module.css';
 import axios from 'axios';
@@ -9,10 +9,80 @@ import FacilitiesTab from "./tabs/FacilitiesTab";
 import OperatingInfoTab from "./tabs/OperatingInfoTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 import { useLoadScript } from '@react-google-maps/api';
+import { getRestaurantDetail } from "../utils/RestaurantApi";
+import { useSearchParams } from 'react-router-dom';
+
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RestaurantList() {
+
+    //레스토랑 상세페이지
+    const [restaurantDetail, setRestaurantDetail] = useState(null);
+    const [searchParams] = useSearchParams();
+    const restaurantId = searchParams.get('restaurantId');
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0); // 선택된 이미지 인덱스
+
+    const fetchRestaurantDetail = async (restaurantId) => {
+        try {
+            const response = await getRestaurantDetail(restaurantId);
+            console.log('레스토랑 상세페이지 정보 ', response.data);
+            setRestaurantDetail(response.data);
+        } catch (error) {
+            console.error('레스토랑 조회 실패:', error);
+        }
+    }
+
+    /**
+ * 영업시간으로부터 영업 상태 메시지 생성
+ */
+    const getOperatingStatus = (openingHours) => {
+        if (!openingHours || openingHours === "영업시간 정보 없음") {
+            return "영업시간 정보 없음";
+        }
+
+        if (openingHours === "휴무") {
+            return "휴무";
+        }
+
+        // "11:00 - 22:00" 형식 파싱
+        const [openTime, closeTime] = openingHours.split(' - ');
+
+        if (!openTime || !closeTime) {
+            return openingHours;
+        }
+
+        // 현재 시간
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        // 영업 시간 파싱
+        const [openHour, openMinute] = openTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+
+        // 분을 포함한 시간 비교 (분 단위까지 계산)
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        const openTotalMinutes = openHour * 60 + openMinute;
+        const closeTotalMinutes = closeHour * 60 + closeMinute;
+
+        // 영업 상태 판단
+        if (currentTotalMinutes < openTotalMinutes) {
+            return "영업 전";
+        } else if (currentTotalMinutes >= closeTotalMinutes) {
+            return "영업 종료";
+        } else {
+            // 영업 중 - 종료 시간 표시
+            const amPm = closeHour < 12 ? "오전" : "오후";
+            const displayHour = closeHour > 12 ? closeHour - 12 : (closeHour === 0 ? 12 : closeHour);
+            return `영업 중 (오늘 ${amPm} ${displayHour}:${closeMinute.toString().padStart(2, '0')}에 영업종료)`;
+        }
+    };
+
+    useEffect(() => {
+        fetchRestaurantDetail(restaurantId);
+    }, [restaurantId])
+
     // Google Maps API 로드
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -74,7 +144,10 @@ export default function RestaurantList() {
 
         // 예약 1차 정보
         const reservationStep1 = {
-            restaurantId: 1,
+            restaurantId: restaurantId,
+            restaurantName: restaurantDetail.name,
+            restaurantAddress: restaurantDetail.address,
+            restaurantPhone: restaurantDetail.tel,
             date: date,
             time: selectedTime,
             peopleCount: people
@@ -94,165 +167,189 @@ export default function RestaurantList() {
     // Google Maps 로딩 중이거나 에러 발생 시 처리
     if (loadError) return <div>Google Maps 로드 중 오류가 발생했습니다.</div>;
     if (!isLoaded) return <div>Google Maps 로딩 중...</div>;
+    if (!restaurantDetail) return <div>상세페이지 로딩 중...</div>
 
     return (
         <div className={styles["main-container"]}>
-                {/* <!-- Main Content --> */}
-                <div className={styles["main-content"]}>
-                    {/* <!-- Image Gallery --> */}
-                    <div className={styles["image-gallery"]}>
-                        🍣 레스토랑 이미지
-                        <div className={styles["gallery-nav"]}>1/5</div>
-                        <div className={styles["image-thumbs"]}>
-                            <div className={`${styles["thumb"]} ${styles["active"]}`}></div>
-                            <div className={styles["thumb"]}></div>
-                            <div className={styles["thumb"]}></div>
-                            <div className={styles["thumb"]}></div>
-                            <div className={styles["thumb"]}></div>
+            {/* <!-- Main Content --> */}
+            <div className={styles["main-content"]}>
+                {/* <!-- Image Gallery --> */}
+                <div className={styles["image-gallery"]}>
+                    {/* 큰 대표 이미지 */}
+                    <div className={styles["main-image"]}>
+                        <img
+                            src={restaurantDetail.imageUrls && restaurantDetail.imageUrls.length > 0 && restaurantDetail.imageUrls[selectedImageIndex]
+                                ? `http://localhost:8002/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`
+                                : '/placeholder-restaurant.png'}
+                            alt={`매장 이미지 ${selectedImageIndex + 1}`}
+                        />
+
+                        {/* 썸네일 이미지들 - 왼쪽 하단에 배치 */}
+                        <div className={styles["thumbnail-container"]}>
+                            {restaurantDetail.imageUrls && restaurantDetail.imageUrls.filter(url => url).map((imageUrl, index) => (
+                                <div
+                                    key={index}
+                                    className={`${styles["image-thumb"]} ${selectedImageIndex === index ? styles["active"] : ""}`}
+                                    onClick={() => setSelectedImageIndex(index)}
+                                >
+                                    <img
+                                        src={`http://localhost:8002/uploads/restaurants/${imageUrl}`}
+                                        alt={`썸네일 ${index + 1}`}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    </div>
-
-                    {/* <!-- Restaurant Info --> */}
-                    <div className={styles["restaurant-header"]}>
-                        <h1 className={styles["restaurant-title"]}>정미스시</h1>
-                        <div className={styles["restaurant-meta"]}>
-                            <div className={styles["rating"]}>
-                                <span className={styles["stars"]}>⭐⭐⭐⭐</span>
-                                <span className={styles["rating-score"]}>4.8</span>
-                                <span className={styles["review-count"]}>리뷰 386개</span>
-                            </div>
-                            <span className={styles["cuisine-type"]}>일식 • 스시/사시미</span>
-                        </div>
-                        <div className={styles["restaurant-address"]}>
-                            <span className={styles["address-icon"]}>📍</span>
-                            <div>
-                                <div>서울 강남구 압구정로 464-41</div>
-                            </div>
-                        </div>
-                        <div className={styles["operating-hours"]}>
-                            <span>🕐</span>
-                            <span>영업 중 (오늘 오후 11:00에 영업종료)</span>
-                        </div>
-                    </div>
-
-                    {/* <!-- Navigation Tabs --> */}
-                    <div className={styles["nav-tabs"]}>
-                        <div className={`${styles["nav-tab"]} ${activeTab === 'menu' ? styles['active'] : ''}`}
-                            onClick={() => setActiveTab('menu')}>메뉴소개</div>
-                        <div className={`${styles["nav-tab"]} ${activeTab === 'location' ? styles['active'] : ''}`}
-                            onClick={() => setActiveTab('location')}>위치</div>
-                        <div className={`${styles["nav-tab"]} ${activeTab === 'facilities' ? styles['active'] : ''}`}
-                            onClick={() => setActiveTab('facilities')}>편의시설</div>
-                        <div className={`${styles["nav-tab"]} ${activeTab === 'info' ? styles['active'] : ''}`}
-                            onClick={() => setActiveTab('info')}>운영정보</div>
-                        <div className={`${styles["nav-tab"]} ${activeTab === 'reviews' ? styles['active'] : ''}`}
-                            onClick={() => setActiveTab('reviews')}>리뷰</div>
-                    </div>
-
-                    {/* <!-- Tab Content --> */}
-                    <div className={styles["tab-content"]}>
-                        {/* 메뉴 소개 탭 */}
-                        {activeTab === 'menu' && <MenuTab />}
-
-                        {/* 위치 탭 */}
-                        {activeTab === 'location' && <LocationTab />}
-
-                        {/* 편의시설 탭 */}
-                        {activeTab === 'facilities' && <FacilitiesTab />}
-
-                        {/* 운영정보 탭 */}
-                        {activeTab === 'info' && <OperatingInfoTab />}
-
-                        {/* 리뷰 탭 */}
-                        {activeTab === 'reviews' && <ReviewsTab />}
                     </div>
                 </div>
 
-                {/* <!-- Sidebar --> */}
-                <div className={styles["sidebar"]}>
-                    {/* <!-- Reservation Card --> */}
-                    <div className={styles["reservation-card"]}>
-                        {/* <!-- Toggle Switch --> */}
-                        <div className={styles["toggle-container"]}>
-                            <div className={`${styles["toggle-option"]} ${reservationType === 'reservation' ? styles['active'] : ''}`}
-                                onClick={() => setReservationType('reservation')}>예약하기</div>
-                            <div className={`${styles["toggle-option"]} ${reservationType === 'waiting' ? styles['active'] : ''}`}
-                                onClick={() => setReservationType('waiting')}>웨이팅하기</div>
+                {/* <!-- Restaurant Info --> */}
+                <div className={styles["restaurant-header"]}>
+                    <h1 className={styles["restaurant-title"]}>{restaurantDetail.name}</h1>
+                    <div className={styles["restaurant-meta"]}>
+                        <div className={styles["rating"]}>
+                            <span className={styles["stars"]}>
+                                {'⭐'.repeat(Math.round(restaurantDetail.averageRating))}
+                            </span>
+                            <span className={styles["review-count"]}>리뷰 {restaurantDetail.reviewCount} 개</span>
                         </div>
+                        <span className={styles["cuisine-type"]}>{restaurantDetail.restaurantCategoryName}</span>
+                    </div>
+                    <div className={styles["restaurant-address"]}>
+                        <span className={styles["address-icon"]}>📍</span>
+                        <div>
+                            <div>{restaurantDetail.address}</div>
+                        </div>
+                    </div>
+                    <div className={styles["restaurant-address"]}>
+                        <span className={styles["address-icon"]}>📍</span>
+                        <div>
+                            <div>{restaurantDetail.tel}</div>
+                        </div>
+                    </div>
+                    <div className={styles["operating-hours"]}>
+                        <span>🕐</span>
+                        <span>{getOperatingStatus(restaurantDetail.todayOpeningHours)}</span>
+                    </div>
+                </div>
 
-                        {/* <!-- Reservation Content --> */}
-                        <div className={`${styles["reservation-content"]} ${reservationType === 'reservation' ? styles['active'] : ''}`}>
-                            <div className={styles["date-time-selector"]}>
-                                <div className={styles["selector-group"]}>
-                                    <label className={styles["selector-label"]}>날짜</label>
-                                    <input
-                                        type="date"
-                                        className={styles["selector-input"]}
-                                        value={date}
-                                        min={today} // 오늘 이전 날짜 선택 불가
-                                        onChange={handleDateChange}
-                                    />
-                                </div>
+                {/* <!-- Navigation Tabs --> */}
+                <div className={styles["nav-tabs"]}>
+                    <div className={`${styles["nav-tab"]} ${activeTab === 'menu' ? styles['active'] : ''}`}
+                        onClick={() => setActiveTab('menu')}>메뉴소개</div>
+                    <div className={`${styles["nav-tab"]} ${activeTab === 'location' ? styles['active'] : ''}`}
+                        onClick={() => setActiveTab('location')}>위치</div>
+                    <div className={`${styles["nav-tab"]} ${activeTab === 'facilities' ? styles['active'] : ''}`}
+                        onClick={() => setActiveTab('facilities')}>편의시설</div>
+                    <div className={`${styles["nav-tab"]} ${activeTab === 'info' ? styles['active'] : ''}`}
+                        onClick={() => setActiveTab('info')}>운영정보</div>
+                    <div className={`${styles["nav-tab"]} ${activeTab === 'reviews' ? styles['active'] : ''}`}
+                        onClick={() => setActiveTab('reviews')}>리뷰</div>
+                </div>
 
-                                <div className={styles["selector-group"]}>
-                                    <label className={styles["selector-label"]}>인원</label>
-                                    <div className={styles["guest-counter"]}>
-                                        <span>성인</span>
-                                        <div className={styles["counter-controls"]}>
-                                            <button className={styles["counter-btn"]} onClick={decrement}>-</button>
-                                            <span className={styles["guest-count"]}>{people}</span>
-                                            <button className={styles["counter-btn"]} onClick={increment}>+</button>
-                                        </div>
+                {/* <!-- Tab Content --> */}
+                <div className={styles["tab-content"]}>
+                    {/* 메뉴 소개 탭 */}
+                    {activeTab === 'menu' && <MenuTab />}
+
+                    {/* 위치 탭 */}
+                    {activeTab === 'location' && <LocationTab />}
+
+                    {/* 편의시설 탭 */}
+                    {activeTab === 'facilities' && <FacilitiesTab />}
+
+                    {/* 운영정보 탭 */}
+                    {activeTab === 'info' && <OperatingInfoTab />}
+
+                    {/* 리뷰 탭 */}
+                    {activeTab === 'reviews' && <ReviewsTab restaurantDetail={restaurantDetail} />}
+                </div>
+            </div>
+
+            {/* <!-- Sidebar --> */}
+            <div className={styles["sidebar"]}>
+                {/* <!-- Reservation Card --> */}
+                <div className={styles["reservation-card"]}>
+                    {/* <!-- Toggle Switch --> */}
+                    <div className={styles["toggle-container"]}>
+                        <div className={`${styles["toggle-option"]} ${reservationType === 'reservation' ? styles['active'] : ''}`}
+                            onClick={() => setReservationType('reservation')}>예약하기</div>
+                        <div className={`${styles["toggle-option"]} ${reservationType === 'waiting' ? styles['active'] : ''}`}
+                            onClick={() => setReservationType('waiting')}>웨이팅하기</div>
+                    </div>
+
+                    {/* <!-- Reservation Content --> */}
+                    <div className={`${styles["reservation-content"]} ${reservationType === 'reservation' ? styles['active'] : ''}`}>
+                        <div className={styles["date-time-selector"]}>
+                            <div className={styles["selector-group"]}>
+                                <label className={styles["selector-label"]}>날짜</label>
+                                <input
+                                    type="date"
+                                    className={styles["selector-input"]}
+                                    value={date}
+                                    min={today} // 오늘 이전 날짜 선택 불가
+                                    onChange={handleDateChange}
+                                />
+                            </div>
+
+                            <div className={styles["selector-group"]}>
+                                <label className={styles["selector-label"]}>인원</label>
+                                <div className={styles["guest-counter"]}>
+                                    <span>성인</span>
+                                    <div className={styles["counter-controls"]}>
+                                        <button className={styles["counter-btn"]} onClick={decrement}>-</button>
+                                        <span className={styles["guest-count"]}>{people}</span>
+                                        <button className={styles["counter-btn"]} onClick={increment}>+</button>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className={styles["available-times"]}>
-                                <div
-                                    className={`${styles["time-slot"]} ${styles["disabled"]}`}
-                                >
-                                    17:30
-                                </div>
-                                <div
-                                    className={`${styles["time-slot"]} ${selectedTime === '18:00' ? styles['selected'] : ''}`}
-                                    onClick={() => handleTimeSlotClick('18:00')}
-                                >
-                                    18:00
-                                </div>
-                                <div
-                                    className={`${styles["time-slot"]} ${selectedTime === '19:00' ? styles['selected'] : ''}`}
-                                    onClick={() => handleTimeSlotClick('19:00')}
-                                >
-                                    19:00
-                                </div>
-                                <div
-                                    className={`${styles["time-slot"]} ${selectedTime === '19:30' ? styles['selected'] : ''}`}
-                                    onClick={() => handleTimeSlotClick('19:30')}
-                                >
-                                    19:30
-                                </div>
-                                <div
-                                    className={`${styles["time-slot"]} ${selectedTime === '20:00' ? styles['selected'] : ''}`}
-                                    onClick={() => handleTimeSlotClick('20:00')}
-                                >
-                                    20:00
-                                </div>
-                                <div
-                                    className={`${styles["time-slot"]} ${styles["disabled"]}`}
-                                >
-                                    20:30
-                                </div>
-                            </div>
-
-                            <button className={styles["reservation-btn"]} onClick={handleReservation}>예약하기</button>
                         </div>
 
-                        {/* <!-- Waiting Content --> */}
-                       <Waiting reservationType={reservationType} />
+                        <div className={styles["available-times"]}>
+                            <div
+                                className={`${styles["time-slot"]} ${styles["disabled"]}`}
+                            >
+                                17:30
+                            </div>
+                            <div
+                                className={`${styles["time-slot"]} ${selectedTime === '18:00' ? styles['selected'] : ''}`}
+                                onClick={() => handleTimeSlotClick('18:00')}
+                            >
+                                18:00
+                            </div>
+                            <div
+                                className={`${styles["time-slot"]} ${selectedTime === '19:00' ? styles['selected'] : ''}`}
+                                onClick={() => handleTimeSlotClick('19:00')}
+                            >
+                                19:00
+                            </div>
+                            <div
+                                className={`${styles["time-slot"]} ${selectedTime === '19:30' ? styles['selected'] : ''}`}
+                                onClick={() => handleTimeSlotClick('19:30')}
+                            >
+                                19:30
+                            </div>
+                            <div
+                                className={`${styles["time-slot"]} ${selectedTime === '20:00' ? styles['selected'] : ''}`}
+                                onClick={() => handleTimeSlotClick('20:00')}
+                            >
+                                20:00
+                            </div>
+                            <div
+                                className={`${styles["time-slot"]} ${styles["disabled"]}`}
+                            >
+                                20:30
+                            </div>
+                        </div>
 
-
+                        <button className={styles["reservation-btn"]} onClick={handleReservation}>예약하기</button>
                     </div>
+
+                    {/* <!-- Waiting Content --> */}
+                    <Waiting reservationType={reservationType} />
+
+
                 </div>
             </div>
+        </div>
     )
 }

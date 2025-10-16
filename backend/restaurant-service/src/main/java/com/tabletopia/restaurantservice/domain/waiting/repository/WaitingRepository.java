@@ -21,7 +21,7 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
 
   //하루가 지나면 watitingnumber가 1부터 시작하게
   @Query("SELECT MAX(w.waitingNumber) FROM Waiting w " +
-      "WHERE w.restaurantId = :restaurantId " +
+      "WHERE w.restaurant.id = :restaurantId " +
       "AND DATE(w.createdAt) = CURRENT_DATE")
   Integer findMaxWaitingNumberByRestaurantIdToday(@Param("restaurantId") Long restaurantId);
 
@@ -38,7 +38,7 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
 
   //내 앞에 대기 중인 팀 수 계산
   @Query("SELECT COUNT(w) FROM Waiting w " +
-      "WHERE w.restaurantId = :restaurantId " +
+      "WHERE w.restaurant.id = :restaurantId " +
       "AND w.waitingState = 'WAITING' " +
       "AND w.waitingNumber < :myWaitingNumber " +
       "AND DATE(w.createdAt) = CURRENT_DATE") //오늘 날짜인지 검사

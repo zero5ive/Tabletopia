@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'; // ✅ useRef import
+import { updateUser, getCurrentUser } from '../utils/UserApi';
 import styles from './ConfirmInfo.module.css';
 import axios from 'axios';
 
@@ -8,9 +9,9 @@ const ReservationConfirm = () => {
 
   const [reservationData, setReservationData] = useState(null);
   const [customerInfo, setCustomerInfo] = useState({
-    name: '추후추가',
-    phone: '010-1111-1111',
-    email: '1@example.com'
+    name: '',
+    phoneNumber: '',
+    email: ''
   });
 
   const [agreements, setAgreements] = useState({
@@ -20,14 +21,38 @@ const ReservationConfirm = () => {
   });
 
   useEffect(() => {
+    // 앞선 예약 정보 불러오기
     const data = localStorage.getItem('finalReservationData');
-    console.log(data);
+    console.log('불러온 예약 정보:', data);
+
     if (!data) {
       alert('예약 정보가 없습니다. 이전 단계로 돌아갑니다.');
       window.location.href = '/reservations/table';
       return;
     }
-    setReservationData(JSON.parse(data));
+
+    // ✅ 예약 데이터 설정
+    const parsedData = JSON.parse(data);
+    setReservationData(parsedData);
+    console.log('예약 데이터 설정 완료:', parsedData);
+
+    // 사용자 정보 불러오기
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getCurrentUser();
+        const userData = response.data;
+        setCustomerInfo({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber
+        });
+      } catch (error) {
+        console.error('유저 정보 조회 실패:', error);
+        alert('유저 정보를 불러오지 못했습니다.');
+      }
+    };
+    fetchUserInfo();
   }, []);
 
   /**
@@ -136,14 +161,14 @@ const ReservationConfirm = () => {
       return;
     }
 
-    if (!customerInfo.phone.trim()) {
+    if (!customerInfo.phoneNumber || !customerInfo.phoneNumber.trim()) {
       alert('휴대폰 번호를 입력해주세요.');
       return;
     }
 
     // 휴대폰 번호 유효성 검사
     const phoneRegex = /^01[016789]-?\d{3,4}-?\d{4}$/;
-    if (!phoneRegex.test(customerInfo.phone.replace(/-/g, ''))) {
+    if (!phoneRegex.test(customerInfo.phoneNumber.replace(/-/g, ''))) {
       alert('올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)');
       return;
     }
@@ -173,9 +198,16 @@ const ReservationConfirm = () => {
 
     try {
       // 예약정보 등록
+      const token = localStorage.getItem('accessToken');
       const response = await axios.post(
         'http://localhost:8002/api/realtime/reservation',
-        finalData
+        finalData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       console.log('예약 등록 응답:', response.data);
@@ -276,8 +308,8 @@ const ReservationConfirm = () => {
                 <input
                   type="tel"
                   className={styles.inputField}
-                  value={customerInfo.phone}
-                  onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
+                  value={customerInfo.phoneNumber || ''}
+                  onChange={(e) => handleCustomerInfoChange('phoneNumber', e.target.value)}
                   placeholder="010-1234-5678"
                 />
               </div>
@@ -331,8 +363,9 @@ const ReservationConfirm = () => {
 
           {/* 예약 요약 사이드바 */}
           <div className={styles.bookingSummary}>
-            <div className={styles.restaurantName}>정미스시</div>
+            <div className={styles.restaurantName}>{reservationData.restaurantName}</div>
             <div className={styles.bookingInfo}>
+              {reservationData.restaurantAddress}<br />
               {reservationData.date} {reservationData.time} • {reservationData.peopleCount}명
             </div>
 

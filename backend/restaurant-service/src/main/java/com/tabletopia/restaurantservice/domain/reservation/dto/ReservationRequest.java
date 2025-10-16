@@ -26,6 +26,14 @@ public class ReservationRequest {
   @NotNull(message = "레스토랑 ID는 필수입니다")
   private Long restaurantId;
 
+  private String restaurantName;
+
+  private String restaurantAddress;
+
+  private String restaurantPhone;
+
+  private String email; // 로그인한 사용자의 이메일
+
   @NotBlank(message = "예약 날짜는 필수입니다")
   private String date;
 
@@ -51,7 +59,7 @@ public class ReservationRequest {
   public static class CustomerInfo {
     private String name;
     private String phone;
-    private String email;
+    private String email; // 예약자로 입력한 이메일 (사용자 A가 사용자가 아닌 B의 예약을 대신해줄 경우 여기의 이메일은 B의 이메일이 올 수 있음)
   }
 
   @Data

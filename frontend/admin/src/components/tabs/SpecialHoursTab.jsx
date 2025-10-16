@@ -77,6 +77,27 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
   const handleSave = async () => {
     if (!selectedRestaurant) return;
 
+    // 유효성 검사
+    for (const h of specialHours) {
+      // 휴무인데 시간 입력된 경우
+      if (h.isClosed && (h.openTime || h.closeTime)) {
+        alert(`${h.specialDate} 은(는) 휴무일입니다. 시간을 비워주세요.`);
+        return;
+      }
+
+      // 운영일인데 시간 누락된 경우
+      if (!h.isClosed && (!h.openTime || !h.closeTime)) {
+        alert(`${h.specialDate} 의 오픈/마감 시간을 모두 입력해주세요.`);
+        return;
+      }
+
+      // 오픈시간이 마감시간보다 늦은 경우
+      if (!h.isClosed && h.openTime >= h.closeTime) {
+        alert(`${h.specialDate} 의 오픈시간이 마감시간보다 늦습니다.`);
+        return;
+      }
+    }
+
     const payload = specialHours.map((h) => ({
       ...h,
       openTime: h.isClosed ? null : h.openTime ? h.openTime + ":00" : null,
@@ -96,6 +117,7 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
   };
 
 
+
   const totalPages = Math.ceil(specialHours.length / itemsPerPage);
   const currentItems = specialHours.slice(
     (currentPage - 1) * itemsPerPage,
@@ -103,17 +125,17 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
   );
 
   if (!selectedRestaurant)
-  return (
-    <div className="tab-pane fade" id="special-hours">
-      <div className="card text-center mt-4 border-danger">
-        <div className="card-body py-5">
-          <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
-          <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
-          <p className="text-muted mb-0">특별 운영시간을 관리하려면 먼저 매장을 선택해주세요.</p>
+    return (
+      <div className="tab-pane fade" id="special-hours">
+        <div className="card text-center mt-4 border-danger">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
+            <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">특별 운영시간을 관리하려면 먼저 매장을 선택해주세요.</p>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
 
 
   return (
