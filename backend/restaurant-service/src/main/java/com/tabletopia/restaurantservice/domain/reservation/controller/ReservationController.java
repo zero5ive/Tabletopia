@@ -74,6 +74,21 @@ public class ReservationController {
     );
   }
 
+  /**
+   * 예약 내역 조회 메서드
+   *
+   * @author 서예닮
+   * @since 2025-10-16
+   */
+  @GetMapping("/restaurants/user/{userId}")
+  public ResponseEntity<ApiResponse<List<Reservation>>> getReservationsByUserId(
+      @PathVariable Long userId
+  ,@RequestParam(required = false) String status){
+    List<Reservation> reservationsList= reservationService.getReservations(userId,status);
+    return ResponseEntity.ok(
+        ApiResponse.success("예약 내역 조회 성공", reservationsList)
+    );
+  }
 
 
  }
