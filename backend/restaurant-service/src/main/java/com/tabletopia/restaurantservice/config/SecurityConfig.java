@@ -48,7 +48,8 @@ public class SecurityConfig {
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/login").permitAll()
+//                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -72,13 +73,16 @@ public class SecurityConfig {
         http
                 .securityMatcher("/api/**")
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+                .cors(cors -> {}) // ✅ CORS 활성화 (중요!)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/user/login",
-                                "/api/user/register",
-                                "/api/refresh"
+//                                "/api/user/login",
+//                                "/api/user/register",
+//                                "/api/user/refresh",
+//                                "/.well-known/**"
+                                "/**"
                         ).permitAll()
+                        .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
