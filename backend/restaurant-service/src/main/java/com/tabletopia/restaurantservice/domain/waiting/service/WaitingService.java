@@ -30,4 +30,10 @@ public interface WaitingService {
 
   //웨이팅 착석
   public Waiting seatedWaiting(Long id, Long restaurantId);
+
+  //내 앞에 대기 중인 팀 수 조회
+  public Integer getTeamsAheadCount(Long restaurantId, Integer myWaitingNumber);
+
+  //사용자의 웨이팅 내역 조회 (앞 대기팀 수 포함)
+  public Page<WaitingResponse> getUserWaitingList(Long userId, Pageable pageable);
 }
