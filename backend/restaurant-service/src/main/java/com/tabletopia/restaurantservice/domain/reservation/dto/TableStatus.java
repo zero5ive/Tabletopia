@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.dto;
 
+import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class TableStatus {
   private Integer xPosition;
   private Integer yPosition;
   private String shape;
-  private String status; // "AVAILABLE", "SELECTED", "RESERVED", "OCCUPIED"
+  private TableSelectStatus status; // 테이블 상태 (AVAILABLE, PENDING, RESERVED 등)
   private String selectedBy; // 선점한 사용자 ID
   private LocalDateTime selectedAt; // 선택 시작 시각
   private LocalDateTime expiryTime; // 만료 시각
