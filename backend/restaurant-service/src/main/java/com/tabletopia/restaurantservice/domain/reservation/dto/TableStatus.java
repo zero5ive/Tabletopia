@@ -24,6 +24,7 @@ public class TableStatus {
   private String shape;
   private TableSelectStatus status; // 테이블 상태 (AVAILABLE, PENDING, RESERVED 등)
   private String selectedBy; // 선점한 사용자 ID
+  private String userEmail; // 선점한 사용자 email
   private LocalDateTime selectedAt; // 선택 시작 시각
   private LocalDateTime expiryTime; // 만료 시각
 }

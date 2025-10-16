@@ -23,10 +23,12 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -77,25 +79,12 @@ public class TableSelectionController {
     String sessionId = accessor.getSessionId();
 
     // 사용자 이메일을 저장할 변수 초기화
-    String userEmail = null;
-
-    // WebSocket 세션에서 인증 정보 확인
-    if (accessor.getUser() != null) {
-      // User 객체의 getName()은 일반적으로 username(이메일)을 반환
-      // CONNECT 시 setUser()로 설정한 Authentication 객체가 반환됨
-      userEmail = accessor.getUser().getName();
-
-      log.debug("WebSocket 세션에서 인증 정보 확인: {}", userEmail);
-    } else {
-      // 인증 정보가 없는 경우 (JWT 토큰이 없거나 유효하지 않은 경우)
-      log.warn("WebSocket 세션에 인증 정보가 없습니다. 세션 ID: {}", sessionId);
-      // 이 경우 userEmail은 null로 남음
-    }
+    String userEmail = getUserEmail(accessor, sessionId);
 
     log.debug("레스토랑 {} 접속 요청: 사용자 {} 세션 {}", restaurantId, userEmail, sessionId);
 
     // Redis에 접속자 추가
-    tableSelectionService.addConnectedUser(restaurantId, sessionId);
+    tableSelectionService.addConnectedUser(restaurantId, userEmail, sessionId);
 
     // TODO 프론트엔드에 수신이 안되어, 현재는 처음 받는 브로드 캐스트의 세션 id를 자신의 세션 id로 저장하게 해놓았음
     // 1. 개별 사용자에게만 자신의 세션 ID 전송 (개인 메시지)
@@ -115,10 +104,36 @@ public class TableSelectionController {
     messagingTemplate.convertAndSend(
         String.format("/topic/reservation/%d/table-status", restaurantId),
 //        UserConnectedResponse.of(sessionId, connectedUsers.get(restaurantId))
-        UserConnectedResponse.of(sessionId, connectedUserIds)
+        UserConnectedResponse.of(sessionId, userEmail, connectedUserIds)
     );
 
-    log.debug("세션 {} 정보 전송 완료 (접속자 수: {})", sessionId, connectedUserIds.size());
+    log.debug("이메일 {} 세션 {} 정보 전송 완료 (접속자 수: {})", userEmail, sessionId, connectedUserIds.size());
+  }
+
+  /**
+   * 웹소켓 세션에서 인증 정보를 확인하고 사용자의 email을 받아오는 메서드
+   * @param accessor
+   * @param sessionId
+   * @return
+   * @author 김예진
+   * @since 2025-10-16
+   */
+  @Nullable
+  private static String getUserEmail(SimpMessageHeaderAccessor accessor, String sessionId) {
+    String userEmail = null;
+
+    // WebSocket 세션에서 인증 정보 확인
+    if (accessor.getUser() != null) {
+      // User 객체의 getName()은 일반적으로 username(이메일)을 반환
+      // CONNECT 시 setUser()로 설정한 Authentication 객체가 반환됨
+      userEmail = accessor.getUser().getName();
+      log.debug("WebSocket 세션에서 인증 정보 확인: {}", userEmail);
+    } else {
+      // 인증 정보가 없는 경우 (JWT 토큰이 없거나 유효하지 않은 경우)
+      log.warn("WebSocket 세션에 인증 정보가 없습니다. 세션 ID: {}", sessionId);
+      // 이 경우 userEmail은 null로 남음
+    }
+    return userEmail;
   }
 
   /**
@@ -142,6 +157,8 @@ public class TableSelectionController {
     // 웹소켓 세션 ID 추출
     String sessionId = accessor.getSessionId();
 
+    String userEmail = getUserEmail(accessor, sessionId);
+
     // 선점 키 생성
     String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(), request.getTime());
     log.debug("생성된 선점키 {}", selectionKey);
@@ -164,6 +181,7 @@ public class TableSelectionController {
     TableSelectionInfo selectionInfo = new TableSelectionInfo(
         tableId,
         sessionId,
+        userEmail,
         now,
         expiryTime, // 만료시간: +5분
         TableSelectStatus.PENDING // 결제 대기 상태 부여
@@ -184,13 +202,14 @@ public class TableSelectionController {
         return;
       }
       // 3-1-2. 선점 정상 성공
-      log.debug("테이블 선점 성공: 테이블 {}, 세션 {}, 만료시간 {}", tableId, sessionId, selectionInfo.getExpiryTime());
+      log.debug("테이블 선점 성공: 테이블 {}, 세션 {}, 사용자 {}, 만료시간 {}", tableId, sessionId, userEmail, selectionInfo.getExpiryTime());
 
       // 모든 클라이언트에게 보낼 테이블 상태 정보 생성
       TableStatus updatedTableStatus = new TableStatus();
       updatedTableStatus.setTableId(tableId);
       updatedTableStatus.setStatus(TableSelectStatus.PENDING); // 결제 대기 중 (선점 상태)
       updatedTableStatus.setSelectedBy(sessionId);
+      updatedTableStatus.setUserEmail(userEmail);
       updatedTableStatus.setSelectedAt(now);
       updatedTableStatus.setExpiryTime(expiryTime);
 
@@ -258,7 +277,7 @@ public class TableSelectionController {
           } else{
             // 다른 사용자가 임시 선점한 상태 (PENDING)
             status.setStatus(TableSelectStatus.PENDING);
-//          status.setSelectedBy(selection.getUserEmail());
+            status.setUserEmail(selection.getEmail());
             status.setSelectedAt(selection.getSelectedAt());
             status.setExpiryTime(selection.getExpiryTime());
           }
@@ -283,53 +302,64 @@ public class TableSelectionController {
   /**
    * 예약 등록
    *
+   * @param request 예약 요청 정보
+   * @param principal JWT 인증 정보 (Spring Security)
+   * @return 예약 결과
    * @author 김예진
    * @since 2025-09-24
    */
   @PostMapping("/reservation")
   @ResponseBody
-  public java.util.Map<String, Object> registerReservation(
+  public Map<String, Object> registerReservation(
       @RequestBody ReservationRequest request,
-      HttpSession session){
-    log.debug("예약 정보 - {}", request);
+      Principal principal) {
+    log.debug("예약 등록 요청: {}", request);
 
     try {
-      String sessionId = session.getId();
-      Long reservationId = reservationService.createReservation(request);
-      log.debug("예약 등록 id - {}", reservationId);
+      // JWT에서 추출된 인증된 사용자 이메일
+      String authenticatedEmail = null;
 
-      // Redis에 예약 완료 상태로 변경 (삭제 대신)
-      String selectionKey = createSelectionKey(request.getRestaurantId(), request.getRestaurantTableId(), request.getDate(), request.getTime());
-      TableSelectionInfo reservedInfo = new TableSelectionInfo(
-          request.getRestaurantTableId(),
-          sessionId,
-          LocalDateTime.now(),
-          LocalDateTime.now().plusHours(24), // 충분히 긴 시간으로 설정
-          TableSelectStatus.RESERVED // 예약 완료 상태
-      );
-      tableSelectionService.saveTableSelection(selectionKey, reservedInfo);
+      if (principal != null) {
+        authenticatedEmail = principal.getName(); // JWT에서 추출된 이메일
+        log.debug("Principal에서 추출한 이메일: {}", authenticatedEmail);
+      } else {
+        // Principal이 null인 경우, 요청 본문의 customerInfo에서 이메일 추출 (임시)
+        if (request.getCustomerInfo() != null && request.getCustomerInfo().getEmail() != null) {
+          authenticatedEmail = request.getCustomerInfo().getEmail();
+          log.debug("요청 본문에서 추출한 이메일: {}", authenticatedEmail);
+        }
+      }
 
-      // 새로 예약되었으므로 예약 캐시 무효화
-      String timeSlot = formatTimeSlot(request.getDate(), request.getTime());
-      tableSelectionService.deleteCachedReservationStatus(request.getRestaurantId(), request.getRestaurantTableId(), timeSlot);
+      if (authenticatedEmail == null) {
+        log.warn("인증 정보 없음: 예약 등록 실패");
+        return Map.of(
+            "success", false,
+            "message", "인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요."
+        );
+      }
 
-      // 예약 완료 상태 브로드캐스트
-      TableStatus tableStatus = new TableStatus();
-      tableStatus.setTableId(request.getRestaurantTableId());
-      tableStatus.setStatus(TableSelectStatus.RESERVED);
-      sendTableStatusUpdate(request.getRestaurantId(), request.getRestaurantTableId(), tableStatus, true, "예약이 완료되었습니다.");
+      // Service에서 검증 및 예약 등록 처리
+      Long reservationId = reservationService.createReservationWithValidation(request, authenticatedEmail);
 
-      // 성공 응답 반환
-      return java.util.Map.of(
+      log.debug("예약 등록 성공: ID={}, 사용자={}", reservationId, authenticatedEmail);
+      return Map.of(
           "success", true,
           "reservationId", reservationId,
           "message", "예약이 성공적으로 등록되었습니다."
       );
-    } catch (Exception e) {
-      log.error("예약 등록 실패", e);
-      return java.util.Map.of(
+    } catch (IllegalStateException e) {
+      // 검증 실패 (비즈니스 로직 에러)
+      log.warn("예약 검증 실패: {}", e.getMessage());
+      return Map.of(
           "success", false,
-          "message", "예약 등록 중 오류가 발생했습니다: " + e.getMessage()
+          "message", e.getMessage()
+      );
+    } catch (Exception e) {
+      // 시스템 에러
+      log.error("예약 등록 중 예상치 못한 오류 발생", e);
+      return Map.of(
+          "success", false,
+          "message", "예약 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
       );
     }
   }
