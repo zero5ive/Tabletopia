@@ -679,6 +679,7 @@ useEffect(() => {
           <div className={styles.bookingSummary}>
             <div className={styles.restaurantName}>{reservationStep1.restaurantName}</div>
             <div className={styles.bookingInfo}>
+              {reservationStep1.restaurantAddress}<br />
               {reservationStep1.date} {reservationStep1.time} • {reservationPeople}명
             </div>
 

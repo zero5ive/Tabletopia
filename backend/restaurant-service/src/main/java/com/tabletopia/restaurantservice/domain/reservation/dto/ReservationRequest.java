@@ -28,7 +28,11 @@ public class ReservationRequest {
 
   private String restaurantName;
 
-  private String userEmail; // 로그인한 사용자의 이메일
+  private String restaurantAddress;
+
+  private String restaurantPhone;
+
+  private String email; // 로그인한 사용자의 이메일
 
   @NotBlank(message = "예약 날짜는 필수입니다")
   private String date;

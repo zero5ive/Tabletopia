@@ -13,6 +13,8 @@ import com.tabletopia.restaurantservice.domain.restaurantTable.entity.Restaurant
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
 import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +38,8 @@ public class ReservationService {
   private final ReservationRepository reservationRepository;
   private final RestaurantTableService restaurantTableService;
   private final TableSelectionService tableSelectionService;
+  private final UserService userService;
+
   private final SimpMessagingTemplate messagingTemplate;
 
   /**
@@ -174,16 +178,15 @@ public class ReservationService {
    */
   private Long createReservation(ReservationRequest request){
     log.debug("예약 생성 요청: {}", request);
-
-    // TODO 예약 엔티티 생성
-    // 예약자 정보
+    // 요청에서 예약자 정보 꺼내기
     CustomerInfo reservationCustomerInfo = request.getCustomerInfo();
 
-    RestaurantSnapshot restaurantSnapshot = new RestaurantSnapshot(1L, request.getRestaurantName(), request.getAd, "전화번호");
-    TableSnapshot tableSnapshot = new TableSnapshot("테이블명", 1);
+    RestaurantSnapshot restaurantSnapshot = new RestaurantSnapshot(1L, request.getRestaurantName(), request.getRestaurantAddress(),
+        request.getRestaurantPhone());
+    TableSnapshot tableSnapshot = new TableSnapshot(request.getRestaurantTableNameSnapshot(), request.getPeopleCount());
 
     Reservation reservation = Reservation.createReservation(
-        1L,
+        userService.findByEmail(reservationCustomerInfo.getEmail()).getId(),
         request.getRestaurantId(),
         request.getRestaurantTableId(),
         request.getPeopleCount(),
