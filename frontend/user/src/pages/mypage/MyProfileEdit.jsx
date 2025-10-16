@@ -1,8 +1,11 @@
 import styles from './MyProfileEdit.module.css'
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { updateUser, getCurrentUser } from '../utils/UserApi';
 
 export default function MyProfileEdit() {
+    const { refreshUserData } = useOutletContext(); // 부모의 refresh 함수 가져오기
+
     // 프로필 데이터 상태 관리
     const [profile, setProfile] = useState({
         id: null,
@@ -65,6 +68,9 @@ export default function MyProfileEdit() {
             const response = await updateUser(userInfoDTO);
             console.log('프로필 저장 성공:', response.data);
             alert(response.data);
+
+            // 부모 컴포넌트의 유저 데이터 갱신
+            await refreshUserData();
         } catch (error) {
             console.error('프로필 저장 실패:', error);
 
