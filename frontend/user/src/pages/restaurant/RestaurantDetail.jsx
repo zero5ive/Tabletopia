@@ -20,6 +20,7 @@ export default function RestaurantList() {
     const [restaurantDetail, setRestaurantDetail] = useState(null);
     const [searchParams] = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0); // 선택된 이미지 인덱스
 
     const fetchRestaurantDetail = async (restaurantId) => {
         try {
@@ -34,48 +35,48 @@ export default function RestaurantList() {
     /**
  * 영업시간으로부터 영업 상태 메시지 생성
  */
-const getOperatingStatus = (openingHours) => {
-    if (!openingHours || openingHours === "영업시간 정보 없음") {
-        return "영업시간 정보 없음";
-    }
+    const getOperatingStatus = (openingHours) => {
+        if (!openingHours || openingHours === "영업시간 정보 없음") {
+            return "영업시간 정보 없음";
+        }
 
-    if (openingHours === "휴무") {
-        return "휴무";
-    }
+        if (openingHours === "휴무") {
+            return "휴무";
+        }
 
-    // "11:00 - 22:00" 형식 파싱
-    const [openTime, closeTime] = openingHours.split(' - ');
-    
-    if (!openTime || !closeTime) {
-        return openingHours;
-    }
+        // "11:00 - 22:00" 형식 파싱
+        const [openTime, closeTime] = openingHours.split(' - ');
 
-    // 현재 시간
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+        if (!openTime || !closeTime) {
+            return openingHours;
+        }
 
-    // 영업 시간 파싱
-    const [openHour, openMinute] = openTime.split(':').map(Number);
-    const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+        // 현재 시간
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
 
-    // 분을 포함한 시간 비교 (분 단위까지 계산)
-    const currentTotalMinutes = currentHour * 60 + currentMinute;
-    const openTotalMinutes = openHour * 60 + openMinute;
-    const closeTotalMinutes = closeHour * 60 + closeMinute;
+        // 영업 시간 파싱
+        const [openHour, openMinute] = openTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closeTime.split(':').map(Number);
 
-    // 영업 상태 판단
-    if (currentTotalMinutes < openTotalMinutes) {
-        return "영업 전";
-    } else if (currentTotalMinutes >= closeTotalMinutes) {
-        return "영업 종료";
-    } else {
-        // 영업 중 - 종료 시간 표시
-        const amPm = closeHour < 12 ? "오전" : "오후";
-        const displayHour = closeHour > 12 ? closeHour - 12 : (closeHour === 0 ? 12 : closeHour);
-        return `영업 중 (오늘 ${amPm} ${displayHour}:${closeMinute.toString().padStart(2, '0')}에 영업종료)`;
-    }
-};
+        // 분을 포함한 시간 비교 (분 단위까지 계산)
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        const openTotalMinutes = openHour * 60 + openMinute;
+        const closeTotalMinutes = closeHour * 60 + closeMinute;
+
+        // 영업 상태 판단
+        if (currentTotalMinutes < openTotalMinutes) {
+            return "영업 전";
+        } else if (currentTotalMinutes >= closeTotalMinutes) {
+            return "영업 종료";
+        } else {
+            // 영업 중 - 종료 시간 표시
+            const amPm = closeHour < 12 ? "오전" : "오후";
+            const displayHour = closeHour > 12 ? closeHour - 12 : (closeHour === 0 ? 12 : closeHour);
+            return `영업 중 (오늘 ${amPm} ${displayHour}:${closeMinute.toString().padStart(2, '0')}에 영업종료)`;
+        }
+    };
 
     useEffect(() => {
         fetchRestaurantDetail(restaurantId);
@@ -170,14 +171,28 @@ const getOperatingStatus = (openingHours) => {
             <div className={styles["main-content"]}>
                 {/* <!-- Image Gallery --> */}
                 <div className={styles["image-gallery"]}>
-                    🍣 레스토랑 이미지
-                    <div className={styles["gallery-nav"]}>1/5</div>
-                    <div className={styles["image-thumbs"]}>
-                        <div className={`${styles["thumb"]} ${styles["active"]}`}></div>
-                        <div className={styles["thumb"]}></div>
-                        <div className={styles["thumb"]}></div>
-                        <div className={styles["thumb"]}></div>
-                        <div className={styles["thumb"]}></div>
+                    {/* 큰 대표 이미지 */}
+                    <div className={styles["main-image"]}>
+                        <img
+                            src={`http://localhost:8002/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`}
+                            alt={`매장 이미지 ${selectedImageIndex + 1}`}
+                        />
+
+                        {/* 썸네일 이미지들 - 왼쪽 하단에 배치 */}
+                        <div className={styles["thumbnail-container"]}>
+                            {restaurantDetail.imageUrls.map((imageUrl, index) => (
+                                <div
+                                    key={index}
+                                    className={`${styles["image-thumb"]} ${selectedImageIndex === index ? styles["active"] : ""}`}
+                                    onClick={() => setSelectedImageIndex(index)}
+                                >
+                                    <img
+                                        src={`http://localhost:8002/uploads/restaurants/${imageUrl}`}
+                                        alt={`썸네일 ${index + 1}`}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -186,8 +201,9 @@ const getOperatingStatus = (openingHours) => {
                     <h1 className={styles["restaurant-title"]}>{restaurantDetail.name}</h1>
                     <div className={styles["restaurant-meta"]}>
                         <div className={styles["rating"]}>
-                            <span className={styles["stars"]}>⭐⭐⭐⭐</span>
-                            <span className={styles["rating-score"]}>{restaurantDetail.averageRating}</span>
+                            <span className={styles["stars"]}>
+                                {'⭐'.repeat(Math.round(restaurantDetail.averageRating))}
+                            </span>
                             <span className={styles["review-count"]}>리뷰 {restaurantDetail.reviewCount} 개</span>
                         </div>
                         <span className={styles["cuisine-type"]}>{restaurantDetail.restaurantCategoryName}</span>
@@ -198,7 +214,7 @@ const getOperatingStatus = (openingHours) => {
                             <div>{restaurantDetail.address}</div>
                         </div>
                     </div>
-                     <div className={styles["restaurant-address"]}>
+                    <div className={styles["restaurant-address"]}>
                         <span className={styles["address-icon"]}>📍</span>
                         <div>
                             <div>{restaurantDetail.tel}</div>

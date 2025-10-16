@@ -17,7 +17,7 @@ export default function RestaurantList() {
     // url에서 파라미터 추출
     const categoryId = searchParams.get('categoryId');
     const regionCode = searchParams.get('regionCode');
-    const nameFromUrl = searchParams.get('name'); 
+    const nameFromUrl = searchParams.get('name');
 
     // 지역 목록
     const regions = [
@@ -184,7 +184,7 @@ export default function RestaurantList() {
     useEffect(() => {
         console.log('검색 조건:', { name: nameFromUrl, categoryId, regionCode });
         fetchRestaurant(0);
-    }, [nameFromUrl, categoryId, regionCode]); 
+    }, [nameFromUrl, categoryId, regionCode]);
 
     // URL의 검색어를 input에 반영
     useEffect(() => {
@@ -201,13 +201,13 @@ export default function RestaurantList() {
                                 type="text"
                                 className={styles["search-input"]}
                                 placeholder="매장명, 지역, 음식 종류를 검색해보세요"
-                                value={searchKeyword} 
+                                value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
                                 onKeyPress={handleKeyPress}
                             />
-                            <button 
+                            <button
                                 className={styles["search-btn"]}
-                                onClick={handleSearch} 
+                                onClick={handleSearch}
                             >
                                 🔍 검색
                             </button>
@@ -267,7 +267,8 @@ export default function RestaurantList() {
                                 <Link key={restaurant.id} to={`/restaurant/detail?restaurantId=${restaurant.id}`} className={styles.noUnderline}>
                                     <div className={styles["restaurant-card"]}>
                                         <div className={styles["card-image"]}>
-                                            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=200&fit=crop" alt={restaurant.name} />
+                                            <img src={`http://localhost:8002/uploads/restaurants/${restaurant.mainImageUrl}`}
+                                                alt={restaurant.name} />
                                             {/* <button className={styles["bookmark-btn"]}>
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
@@ -283,7 +284,9 @@ export default function RestaurantList() {
                                             <h3 className={styles["restaurant-name"]}>{restaurant.name}</h3>
                                             <div className={styles["restaurant-info"]}>
                                                 <div className={styles["rating"]}>
-                                                    <span className={styles["star"]}>⭐</span>
+                                                    <span className={styles["stars"]}>
+                                                        {'⭐'.repeat(Math.round(restaurant.averageRating))}
+                                                    </span>
                                                     <span className={styles["score"]}>
                                                         {restaurant.averageRating ? restaurant.averageRating.toFixed(1) : '0.0'}
                                                     </span>
