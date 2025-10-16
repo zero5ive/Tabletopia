@@ -6,6 +6,7 @@ import ChatBotLayout from '../components/ChatBotLayout';
 import Login from '../pages/loginpage/Login';
 import SignUp from '../pages/signuppage/SignUp';
 import SignUpSuccess from '../pages/signuppage/SignUpSuccess';
+import UserInfo from '../pages/loginpage/UserProfile'
 
 // 서비스 메인페이지
 import Main from '../pages/mainpage/Main';
@@ -132,7 +133,12 @@ const router = createBrowserRouter([
             {
                 path: "loginform",
                 element: <Login />
+            },
+            {
+                path: "userinfo",
+                element: <UserInfo />
             }
+
         ]
     },
 

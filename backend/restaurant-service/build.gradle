@@ -1,3 +1,4 @@
+// ========= restaurant-service application.properties =========
 
 plugins {
     id 'java'

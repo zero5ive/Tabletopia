@@ -1,12 +1,15 @@
 package com.tabletopia.restaurantservice.domain.user.controller;
 
+import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.tabletopia.restaurantservice.domain.refreshtoken.service.RefreshTokenService;
 import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationRequest;
 import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationResponse;
 import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
+import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
 import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsService;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.util.JwtUtil;
+import com.tabletopia.restaurantservice.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +21,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Map;
 
@@ -118,5 +126,15 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
                 .body(Map.of("success", true, "message", "로그아웃 성공"));
+    }
+
+    /**
+     * 현재 로그인된 사용자 정보 조회
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoDTO> getCurrentUser() {
+        String name = userService.getCurrentUserInfo().getName();
+        log.debug("가져온 이름은"+ name+"입니다.");
+        return ResponseEntity.ok(userService.getCurrentUserInfo());
     }
 }

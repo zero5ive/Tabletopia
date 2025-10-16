@@ -129,6 +129,10 @@
     background: linear-gradient(135deg, #f8d7da, #f5c6cb); 
     color: #721c24; 
 }
+.status-called { 
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb); 
+    color: #721c24; 
+}
 
 .card-details {
     display: grid;
@@ -701,7 +705,76 @@
     margin-bottom: 20px;
 }
 
+/* 페이지네이션 추가 스타일 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding: 20px;
+}
 
+.page-btn {
+    padding: 8px 16px;
+    border: 1px solid #e8eaed;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #5f6368;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #fafbfc;
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+.page-number {
+    min-width: 40px;
+    height: 40px;
+    padding: 8px;
+    border: 1px solid #e8eaed;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #5f6368;
+}
+
+.page-number:hover {
+    background: #fafbfc;
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.page-number.active {
+    background: #ff4444;
+    border-color: #ff4444;
+    color: white;
+}
+
+.total-count {
+    text-align: center;
+    padding: 16px;
+    color: #5f6368;
+    font-size: 14px;
+}
 
 @media (max-width: 1200px) {
     .layout-wrapper {
