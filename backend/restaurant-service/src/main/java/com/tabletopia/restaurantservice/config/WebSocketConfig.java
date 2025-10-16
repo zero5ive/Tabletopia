@@ -1,8 +1,8 @@
 package com.tabletopia.restaurantservice.config;
 
 import com.tabletopia.restaurantservice.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -29,11 +29,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Slf4j
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final JwtUtil jwtUtil;
   private final UserDetailsService userDetailsService;
+
+  public WebSocketConfig(JwtUtil jwtUtil,
+      @Qualifier("customUserDetailsService") UserDetailsService userDetailsService) {
+    this.jwtUtil = jwtUtil;
+    this.userDetailsService = userDetailsService;
+  }
 
   /**
    * 경로 설정

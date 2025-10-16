@@ -24,6 +24,7 @@ public class AdminController {
     private final AdminService adminService;
     private final AuthenticationManager authenticationManager;
 
+
     @GetMapping("/me")
     public ResponseEntity<?> getAdminInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

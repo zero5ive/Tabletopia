@@ -207,6 +207,9 @@ const Login = () => {
                 <div className={styles.signupLink}>
                     계정이 없으신가요? <Link to='/admins/signup'>회원가입</Link>
                 </div>
+                <div className={styles.signupLink}>
+                    adminAPi/me로 보내는 요청<Link to='/admins/admininfo'>ee가입</Link>
+                </div>
             </div>
         </div>
     );

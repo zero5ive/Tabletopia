@@ -30,7 +30,12 @@ import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsSer
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 
-
+/**
+ * 스프링 시큐리티의 설정 Bean입니다
+ *
+ * @author 이세형
+ * @since 2025-09-27
+ * */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -81,18 +86,12 @@ public class SecurityConfig {
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/**").permitAll()
-//                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/admin/api/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginProcessingUrl("/admin/login")
-                        .successHandler(adminAuthenticationSuccessHandler())
-                        .failureHandler(adminAuthenticationFailureHandler())
-                        .permitAll()
-                )
+
                 .logout(logout -> logout
-                        .logoutUrl("/admin/logout")
+                        .logoutUrl("/admin/api/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
                         })
