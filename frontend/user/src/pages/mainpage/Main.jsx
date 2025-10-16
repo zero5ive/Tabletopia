@@ -20,8 +20,8 @@ export default function Main(){
                 <LocationCategory/>
 
                 {/* Restaurants */}
-                <Advertisement/>
-                <NewRestaurant/>
+                {/* <Advertisement/> */}
+                {/* <NewRestaurant/> */}
             </main>
 
             {/* 챗봇 */}
