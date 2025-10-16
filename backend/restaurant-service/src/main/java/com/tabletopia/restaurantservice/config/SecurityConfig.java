@@ -1,12 +1,15 @@
 package com.tabletopia.restaurantservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.tabletopia.restaurantservice.filter.JwtRequestFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,8 +21,15 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
+
+import com.tabletopia.restaurantservice.domain.admin.service.AdminDetailsService;
+
+import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsService;
+
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+
+
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +38,8 @@ public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
     private final ObjectMapper objectMapper;
+    private final AdminDetailsService adminDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,11 +47,32 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public DaoAuthenticationProvider adminAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(adminDetailsService);
+        provider.setPasswordEncoder(passwordEncoder()); // Use the bean directly
+        return provider;
     }
+
+    @Bean
+    public DaoAuthenticationProvider userAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder()); // Use the bean directly
+        return provider;
+    }
+
+        @Bean
+        public AuthenticationManager authenticationManager(
+                AuthenticationConfiguration authenticationConfiguration,
+                HttpSecurity http
+        ) throws Exception {
+            AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+            authenticationManagerBuilder
+                    .authenticationProvider(adminAuthenticationProvider())
+                    .authenticationProvider(userAuthenticationProvider());
+            return authenticationManagerBuilder.build();
+        }
 
     @Bean
     @Order(1)
@@ -48,8 +81,8 @@ public class SecurityConfig {
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/**").permitAll()
+//                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -76,13 +109,11 @@ public class SecurityConfig {
                 .cors(cors -> {}) // ✅ CORS 활성화 (중요!)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-//                                "/api/user/login",
-//                                "/api/user/register",
-//                                "/api/user/refresh",
-//                                "/.well-known/**"
-                                "/**"
+                                "/api/user/login",
+                                "/api/user/register",
+                                "/api/user/refresh",
+                                "/.well-known/**"
                         ).permitAll()
-                        .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())

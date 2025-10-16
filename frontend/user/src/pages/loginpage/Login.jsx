@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import styles from './Login.module.css';
 import { Link } from 'react-router-dom';
-
+import userApi from '../utils/UserApi';
 const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -94,17 +94,16 @@ const Login = () => {
         const fullEmail = `${formData.emailLocal}@${formData.emailDomain}`;
 
         try {
-            const response = await axios.post('http://localhost:8002/api/user/login', {
+            const response = await userApi.post('/api/user/login', {
                 email: fullEmail,
                 password: formData.password
             });
             
             const data = response.data;
-            console.log(data);
             
             if (data.success && data.accessToken) {
-                console.log("로그인 성공점에 진입 합");
                 localStorage.setItem('accessToken', data.accessToken);
+                await new Promise(r => setTimeout(r, 100)); // 0.1초 대기
                 navigate('/');
             } else {
                 setGlobalError(data.message || '로그인 정보가 올바르지 않습니다.');

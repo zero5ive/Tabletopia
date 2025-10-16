@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import styles from './Login.module.css';
 import { Link } from 'react-router-dom';
+import AdminApi from '../../utils/AdminApi';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -94,23 +95,23 @@ const Login = () => {
         const fullEmail = `${formData.emailLocal}@${formData.emailDomain}`;
 
         try {
-            const response = await fetch('/api/user/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: fullEmail, password: formData.password })
+            const response = await AdminApi.post('/admin/api/login', {
+                email: fullEmail,
+                password: formData.password
             });
             
-            const data = await response.json();
-            console.log(data);
+            const data = response.data;
+            console.log("Login response data:", data);
             
-            if (data.success && data.accessToken) {
-                console.log("로그인 성공점에 진입 합");
-                localStorage.setItem('accessToken', data.accessToken);
-                navigate('/');
+            if (data.success===true) {
+                console.log("로그인 성공");
+                navigate('/main'); // 로그인 후 메인 페이지로 이동
             } else {
+                // 백엔드에서 { success: false, message: '...' } 형태의 응답을 주는 경우
                 setGlobalError(data.message || '로그인 정보가 올바르지 않습니다.');
             }
         } catch (error) {
+            console.error("Login error: ", error);
             setGlobalError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };

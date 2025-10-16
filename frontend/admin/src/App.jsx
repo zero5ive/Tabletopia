@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import Login from './pages/loginpage/Login';
 import SignUp from './pages/signuppage/SignUp';
 import MainContent from './components/MainContent';
+import SignUpSuccess from './pages/signuppage/SignUpSuccess';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Login/>} />
               <Route path="/admins/signup" element={<SignUp/>}/>
+              <Route path="/admins/signup/success" eleement={<SignUpSuccess/>}/>
               <Route path="/main" element={<MainContent/>}/>
             </Routes>
           </div>

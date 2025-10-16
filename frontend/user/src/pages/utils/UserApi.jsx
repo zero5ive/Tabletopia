@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 // Axios 인스턴스 생성
-const api = axios.create({
+const UserApi = axios.create({
     baseURL: 'http://localhost:8002' // 기본 URL 설정
 });
 
 // 요청 인터셉터 (요청을 보내기 전에 실행)
-api.interceptors.request.use(
+UserApi.interceptors.request.use(
     config => {
         // localStorage에서 accessToken 가져오기
         const token = localStorage.getItem('accessToken');
@@ -23,4 +23,4 @@ api.interceptors.request.use(
     }
 );
 
-export default api
+export default UserApi

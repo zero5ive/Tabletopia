@@ -39,6 +39,9 @@ public class UserService {
 
     /**
      * 현재 인증된 사용자의 정보를 UserInfoResponse DTO로 반환합니다.
+     *
+     * @author 이세형
+     * @since 2025-10-16
      * @return UserInfoResponse DTO
      */
     public UserInfoDTO getCurrentUserInfo() {

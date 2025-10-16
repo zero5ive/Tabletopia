@@ -31,8 +31,9 @@ public class Admin {
     @Column(nullable = false, length = 20)
     private String name;
 
+    @CreationTimestamp
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private LocalDateTime updatedAt;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
