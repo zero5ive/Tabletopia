@@ -39,10 +39,19 @@ export default function FoodCategory() {
             <section>
                 <h2 className={styles.sectionTitle}>어떤 음식이 드시고 싶으세요?</h2>
                 <div className={styles.categoriesGrid}>
+                    <Link
+                        to={`/restaurant/list`}
+                        className={styles.noUnderline}
+                    >
+                        <div className={styles.categoryItem}>
+                            <div className={styles.categoryIcon}>🍴</div>
+                            <div className={styles.categoryName}>전체</div>
+                        </div>
+                    </Link>
                     {categoryList.map(category => (
-                        <Link 
-                            key={category.id} 
-                            to={`/restaurant/list?categoryId=${category.id}`} 
+                        <Link
+                            key={category.id}
+                            to={`/restaurant/list?categoryId=${category.id}`}
                             className={styles.noUnderline}
                         >
                             <div className={styles.categoryItem}>
