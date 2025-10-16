@@ -9,3 +9,4 @@ export const getOpeningHours = (id) => {
 export const getEffectiveHours = (id) => {
     return axios.get(`${URL}/effective/${id}`);
 }
+

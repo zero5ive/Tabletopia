@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.restaurant.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
 import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.RestaurantFacility;
+import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.entity.RestaurantOpeningHour;
 import com.tabletopia.restaurantservice.domain.restaurantreview.entity.RestaurantReview;
 import jakarta.persistence.*;
@@ -107,6 +108,10 @@ public class Restaurant {
   @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
   @JsonIgnoreProperties("restaurant")
   private List<RestaurantReview> reviews = new ArrayList<>();
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<RestaurantImage> restaurantImage = new ArrayList<>();
 
   /** 매장 소유 계정 (FK) */
 //  @ManyToOne(fetch = FetchType.LAZY)
