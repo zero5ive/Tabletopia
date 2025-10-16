@@ -177,6 +177,12 @@ export const WebSocketProvider = ({ children }) => {
         )
     }
 
+    const markAllAsRead = () => {
+        setNotifications(prev =>
+            prev.map(notif => ({ ...notif, read: true }))
+        )
+    }
+
     const value = {
         stompClient,
         notifications,
@@ -184,7 +190,8 @@ export const WebSocketProvider = ({ children }) => {
         addNotification,
         removeNotification,
         clearAllNotifications,
-        markAsRead
+        markAsRead,
+        markAllAsRead
     }
 
     return (

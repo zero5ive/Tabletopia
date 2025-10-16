@@ -23,4 +23,8 @@ api.interceptors.request.use(
     }
 );
 
+//마이페이지 유저정보 업데이트
+export const updateUser = (userId, userData) =>
+    api.put(`/api/user/userId/${userId}`, userData)
+
 export default api

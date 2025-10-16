@@ -46,5 +46,19 @@ public class UserService {
         User user = findByEmail(currentUserEmail);
         return UserInfoDTO.from(user);
     }
+
+  /**
+   * 사용자의 정보를 수정하기 .
+   */
+    public void updateUser(long userId, UserInfoDTO userInfoDTO) {
+      User user = userRepository.findById(userId)
+          .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다"));
+
+      user.setName(userInfoDTO.getName());
+      user.setEmail(userInfoDTO.getEmail());
+      user.setPhoneNumber(userInfoDTO.getPhoneNumber());
+
+      userRepository.save(user);
+    }
 }
 

@@ -10,6 +10,7 @@ import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsSer
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.util.JwtUtil;
 import com.tabletopia.restaurantservice.util.SecurityUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -137,4 +138,14 @@ public class UserController {
         log.debug("가져온 이름은"+ name+"입니다.");
         return ResponseEntity.ok(userService.getCurrentUserInfo());
     }
+
+  /**
+   *  로그인된 사용자 정보 변경
+   */
+  @PutMapping("/userId/{userId}")
+  public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody @Valid UserInfoDTO userInfoDTO) {
+
+    userService.updateUser(userId, userInfoDTO);
+    return ResponseEntity.ok("프로필이 저장되었습니다");
+  }
 }
