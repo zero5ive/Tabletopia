@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.reservation.service;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
+import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
@@ -145,4 +146,35 @@ public class ReservationService {
       return null;
     }
   }
+
+  /**
+   * 예약 내역 상태별 조회
+   * 프론트엔드 4개 탭: PENDING(대기중), CONFIRMED(확정), COMPLETED(완료), COMPLETED_GROUP(취소+노쇼)
+   *
+   * @author 서예닮
+   * @since 2025-10-16
+   */
+  public List<Reservation> getReservations(Long userId, String status) {
+    // status가 null이면 전체 조회
+    if (status == null || status.isEmpty()) {
+      return reservationRepository.findByUserId(userId);
+    }
+
+    switch (status.toUpperCase()) {
+      case "PENDING":
+        return reservationRepository.findByUserIdAndReservationState(userId, ReservationStatus.PENDING);
+      case "CONFIRMED":
+        return reservationRepository.findByUserIdAndReservationState(userId, ReservationStatus.CONFIRMED);
+      case "COMPLETED":
+        return reservationRepository.findByUserIdAndReservationState(userId, ReservationStatus.COMPLETED);
+      case "COMPLETED_GROUP":  // 취소 + 노쇼 그룹 탭
+        return reservationRepository.findByUserIdAndReservationStateIn(
+            userId,
+            List.of(ReservationStatus.CANCELLED, ReservationStatus.NO_SHOW)
+        );
+      default:
+        return reservationRepository.findByUserId(userId);
+    }
+  }
+
 }
