@@ -19,6 +19,7 @@ import com.tabletopia.restaurantservice.domain.restaurantTable.service.Restauran
 import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
