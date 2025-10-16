@@ -9,6 +9,7 @@ import axios from 'axios';
 import { getWaitingList } from '../utils/WaitingApi';
 import { getRestaurant } from '../utils/RestaurantApi';
 import { useSearchParams } from 'react-router-dom';
+import { getWaitingStatus } from '../utils/WaitingApi';
 
 export default function Waiting({ reservationType }) {
 
@@ -59,11 +60,13 @@ export default function Waiting({ reservationType }) {
 
   useEffect(() => {
 
-    //웨이팅 리스트 조회
+    if (!restaurantId) return;
+
+    // 1. 웨이팅 리스트 조회
     fetchWaitingList();
 
-    // 1. 먼저 현재 웨이팅 상태를 조회
-    axios.get('http://localhost:8002/api/waiting/status')
+    // 2. 웨이팅 상태 조회
+    getWaitingStatus(restaurantId)
       .then(response => {
         setIsWaitingOpen(response.data.isOpen);
         console.log('초기 웨이팅 상태:', response.data.isOpen);
@@ -72,7 +75,7 @@ export default function Waiting({ reservationType }) {
         console.error('웨이팅 상태 조회 실패:', error);
       });
 
-    // 2. 웹소켓 연결 및 실시간 업데이트 구독
+    // 3. 웹소켓 연결 및 실시간 업데이트 구독
     const socket = new SockJS('http://localhost:8002/ws');
     const client = new Client({
       webSocketFactory: () => socket,
@@ -83,22 +86,20 @@ export default function Waiting({ reservationType }) {
         console.log('웹소켓 연결 성공');
 
         // 웨이팅 오픈 구독
-        client.subscribe('/topic/open', (msg) => {
-          console.log('웨이팅 오픈 메시지 받음:', msg.body);
+        client.subscribe(`/topic/restaurant/${restaurantId}/open`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === "OPEN") {
             setIsWaitingOpen(true);
-            console.log('웨이팅 상태: 오픈됨');
+            window.alert('웨이팅이 오픈되었습니다.');
           }
         });
 
-        // 웨이팅 닫기 구독
-        client.subscribe('/topic/close', (msg) => {
-          console.log('웨이팅 닫기 메시지 받음:', msg.body);
+        //웨이팅 닫기 구독
+        client.subscribe(`/topic/restaurant/${restaurantId}/close`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === "CLOSE") {
             setIsWaitingOpen(false);
-            console.log('웨이팅 상태: 닫힘');
+            window.alert('웨이팅이 마감되었습니다.');
           }
         });
 
@@ -143,7 +144,7 @@ export default function Waiting({ reservationType }) {
         client.deactivate();
       }
     };
-  }, []);
+  }, [restaurantId]);
 
 
   if (!restaurant) return <div>레스토랑 로딩중 ...</div>

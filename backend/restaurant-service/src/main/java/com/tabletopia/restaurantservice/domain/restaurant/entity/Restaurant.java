@@ -93,6 +93,19 @@ public class Restaurant {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
+  /**웨이팅 오픈 상태 추가*/
+  @Column(name = "is_waiting_open", nullable = false)
+  private Boolean isWaitingOpen = false;
+
+  public void openWaiting() {
+    this.isWaitingOpen = true;
+  }
+
+  public void closeWaiting() {
+    this.isWaitingOpen = false;
+  }
+
+
   /** 매장 카테고리 (FK) */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_category_id", nullable = false)
@@ -124,4 +137,6 @@ public class Restaurant {
   @JoinColumn(name = "restaurant_account_id", nullable = false)
   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private RestaurantAccount restaurantAccount;
+
 }
+

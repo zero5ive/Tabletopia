@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { getWaitingList, waitingCancel, waitingCall, waitingSeated } from '../../utils/WaitingApi';
-import { useParams } from "react-router-dom";
-import { getRestaurant } from '../../utils/RestaurantApi';
+import { getWaitingList, waitingCancel, waitingCall, waitingSeated, getWaitingStatus } from '../../utils/WaitingApi';
 import { useSearchParams } from 'react-router-dom';
-
 
 export default function WaitingTab({selectedRestaurant}) {
   const [activeFilter, setActiveFilter] = useState('웨이팅');
-  const [showVisitConfirmed, setShowVisitConfirmed] = useState(false);
-  const [showStoreArrival, setShowStoreArrival] = useState(false);
   const [waitingList, setWaitingList] = useState([]);
-
   const [searchParams] = useSearchParams();
 
   //페이징 추가
@@ -21,8 +15,22 @@ export default function WaitingTab({selectedRestaurant}) {
   const [totalElements, setTotalElements] = useState(0);
   const pageSize = 10;
 
-  //임의로 설정한 restaurantId
-  //const restaurantId = 2;
+  // useRef로 최신 값 참조
+  const selectedRestaurantRef = useRef(selectedRestaurant);
+  const activeFilterRef = useRef(activeFilter);
+  const currentPageRef = useRef(currentPage);
+
+  useEffect(() => {
+    selectedRestaurantRef.current = selectedRestaurant;
+  }, [selectedRestaurant]);
+
+  useEffect(() => {
+    activeFilterRef.current = activeFilter;
+  }, [activeFilter]);
+
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
 
   // 상태 매핑 추가
   const statusMap = {
@@ -34,41 +42,78 @@ export default function WaitingTab({selectedRestaurant}) {
 
   //웨이팅 리스트 조회 함수
   const fetchWaitingList = async (page = 0, status = 'WAITING') => {
-    console.log("웨이팅 리스트 조회 함수 시작");
-    if (!selectedRestaurant) return;
+    console.log("웨이팅 리스트 조회 함수 시작", "page:", page, "status:", status);
+    const restaurant = selectedRestaurantRef.current;
 
-    console.log("어드민 레스토랑 아이디: " + selectedRestaurant.id);
+    if (!restaurant) {
+      console.log("selectedRestaurant가 없음");
+      return;
+    }
 
-    const response = await getWaitingList(selectedRestaurant.id, page, pageSize, status);
-    console.log('웨이팅 리스트 (페이징)', response.data);
+    console.log("어드민 레스토랑 아이디: " + restaurant.id);
 
-    // Spring Page 응답 구조
-    const pageData = response.data;
+    try {
+      const response = await getWaitingList(restaurant.id, page, pageSize, status);
+      console.log('===== API 응답 전체 =====', response);
+      console.log('===== API 응답 data =====', response.data);
+      console.log('===== response.data의 타입 =====', typeof response.data);
+      console.log('===== response.data의 키들 =====', Object.keys(response.data || {}));
 
-    setWaitingList(transformedWatingData(pageData.content)); // 실제 데이터
-    setTotalPages(pageData.totalPages);                      // 전체 페이지 수
-    setTotalElements(pageData.totalElements);                // 전체 데이터 수
-    setCurrentPage(pageData.number);                         // 현재 페이지 번호
+      const pageData = response.data;
 
-    console.log('현재 페이지:', pageData.number);
-    console.log('전체 페이지:', pageData.totalPages);
-    console.log('전체 데이터:', pageData.totalElements);
+      // 응답 데이터 구조 확인
+      if (!pageData) {
+        console.error('응답 데이터가 없습니다');
+        return;
+      }
 
-    
-  }
+      console.log('content:', pageData.content);
+      console.log('page 객체:', pageData.page);
+      console.log('totalPages:', pageData.totalPages);
+      console.log('totalElements:', pageData.totalElements);
+      console.log('number:', pageData.number);
+
+      // page 객체 안에 페이징 정보가 있는 경우
+      const pageInfo = pageData.page || pageData;
+      console.log('pageInfo:', pageInfo);
+      console.log('pageInfo.totalPages:', pageInfo.totalPages);
+      console.log('pageInfo.totalElements:', pageInfo.totalElements);
+      console.log('pageInfo.number:', pageInfo.number);
+
+      // 현재 페이지가 비어있고 이전 페이지가 있으면 이전 페이지로 이동
+      if (pageData.content && pageData.content.length === 0 && page > 0) {
+        console.log('현재 페이지가 비어있어 이전 페이지로 이동');
+        fetchWaitingList(page - 1, status);
+        return;
+      }
+
+      setWaitingList(pageData.content ? transformedWatingData(pageData.content) : []);
+      setTotalPages(pageInfo.totalPages || 0);
+      setTotalElements(pageInfo.totalElements || 0);
+      setCurrentPage(pageInfo.number || 0);
+
+      console.log('업데이트 완료 - totalPages:', pageInfo.totalPages, 'totalElements:', pageInfo.totalElements, 'currentPage:', pageInfo.number);
+    } catch (error) {
+      console.error('웨이팅 리스트 조회 실패:', error);
+      console.error('에러 상세:', error.response || error.message);
+    }
+  };
 
   //웨이팅 정보
   const transformedWatingData = (waitingData) => {
-    return waitingData.map(item => ({
-      id: item.id,
-      waitingNumber: item.waitingNumber,
-      customerInfo: {
-        userId: item.userId,
-        peopleCount: item.peopleCount
-      },
-      createdAt: item.createdAt,
-
-    }));
+    return waitingData.map(item => {
+      console.log('웨이팅 항목:', item.id, 'waitingState:', item.waitingState);
+      return {
+        id: item.id,
+        waitingNumber: item.waitingNumber,
+        status: item.waitingState,
+        customerInfo: {
+          userId: item.userId,
+          peopleCount: item.peopleCount
+        },
+        createdAt: item.createdAt,
+      };
+    });
   }
 
   //웨이팅 open관련
@@ -96,7 +141,6 @@ export default function WaitingTab({selectedRestaurant}) {
 
       window.alert(message);
 
-      // 상태 변경 후 새로고침
       const status = statusMap[activeFilter];
       fetchWaitingList(currentPage, status);
 
@@ -111,20 +155,23 @@ export default function WaitingTab({selectedRestaurant}) {
     const confirm = window.confirm("정말 취소하시겠습니까?");
     if (!confirm) return;
 
-    const response = await waitingCancel(waitingId, selectedRestaurant.id);
-    window.alert("웨이팅이 취소되었습니다.");
+    try {
+      const response = await waitingCancel(waitingId, selectedRestaurant.id);
+      window.alert("웨이팅이 취소되었습니다.");
 
-    //취소 후 새로고침
-    const status = statusMap[activeFilter];
-    fetchWaitingList(currentPage, status);
-
+      // 현재 페이지 데이터를 다시 불러옴 (취소된 항목은 WAITING 탭에서 사라짐)
+      const status = statusMap[activeFilter];
+      fetchWaitingList(currentPage, status);
+    } catch (error) {
+      console.error('취소 실패:', error);
+      window.alert("취소 중 오류가 발생했습니다.");
+    }
   }
 
   const handleFilterClick = (filterName) => {
     setActiveFilter(filterName);
     const status = statusMap[filterName];
-    fetchWaitingList(0, status); // 첫 페이지부터 해당 상태 조회
-
+    fetchWaitingList(0, status);
   }
 
   const filteredWaitingList = waitingList;
@@ -151,23 +198,64 @@ export default function WaitingTab({selectedRestaurant}) {
     }
   };
 
-
   useEffect(() => {
-    if (selectedRestaurant) fetchWaitingList(0, 'WAITING'); //초기 로드: 첫 페이지, WAITING 상태
+    console.log('useEffect 실행됨, selectedRestaurant:', selectedRestaurant);
+    if (selectedRestaurant) {
+      console.log('fetchWaitingList 호출 시작');
+      fetchWaitingList(0, 'WAITING');
+    } else {
+      console.log('selectedRestaurant가 없어서 fetchWaitingList 호출 안함');
+    }
   }, [selectedRestaurant]);
 
+  // 탭이 활성화될 때 데이터 다시 로드
+  useEffect(() => {
+    const handleTabShown = (event) => {
+      const href = event.target.getAttribute('href');
+      if (href === '#waiting' && selectedRestaurant) {
+        console.log('웨이팅 탭 활성화됨, 데이터 다시 로드');
+        const status = statusMap[activeFilter];
+        fetchWaitingList(0, status);
+      }
+    };
 
+    const waitingTabButton = document.querySelector('a[href="#waiting"]');
+    if (waitingTabButton) {
+      waitingTabButton.addEventListener('shown.bs.tab', handleTabShown);
+      return () => {
+        waitingTabButton.removeEventListener('shown.bs.tab', handleTabShown);
+      };
+    }
+  }, [selectedRestaurant, activeFilter]);
 
   useEffect(() => {
+    if (!selectedRestaurant) return;
+
+    getWaitingStatus(selectedRestaurant.id)
+      .then(response => {
+        setIsWaitingOpen(response.data.isOpen);
+        console.log('초기 웨이팅 상태:', response.data.isOpen);
+      })
+      .catch(error => {
+        console.error('웨이팅 상태 조회 실패:', error);
+      });
+  }, [selectedRestaurant]);
+
+  useEffect(() => {
+    if (!selectedRestaurant) {
+      console.log('selectedRestaurant가 없어서 WebSocket 연결 안함');
+      return;
+    }
+
+    console.log('WebSocket 연결 시작, restaurantId:', selectedRestaurant.id);
+
     const socket = new SockJS('http://localhost:8002/ws');
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
         console.log('웹소켓 연결 성공');
 
-        // 웨이팅 오픈 구독
-        client.subscribe('/topic/open', (msg) => {
-          console.log('웨이팅 오픈 메시지 받음:', msg.body);
+        client.subscribe(`/topic/restaurant/${selectedRestaurant.id}/open`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === 'OPEN') {
             setIsWaitingOpen(true);
@@ -175,9 +263,7 @@ export default function WaitingTab({selectedRestaurant}) {
           }
         });
 
-        // 웨이팅 닫기 구독
-        client.subscribe('/topic/close', (msg) => {
-          console.log('웨이팅 닫기 메시지 받음:', msg.body);
+        client.subscribe(`/topic/restaurant/${selectedRestaurant.id}/close`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === 'CLOSE') {
             setIsWaitingOpen(false);
@@ -185,61 +271,87 @@ export default function WaitingTab({selectedRestaurant}) {
           }
         });
 
-
-        // 웨이팅 등록 구독
         client.subscribe('/topic/regist', (msg) => {
+          console.log('웨이팅 등록 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
           if (alert.type === 'REGIST') {
-            fetchWaitingList();
+            if (selectedRestaurantRef.current) {
+              const status = statusMap[activeFilterRef.current];
+              fetchWaitingList(currentPageRef.current, status);
+            }
           }
         });
 
-        //웨이팅 취소 구독
         client.subscribe('/topic/cancel', (msg) => {
+          console.log('웨이팅 취소 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
           if(alert.type === "CANCEL") {
-            fetchWaitingList();
+            if (selectedRestaurantRef.current) {
+              const status = statusMap[activeFilterRef.current];
+              fetchWaitingList(currentPageRef.current, status);
+            }
           }
         });
-
       },
 
       onStompError: (frame) => {
         console.error('STOMP 에러:', frame);
       }
     });
+    
     client.activate();
     setStompClient(client);
 
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제
     return () => {
+      console.log('WebSocket 연결 해제');
       if (client) {
         client.deactivate();
       }
     };
-  }, []);
-
-
-
+  }, [selectedRestaurant]);
 
   //  웨이팅 토글 함수 (오픈/닫기)
   const toggleWaiting = () => {
-    if (stompClient && stompClient.connected) {
-      // 현재 상태에 따라 OPEN 또는 CLOSE 결정
-      const action = isWaitingOpen ? 'close' : 'open';
-      stompClient.publish({
-        destination: `/app/waiting/${action.toLowerCase()}`,
-        body: JSON.stringify({
-          action: action,
-          timestamp: new Date().toISOString()
-        })
-      });
-      console.log(`웨이팅 ${action} 요청 전송`);
-    } else {
-      console.error('웹소켓이 연결되지 않았습니다');
+    if (!selectedRestaurant) {
+      console.error('레스토랑이 선택되지 않았습니다');
+      return;
     }
+
+    if (!stompClient || !stompClient.connected) {
+      console.error('웹소켓이 연결되지 않았습니다');
+      window.alert('서버와 연결이 끊어졌습니다. 페이지를 새로고침해주세요.');
+      return;
+    }
+
+    const action = isWaitingOpen ? 'close' : 'open';
+
+    stompClient.publish({
+      destination: `/app/waiting/${action}`,
+      body: JSON.stringify({
+        restaurantId: selectedRestaurant.id  
+      })
+    });
+    console.log(`웨이팅 ${action} 요청 전송`);
   };
 
+  // 레스토랑 미선택 시 안내 화면
+  if (!selectedRestaurant) {
+    return (
+      <div className="tab-pane fade" id="waiting">
+        <div className="card text-center mt-4 border-danger">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-danger mb-3"></i>
+            <h5 className="text-danger fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">
+              웨이팅을 관리하려면 먼저 매장을 선택해주세요.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ 레스토랑 선택 시 정상 화면
   return (
     <div className="tab-pane fade" id="waiting">
       <div className="waiting-container">
@@ -264,17 +376,15 @@ export default function WaitingTab({selectedRestaurant}) {
         {/* 필터 섹션 */}
         <div className="waiting-filterSection">
           <div className="waiting-statusFilters">
-            <span className="waiting-filterLabel">웨이팅 중 (</span>
-            <span className="waiting-count">7팀</span>
-            <span className="waiting-filterLabel">·</span>
-            <span className="waiting-count">20명</span>
+            <span className="waiting-filterLabel">{activeFilter} (</span>
+            <span className="waiting-count">{totalElements}팀</span>
             <span className="waiting-filterLabel">)</span>
 
-           {Object.keys(statusMap).map(status => (
+            {Object.keys(statusMap).map(status => (
               <button
                 key={status}
                 className={`waiting-filterButton ${status} ${activeFilter === status ? 'active' : ''}`}
-                 onClick={() => handleFilterClick(status)}
+                onClick={() => handleFilterClick(status)}
               >
                 {status}
               </button>
@@ -284,34 +394,48 @@ export default function WaitingTab({selectedRestaurant}) {
 
         {/* 웨이팅 리스트 */}
         <div className="waiting-list">
-          {filteredWaitingList.map(waiting => (
-            <div key={waiting.id} className="waiting-card">
-              <div className="waiting-number">
-                <div className="waiting-numberBadge">{waiting.waitingNumber}</div>
-                <span className="waiting-numberLabel">번째</span>
-              </div>
-
-              <div className="waiting-customerInfo">
-                <div>{waiting.customerInfo.userId} / 총 {waiting.customerInfo.peopleCount}명</div>
-                <div>{waiting.customerInfo.phone}</div>
-
-              </div>
-
-              <div className="waiting-actionButtons">
-                <button onClick={() => handleStatusChange(waiting.id, '호출')}>호출</button>
-                <button onClick={() => handleStatusChange(waiting.id, '착석')}>착석</button>
-                <button onClick={() => handleCancelChange(waiting.id, '취소')}>취소</button>
-              </div>
+          {filteredWaitingList.length === 0 ? (
+            <div className="text-center text-muted mt-5">
+              <i className="fas fa-clipboard-list fa-3x mb-3"></i>
+              <p>현재 {activeFilter} 상태의 웨이팅이 없습니다.</p>
             </div>
-          ))}
+          ) : (
+            filteredWaitingList.map(waiting => (
+              <div key={waiting.id} className="waiting-card">
+                <div className="waiting-number">
+                  <div className="waiting-numberBadge">{waiting.waitingNumber}</div>
+                  <span className="waiting-numberLabel">번째</span>
+                </div>
+
+                <div className="waiting-customerInfo">
+                  <div>{waiting.customerInfo.userId} / 총 {waiting.customerInfo.peopleCount}명</div>
+                  <div>{waiting.customerInfo.phone}</div>
+                </div>
+
+                <div className="waiting-actionButtons">
+                  {(() => {
+                    return waiting.status !== 'CANCELLED' ? (
+                      <>
+                        <button onClick={() => handleStatusChange(waiting.id, '호출')}>호출</button>
+                        <button onClick={() => handleStatusChange(waiting.id, '착석')}>착석</button>
+                        <button onClick={() => handleCancelChange(waiting.id, '취소')}>취소</button>
+                      </>
+                    ) : (
+                      <span className="text-muted">취소됨</span>
+                    );
+                  })()}
+                </div>
+
+              </div>
+            ))
+          )}
         </div>
 
         {/* 페이징 UI */}
-        {totalPages > 1 && (
-          <div className="demo-section">
-            <div className="pagination-container">
+        <div className="demo-section">
+          <div className="pagination-container">
+            {totalPages > 1 && (
               <div className="pagination">
-                {/* 이전 버튼 */}
                 <button
                   onClick={goToPrevPage}
                   disabled={currentPage === 0}
@@ -322,7 +446,6 @@ export default function WaitingTab({selectedRestaurant}) {
                   </svg>
                 </button>
 
-                {/* 페이지 번호 버튼들 */}
                 {Array.from({ length: totalPages }, (_, i) => i).map(pageNum => (
                   <button
                     key={pageNum}
@@ -333,7 +456,6 @@ export default function WaitingTab({selectedRestaurant}) {
                   </button>
                 ))}
 
-                {/* 다음 버튼 */}
                 <button
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages - 1}
@@ -344,10 +466,9 @@ export default function WaitingTab({selectedRestaurant}) {
                   </svg>
                 </button>
               </div>
-            </div>
+            )}
           </div>
-        )}
-
+        </div>
       </div>
     </div>
   );

@@ -64,16 +64,34 @@ public class WaitingServiceImpl implements WaitingService{
     return waitingRepository.save(waiting);
   }
 
-
   @Override
-  public void setWaitingOpen(boolean isOpen) {
-    this.waitingOpen = isOpen;
+  public boolean isWaitingOpen(Long restaurantId) {
+
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("레스토랑을 찾을 수 없습니다."));
+    return restaurant.getIsWaitingOpen();
   }
 
+  @Transactional
   @Override
-  public boolean isWaitingOpen() {
-    return this.waitingOpen;
+  public void openWaiting(Long restaurantId) {
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("레스토랑을 찾을 수 없습니다."));
+
+    restaurant.openWaiting();
+    restaurantRepository.save(restaurant);
   }
+
+  @Transactional
+  @Override
+  public void closeWaiting(Long restaurantId) {
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("레스토랑을 찾을 수 없습니다."));
+
+    restaurant.closeWaiting();
+    restaurantRepository.save(restaurant);
+  }
+
 
   @Override
   public Page<WaitingResponse> getWaitingList(Long restaurantId, WaitingState status,  Pageable pageable) {

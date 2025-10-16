@@ -130,9 +130,10 @@ public class WaitingController {
   // 웨이팅 오픈 상태 조회 REST API
   @GetMapping("/api/waiting/status")
   @ResponseBody
-  public Map<String, Boolean> getWaitingStatus() {
+  public Map<String, Boolean> getWaitingStatus(@RequestParam(required = false) Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen();
-    log.debug("웨이팅 상태 조회 요청 - isOpen: {}", isOpen);
+    log.debug("웨이팅 상태 조회 요청 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
+    // TODO: 추후 레스토랑별 상태 관리 필요
     return Map.of("isOpen", isOpen);
   }
 

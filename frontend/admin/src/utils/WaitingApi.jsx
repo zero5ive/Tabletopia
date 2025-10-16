@@ -2,6 +2,10 @@ import axios from "axios";
 
 const URL="http://localhost:8002/api/waitings";
 
+// 웨이팅 오픈 상태 조회
+export const getWaitingStatus = (restaurantId) =>
+    axios.get(`${URL}/status?restaurantId=${restaurantId}`);
+
 //웨이팅 리스트 페이징 처리
 export const getWaitingList = (restaurantId, page = 0, size = 10, status = 'WAITING') => 
   axios.get(`${URL}/${restaurantId}?status=${status}&page=${page}&size=${size}`);

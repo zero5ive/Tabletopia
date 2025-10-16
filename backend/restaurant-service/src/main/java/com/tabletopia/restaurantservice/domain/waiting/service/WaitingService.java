@@ -11,11 +11,14 @@ public interface WaitingService {
   //웨이팅 등록
   public Waiting registerWaiting(Long restaurantId, Long userId, Integer peopleCount);
 
-  // 웨이팅 오픈 상태 설정
-  public void setWaitingOpen(boolean isOpen);
-
   // 웨이팅 오픈 상태 조회
-  public boolean isWaitingOpen();
+  public boolean isWaitingOpen(Long restaurantId);
+
+  // 웨이팅 오픈
+  public void openWaiting(Long restaurantId);
+
+  // 웨이팅 마감
+  public void closeWaiting(Long restaurantId);
 
   public Page<WaitingResponse> getWaitingList(Long restaurantId, WaitingState status, Pageable pageable);
 
