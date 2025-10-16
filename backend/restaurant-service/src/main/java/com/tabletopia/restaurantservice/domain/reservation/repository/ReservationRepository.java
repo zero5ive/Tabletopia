@@ -1,6 +1,7 @@
 package com.tabletopia.restaurantservice.domain.reservation.repository;
 
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
+import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
    * 레스토랑의 해당 시간대의 테이블 예약 정보 조회
    */
   public Reservation findReservationByRestaurantIdAndRestaurantTableIdAndReservationAt(Long restaurantId, Long restaurantTableId, LocalDateTime reservationAt);
+
+  /**
+   * 사용자의 예약 내역 조회
+   */
+  List<Reservation> findByUserId(Long userId);
+
+  List<Reservation> findByUserIdAndReservationState(Long userId, ReservationStatus status);
+
+  List<Reservation> findByUserIdAndReservationStateIn(Long userId, List<ReservationStatus> statuses);
 }
