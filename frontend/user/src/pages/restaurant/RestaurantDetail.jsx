@@ -144,7 +144,8 @@ export default function RestaurantList() {
 
         // 예약 1차 정보
         const reservationStep1 = {
-            restaurantId: 1,
+            restaurantId: restaurantId,
+            restaurantName: restaurantDetail.name,
             date: date,
             time: selectedTime,
             peopleCount: people
@@ -175,13 +176,15 @@ export default function RestaurantList() {
                     {/* 큰 대표 이미지 */}
                     <div className={styles["main-image"]}>
                         <img
-                            src={`http://localhost:8002/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`}
+                            src={restaurantDetail.imageUrls && restaurantDetail.imageUrls.length > 0 && restaurantDetail.imageUrls[selectedImageIndex]
+                                ? `http://localhost:8002/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`
+                                : '/placeholder-restaurant.png'}
                             alt={`매장 이미지 ${selectedImageIndex + 1}`}
                         />
 
                         {/* 썸네일 이미지들 - 왼쪽 하단에 배치 */}
                         <div className={styles["thumbnail-container"]}>
-                            {restaurantDetail.imageUrls.map((imageUrl, index) => (
+                            {restaurantDetail.imageUrls && restaurantDetail.imageUrls.filter(url => url).map((imageUrl, index) => (
                                 <div
                                     key={index}
                                     className={`${styles["image-thumb"]} ${selectedImageIndex === index ? styles["active"] : ""}`}
@@ -256,7 +259,7 @@ export default function RestaurantList() {
                     {activeTab === 'info' && <OperatingInfoTab />}
 
                     {/* 리뷰 탭 */}
-                    {activeTab === 'reviews' && <ReviewsTab />}
+                    {activeTab === 'reviews' && <ReviewsTab restaurantDetail={restaurantDetail} />}
                 </div>
             </div>
 

@@ -2,6 +2,7 @@ package com.tabletopia.restaurantservice.domain.restaurantreview.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,8 +27,8 @@ public class RestaurantReview {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id", nullable = false)

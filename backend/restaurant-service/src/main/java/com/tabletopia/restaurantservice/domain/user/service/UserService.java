@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
  * @author 이세형
  * @since 2025-10-01
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -43,6 +44,7 @@ public class UserService {
      */
     public UserInfoDTO getCurrentUserInfo() {
         String currentUserEmail = SecurityUtil.getCurrentUserEmail();
+        log.debug("사용자 이메일: {}", currentUserEmail);
         User user = findByEmail(currentUserEmail);
         return UserInfoDTO.from(user);
     }

@@ -267,7 +267,9 @@ export default function RestaurantList() {
                                 <Link key={restaurant.id} to={`/restaurant/detail?restaurantId=${restaurant.id}`} className={styles.noUnderline}>
                                     <div className={styles["restaurant-card"]}>
                                         <div className={styles["card-image"]}>
-                                            <img src={`http://localhost:8002/uploads/restaurants/${restaurant.mainImageUrl}`}
+                                            <img src={restaurant.mainImageUrl
+                                                ? `http://localhost:8002/uploads/restaurants/${restaurant.mainImageUrl}`
+                                                : '/placeholder-restaurant.png'}
                                                 alt={restaurant.name} />
                                             {/* <button className={styles["bookmark-btn"]}>
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
