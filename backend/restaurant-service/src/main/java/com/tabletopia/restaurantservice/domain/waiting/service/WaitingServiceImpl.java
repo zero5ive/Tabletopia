@@ -1,15 +1,20 @@
 package com.tabletopia.restaurantservice.domain.waiting.service;
 
+import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.restaurantservice.domain.waiting.repository.WaitingRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * 웨이팅 서비스
  *
@@ -23,14 +28,42 @@ public class WaitingServiceImpl implements WaitingService{
 
   private final WaitingRepository waitingRepository;
   private final ModelMapper modelMapper;
+  private final RestaurantRepository restaurantRepository;
 
   // 웨이팅 오픈 상태를 메모리에 저장
   private boolean waitingOpen = false;
 
-  @Override
-  public Waiting save(Waiting waiting) {
+  /**
+   * 웨이팅 등록
+   */
+  @Transactional
+  public Waiting registerWaiting(Long restaurantId, Long userId, Integer peopleCount) {
+
+    // 1. Restaurant 엔티티 조회
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException(
+            "식당을 찾을 수 없습니다. ID: " + restaurantId));
+
+    // 2. 다음 웨이팅 번호 계산
+    Integer maxWaitingNumber = waitingRepository
+        .findMaxWaitingNumberByRestaurantIdToday(restaurantId);
+    int nextWaitingNumber = (maxWaitingNumber != null) ? maxWaitingNumber + 1 : 1;
+
+    // 3. Waiting 엔티티 생성
+    Waiting waiting = new Waiting(
+        restaurant,
+        userId,
+        peopleCount,
+        restaurant.getName()  // 스냅샷
+    );
+
+    // 4. 웨이팅 번호 할당
+    waiting.assignWaitingNumber(nextWaitingNumber);
+
+    // 5. 저장 및 반환
     return waitingRepository.save(waiting);
   }
+
 
   @Override
   public void setWaitingOpen(boolean isOpen) {
@@ -109,7 +142,7 @@ public class WaitingServiceImpl implements WaitingService{
       // WAITING 상태이고 오늘 날짜인 경우에만 앞 대기팀 수 계산
       LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay(); //오늘 0시
       if (waiting.getWaitingState() == WaitingState.WAITING && waiting.getCreatedAt().isAfter(todayStart)) {
-            Integer teamsAhead = getTeamsAheadCount(waiting.getRestaurantId(), waiting.getWaitingNumber());
+            Integer teamsAhead = getTeamsAheadCount(waiting.getRestaurant().getId(), waiting.getWaitingNumber());
             response.setTeamsAhead(teamsAhead);
       }
 

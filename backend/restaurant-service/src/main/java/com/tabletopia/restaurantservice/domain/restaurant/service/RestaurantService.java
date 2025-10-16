@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.restaurant.service;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantCategoryWithPage;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantSearchResponse;
+import com.tabletopia.restaurantservice.domain.restaurant.dto.RestuarantLocationResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.SearchCondition;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
@@ -211,5 +212,15 @@ public class RestaurantService {
         .orElseThrow(() -> new IllegalArgumentException("해당 레스토랑이 존재하지 않습니다. ID: " + restaurantId));
 
     return RestaurantSearchResponse.from(restaurant);
+  }
+
+  /**
+   *레스토랑 위치 조회
+   */
+  public RestuarantLocationResponse getRestuarantLocation(Long restaurantId){
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(()-> new RuntimeException("해당 레스토랑이 존재하지 않습니다." + restaurantId));
+
+    return RestuarantLocationResponse.from(restaurant);
   }
 }

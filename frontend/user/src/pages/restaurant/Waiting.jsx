@@ -7,6 +7,8 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import { getWaitingList } from '../utils/WaitingApi';
+import { getRestaurant } from '../utils/RestaurantApi';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Waiting({ reservationType }) {
 
@@ -15,9 +17,22 @@ export default function Waiting({ reservationType }) {
   const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)
   const [isWaitingOpen, setIsWaitingOpen] = useState(false); //웨이팅 오픈
   const [waitingList, setWaitingList] = useState([]);
-  const {restaurantId} = useParams();
+  const [searchParams] = useSearchParams();
+  const restaurantId = searchParams.get('restaurantId');
+  const [restaurant, setRestaurant] = useState(null);
 
-  
+
+  const fetchRestaurant = async (restaurantId) => {
+    const response = await getRestaurant(restaurantId);
+    console.log('웨이팅에서 레스토랑id 조회', response.data);
+
+    setRestaurant(response.data);
+  }
+
+  useEffect(() => {
+    fetchRestaurant(restaurantId);
+  }, [restaurantId])
+
   const increment = () => {
     setPeople(prev => prev + 1);
   };
@@ -27,13 +42,14 @@ export default function Waiting({ reservationType }) {
   };
 
   //웨이팅 리스트 조회 함수
-  const fetchWaitingList = async() =>{
-      const response = await getWaitingList(2);
-      console.log('웨이팅 리스트', response);
+  const fetchWaitingList = async () => {
+     if (!restaurantId) return;
+    const response = await getWaitingList(restaurantId);
+    console.log('웨이팅 리스트', response);
 
-      // Page 객체의 content 배열을 가져옴
-      setWaitingList(response.data.content || []);
-      console.log('웨이팅 리스트 조회', response.data.content);
+    // Page 객체의 content 배열을 가져옴
+    setWaitingList(response.data.content || []);
+    console.log('웨이팅 리스트 조회', response.data.content);
   }
 
   //총 팀 수 계산
@@ -86,10 +102,10 @@ export default function Waiting({ reservationType }) {
           }
         });
 
-         //웨이팅 취소 구독
+        //웨이팅 취소 구독
         client.subscribe('/topic/cancel', (msg) => {
           const alert = JSON.parse(msg.body);
-          if(alert.type === "CANCEL") {
+          if (alert.type === "CANCEL") {
             fetchWaitingList();
           }
         });
@@ -129,11 +145,25 @@ export default function Waiting({ reservationType }) {
     };
   }, []);
 
+
+  if (!restaurant) return <div>레스토랑 로딩중 ...</div>
+
   //웨이팅 등록
   const waitingRegist = () => {
 
-    if(!isWaitingOpen) {
+    if (!isWaitingOpen) {
       window.alert('현재 웨이팅 등록이 불가능합니다.');
+      return;
+    }
+
+    if (!restaurant) {
+      window.alert('레스토랑을 불러오는 중입니다.');
+      return;
+    }
+
+    //WebSocket 연결 체크
+    if (!stompClient || !stompClient.connected) {
+      window.alert('서버와 연결이 끊어졌습니다. 페이지를 새로고침해주세요.');
       return;
     }
 
@@ -142,13 +172,14 @@ export default function Waiting({ reservationType }) {
         destination: `/app/waiting/regist`,
         body: JSON.stringify({
           userId: 1,
-          restaurantName: "냠냠",
+          restaurantName: restaurant.name,
           peopleCount: people,
-          restaurantId: 2,
+          restaurantId: restaurantId,
         })
       });
     }
   }
+
 
   return (
     <>
@@ -156,13 +187,13 @@ export default function Waiting({ reservationType }) {
       <div className={`${styles["waiting-content"]} ${reservationType === 'waiting' ? styles['active'] : ''}`}>
         <div className={styles["waiting-info"]}>
           <div className={styles["waiting-status"]}>
-          {isWaitingOpen ? (
-             <>
+            {isWaitingOpen ? (
+              <>
                 <div>2인석 : {team2}팀</div>
                 <div>4인석 : {team4}팀</div>
               </>
-             ) : '현재 웨이팅이 닫혀있습니다.'}
-           
+            ) : '현재 웨이팅이 닫혀있습니다.'}
+
           </div>
         </div>
 

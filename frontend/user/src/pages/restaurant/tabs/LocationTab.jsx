@@ -1,6 +1,6 @@
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import styles from '../RestaurantDetail.module.css';
-import { getRestaurant } from '../../utils/RestaurantApi';
+import { getRestaurantLocation } from '../../utils/RestaurantApi';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -16,8 +16,8 @@ export default function LocationTab() {
     
     const restaurantLocation = async (restaurantId) => {
         try {
-            const response = await getRestaurant(restaurantId);
-            console.log('레스토랑 정보:', response.data);
+            const response = await getRestaurantLocation(restaurantId);
+            console.log('레스토랑 위치:', response.data);
             setLocation(response.data);
         } catch (error) {
             console.error('조회 실패:', error);

@@ -12,6 +12,7 @@ import { useLoadScript } from '@react-google-maps/api';
 import { getRestaurantDetail } from "../utils/RestaurantApi";
 import { useSearchParams } from 'react-router-dom';
 
+
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RestaurantList() {

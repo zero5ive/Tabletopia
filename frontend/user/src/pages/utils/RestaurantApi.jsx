@@ -43,9 +43,15 @@ export const searchRestaurants = async (params = {}) => {
 };
 
 /*
- 레스토랑 상세페이지 검색 
+ 레스토랑 상세페이지 (사진, 리뷰 등)
 */
 export const getRestaurantDetail = (id) =>{
-    return axios.get(`${URL}/${id}/detail`)
+    return axios.get(`${URL}/${id}/detail`);
 }
 
+/*
+레스토랑 위치
+*/
+export const getRestaurantLocation = (id) => {
+    return axios.get(`${URL}/${id}/location`);
+}
