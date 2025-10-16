@@ -31,6 +31,11 @@ public class TableSelectionInfo implements Serializable {
   private String sessionId;
 
   /**
+   * 선점한 사용자의 email
+   */
+  private String email;
+
+  /**
    * 선점 시작 시간
    */
   private LocalDateTime selectedAt;
