@@ -128,10 +128,14 @@ public class RestaurantSearchResponse {
     }
 
     return restaurant.getRestaurantImage().stream()
-        .filter(img -> img.isMain()) // 메인 이미지 여부
+        .filter(img -> img.isMain() && img.getImageUrl() != null) // 메인 이미지이면서 URL이 null이 아닌 것만
         .findFirst()
         .map(img -> img.getImageUrl())
-        .orElse(restaurant.getRestaurantImage().get(0).getImageUrl()); // 없으면 첫 번째 이미지
+        .orElseGet(() -> restaurant.getRestaurantImage().stream()
+            .filter(img -> img.getImageUrl() != null)
+            .findFirst()
+            .map(img -> img.getImageUrl())
+            .orElse(null)); // 모든 이미지가 null이면 null 반환
   }
 
   /**
@@ -144,6 +148,7 @@ public class RestaurantSearchResponse {
 
     return restaurant.getRestaurantImage().stream()
         .map(img -> img.getImageUrl())
+        .filter(url -> url != null) // null URL 제외
         .collect(Collectors.toList());
   }
 }
