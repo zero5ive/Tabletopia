@@ -331,7 +331,7 @@ const ReservationConfirm = () => {
 
           {/* 예약 요약 사이드바 */}
           <div className={styles.bookingSummary}>
-            <div className={styles.restaurantName}>정미스시</div>
+            <div className={styles.restaurantName}>{reservationData.restaurantName}</div>
             <div className={styles.bookingInfo}>
               {reservationData.date} {reservationData.time} • {reservationData.peopleCount}명
             </div>

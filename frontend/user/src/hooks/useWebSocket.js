@@ -53,6 +53,11 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
             // SockJS를 통한 WebSocket 연결
             webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
 
+            // JWT 인증 헤더 추가
+            connectHeaders: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            },
+
             // 디버그 모드 (프로덕션에서는 비활성화 권장)
             debug: function (str) {
                 console.log('STOMP:', str);
