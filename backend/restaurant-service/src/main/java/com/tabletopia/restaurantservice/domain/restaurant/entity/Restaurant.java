@@ -7,6 +7,7 @@ import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.Restaur
 import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.entity.RestaurantOpeningHour;
 import com.tabletopia.restaurantservice.domain.restaurantreview.entity.RestaurantReview;
+import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +114,10 @@ public class Restaurant {
   @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
   @JsonIgnoreProperties("restaurant")
   private List<RestaurantImage> restaurantImage = new ArrayList<>();
+
+  @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @JsonIgnoreProperties("restaurant")
+  private List<Waiting>  waitings = new ArrayList<>();
 
   /** 매장 소유 계정 (FK) */
   @ManyToOne(fetch = FetchType.LAZY)

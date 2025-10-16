@@ -43,7 +43,11 @@ public class WaitingController {
   private final WaitingNotificationService waitingNotificationService;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
-  //어드민 : 웨이팅 오픈
+  /**
+   * 웨이팅 오픈
+   *
+   * @author 성유진
+   */
   @MessageMapping("/waiting/open")
   public void open(){
 
@@ -60,7 +64,11 @@ public class WaitingController {
 
   }
 
-  //어드민 : 웨이팅 닫힘
+  /**
+   * 웨이팅 닫힘
+   *
+   * @author 성유진
+   */
   @MessageMapping("/waiting/close")
   public void close(){
 
@@ -76,52 +84,44 @@ public class WaitingController {
     simpMessagingTemplate.convertAndSend("/topic/close", waitingEvent);
   }
 
-  //시용자 : 웨이팅 등록
-@MessageMapping("/waiting/regist")
-  public void regist(@Payload WaitingRequest waitingRequest, SimpMessageHeaderAccessor headerAccessor){
+  /**
+   * 웨이팅 등록
+   *
+   * @author 성유진
+   */
+  @MessageMapping("/waiting/regist")
+  public void regist(@Payload WaitingRequest waitingRequest,
+      SimpMessageHeaderAccessor headerAccessor) {
 
     log.debug("웨이팅 등록 요청 받음");
-    //웹소켓 sessionId
-  String sessionId = (String) headerAccessor.getHeader("simpSessionId");
+    String sessionId = (String) headerAccessor.getHeader("simpSessionId");
 
-  try {
+    //  Service 호출 (엔티티 반환받음)
+    Waiting waiting = waitingService.registerWaiting(
+        waitingRequest.getRestaurantId(),
+        waitingRequest.getUserId(),
+        waitingRequest.getPeopleCount()
+    );
 
-    // 자동으로 다음 웨이팅 번호 생성
-    Integer maxWaitingNumber = waitingService.getMaxWaitingNumber(waitingRequest.getRestaurantId());
-    int nextWaitingNumber = (maxWaitingNumber != null) ? maxWaitingNumber + 1 : 1;
+    //  Controller에서 엔티티를 사용해서 응답 생성
+    WaitingEvent waitingEvent = new WaitingEvent();
+    waitingEvent.setType("REGIST");
+    waitingEvent.setContent("웨이팅 등록");
+    waitingEvent.setSender(waitingRequest.getUserId());
+    waitingEvent.setContent(
+        waiting.getRestaurantNameSnapshot() +  "에 " + waiting.getPeopleCount()+ "명 등록");
 
-      Waiting waiting = new Waiting(waitingRequest.getRestaurantId(), waitingRequest.getUserId(),
-          waitingRequest.getPeopleCount(),
-          waitingRequest.getRestaurantName());
+    simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
 
-      waiting.assignWaitingNumber(nextWaitingNumber);
+    log.debug("웨이팅 등록 완료 (세션: {}, userId: {})",
+        sessionId, waitingRequest.getUserId());
+  }
 
-      waitingService.save(waiting);
-
-      WaitingEvent waitingEvent = new WaitingEvent();
-      waitingEvent.setType("REGIST");
-      waitingEvent.setContent("웨이팅 등록");
-      waitingEvent.setSender(waitingRequest.getUserId());
-      waitingEvent.setContent(
-          waitingRequest.getRestaurantName() +  "에 " + waitingRequest.getPeopleCount() + "명 등록");
-
-      simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
-
-      log.debug(" 웨이팅 등록 완료 및 메시지 전송 (세션: {}, userId: {})",
-          sessionId, waitingRequest.getUserId());
-
-    }catch (Exception e){
-      log.error("웨이팅 등록 실패 : {}" , e.getMessage());
-
-      WaitingEvent waitingEvent = new WaitingEvent();
-      waitingEvent.setType("ERROR");
-      waitingEvent.setContent("웨이팅 등록 실패");
-
-      simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
-    }
-}
-
-  // 웨이팅 오픈 상태 조회 REST API
+  /**
+   * 웨이팅 오픈 상태 조회 REST API
+   *
+   * @author 성유진
+   */
   @GetMapping("/api/waiting/status")
   @ResponseBody
   public Map<String, Boolean> getWaitingStatus() {
@@ -130,8 +130,11 @@ public class WaitingController {
     return Map.of("isOpen", isOpen);
   }
 
-
-  //웨이팅 리스트 조회
+  /**
+   * 웨이팅 리스트 조회
+   *
+   * @author 성유진
+   */
   @GetMapping("/api/waitings/{restaurantId}")
   @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getList(@PathVariable Long restaurantId,
@@ -149,8 +152,11 @@ public class WaitingController {
     return  ResponseEntity.ok(waitingList);
   }
 
-
-  //웨이팅 취소
+  /**
+   * 웨이팅 취소
+   *
+   * @author 성유진
+   */
   @PutMapping("/api/waitings/{id}/cancel")
   @ResponseBody
   public ResponseEntity<String>cancelWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {

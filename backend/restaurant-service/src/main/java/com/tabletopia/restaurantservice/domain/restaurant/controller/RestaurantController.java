@@ -1,6 +1,7 @@
 package com.tabletopia.restaurantservice.domain.restaurant.controller;
 
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantSearchResponse;
+import com.tabletopia.restaurantservice.domain.restaurant.dto.RestuarantLocationResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.SearchCondition;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.service.RestaurantService;
@@ -90,6 +91,14 @@ public class RestaurantController {
   @GetMapping("/{id}/detail")
   public ResponseEntity<RestaurantSearchResponse> getRestaurantDetail(@PathVariable Long id) {
     return ResponseEntity.ok(restaurantService.getRestaurantDetail(id));
+  }
+
+  /**
+   * 레스토랑 위치 조회
+   */
+  @GetMapping("/{id}/location")
+  public ResponseEntity<RestuarantLocationResponse> getRestaurantLocation(@PathVariable Long id) {
+    return ResponseEntity.ok(restaurantService.getRestuarantLocation(id));
   }
 
 }

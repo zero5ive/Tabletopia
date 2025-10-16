@@ -3,13 +3,17 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { getWaitingList, waitingCancel, waitingCall, waitingSeated } from '../../utils/WaitingApi';
 import { useParams } from "react-router-dom";
+import { getRestaurant } from '../../utils/RestaurantApi';
+import { useSearchParams } from 'react-router-dom';
 
 
-export default function WaitingTab() {
+export default function WaitingTab({selectedRestaurant}) {
   const [activeFilter, setActiveFilter] = useState('웨이팅');
   const [showVisitConfirmed, setShowVisitConfirmed] = useState(false);
   const [showStoreArrival, setShowStoreArrival] = useState(false);
   const [waitingList, setWaitingList] = useState([]);
+
+  const [searchParams] = useSearchParams();
 
   //페이징 추가
   const [currentPage, setCurrentPage] = useState(0);
@@ -18,7 +22,7 @@ export default function WaitingTab() {
   const pageSize = 10;
 
   //임의로 설정한 restaurantId
-  const restaurantId = 2;
+  //const restaurantId = 2;
 
   // 상태 매핑 추가
   const statusMap = {
@@ -30,7 +34,12 @@ export default function WaitingTab() {
 
   //웨이팅 리스트 조회 함수
   const fetchWaitingList = async (page = 0, status = 'WAITING') => {
-    const response = await getWaitingList(restaurantId, page, pageSize, status);
+    console.log("웨이팅 리스트 조회 함수 시작");
+    if (!selectedRestaurant) return;
+
+    console.log("어드민 레스토랑 아이디: " + selectedRestaurant.id);
+
+    const response = await getWaitingList(selectedRestaurant.id, page, pageSize, status);
     console.log('웨이팅 리스트 (페이징)', response.data);
 
     // Spring Page 응답 구조
@@ -44,6 +53,8 @@ export default function WaitingTab() {
     console.log('현재 페이지:', pageData.number);
     console.log('전체 페이지:', pageData.totalPages);
     console.log('전체 데이터:', pageData.totalElements);
+
+    
   }
 
   //웨이팅 정보
@@ -72,11 +83,11 @@ export default function WaitingTab() {
 
       switch (newStatus) {
         case '호출':
-          response = await waitingCall(waitingId, restaurantId);
+          response = await waitingCall(waitingId, selectedRestaurant.id);
           message = response.data;
           break;
         case '착석':
-          response = await waitingSeated(waitingId, restaurantId);
+          response = await waitingSeated(waitingId, selectedRestaurant.id);
           message = response.data;
           break;
         default:
@@ -100,7 +111,7 @@ export default function WaitingTab() {
     const confirm = window.confirm("정말 취소하시겠습니까?");
     if (!confirm) return;
 
-    const response = await waitingCancel(waitingId, restaurantId);
+    const response = await waitingCancel(waitingId, selectedRestaurant.id);
     window.alert("웨이팅이 취소되었습니다.");
 
     //취소 후 새로고침
@@ -142,8 +153,9 @@ export default function WaitingTab() {
 
 
   useEffect(() => {
-    fetchWaitingList(0, 'WAITING'); //초기 로드: 첫 페이지, WAITING 상태
-  }, []);
+    if (selectedRestaurant) fetchWaitingList(0, 'WAITING'); //초기 로드: 첫 페이지, WAITING 상태
+  }, [selectedRestaurant]);
+
 
 
   useEffect(() => {

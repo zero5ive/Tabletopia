@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface WaitingService {
 
   //웨이팅 등록
-  public Waiting save(Waiting waiting);
+  public Waiting registerWaiting(Long restaurantId, Long userId, Integer peopleCount);
 
   // 웨이팅 오픈 상태 설정
   public void setWaitingOpen(boolean isOpen);
