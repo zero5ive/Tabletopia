@@ -6,6 +6,7 @@ import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationRequest;
 import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationResponse;
 import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
 import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
+import com.tabletopia.restaurantservice.domain.user.dto.UserUpdateDTO;
 import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsService;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.util.JwtUtil;
@@ -140,12 +141,13 @@ public class UserController {
     }
 
   /**
+   * @author 서예닮
+   * @since 2025-10-16
    *  로그인된 사용자 정보 변경
    */
-  @PutMapping("/userId/{userId}")
-  public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody @Valid UserInfoDTO userInfoDTO) {
-
-    userService.updateUser(userId, userInfoDTO);
+  @PutMapping("/update")
+  public ResponseEntity<String> updateUser(@RequestBody @Valid UserUpdateDTO userUpdateDTO) {
+    userService.updateUser(userUpdateDTO);
     return ResponseEntity.ok("프로필이 저장되었습니다");
   }
 }

@@ -1,17 +1,41 @@
 import styles from './MyProfileEdit.module.css'
-import { useState } from 'react';
-import { updateUser } from '../utils/UserApi';
+import { useState, useEffect } from 'react';
+import { updateUser, getCurrentUser } from '../utils/UserApi';
 
 export default function MyProfileEdit() {
     // 프로필 데이터 상태 관리
     const [profile, setProfile] = useState({
-        id: 1,
-        name: '김철수',
-        email: 'user@example.com',
-        phoneNumber: '010-1234-5678',
+        id: null,
+        name: '',
+        email: '',
+        phoneNumber: '',
     });
 
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    // 컴포넌트 마운트 시 현재 유저 정보 불러오기
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const response = await getCurrentUser();
+                const userData = response.data;
+                setProfile({
+                    id: userData.id,
+                    name: userData.name,
+                    email: userData.email,
+                    phoneNumber: userData.phoneNumber
+                });
+            } catch (error) {
+                console.error('유저 정보 조회 실패:', error);
+                alert('유저 정보를 불러오지 못했습니다.');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
 
     // 입력 필드 변경 핸들러
     const handleInputChange = (field, value) => {
@@ -35,11 +59,10 @@ export default function MyProfileEdit() {
         try {
             const userInfoDTO = {
                 name: profile.name,
-                email: profile.email,
                 phoneNumber: profile.phoneNumber
             };
 
-            const response = await updateUser(profile.id, userInfoDTO);
+            const response = await updateUser(userInfoDTO);
             console.log('프로필 저장 성공:', response.data);
             alert(response.data);
         } catch (error) {
@@ -55,6 +78,15 @@ export default function MyProfileEdit() {
             setLoading(false);
         }
     };
+
+    // 초기 로딩 중일 때
+    if (initialLoading) {
+        return (
+            <div className={styles['main-panel']}>
+                <div className={styles['loading']}>로딩 중...</div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -85,8 +117,9 @@ export default function MyProfileEdit() {
                                 type="email"
                                 className={styles['form-input']}
                                 value={profile.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
-                                placeholder="이메일을 입력하세요"
+                                placeholder={profile.email}
+                                readOnly
+                                style={{ backgroundColor:'#f0f0f0', cursor: 'not-allowed' }}     
                             />
                         </div>
 
