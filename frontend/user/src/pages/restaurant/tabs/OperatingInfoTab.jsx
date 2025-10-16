@@ -74,7 +74,7 @@ export default function OperatingInfoTab() {
                 openTime: hour.openTime,
                 closeTime: hour.closeTime,
                 breakStartTime: hour.breakStartTime,
-                breakEndTime: hour.breakEndTime,    
+                breakEndTime: hour.breakEndTime,
                 days: []
             };
         }
@@ -158,7 +158,10 @@ export default function OperatingInfoTab() {
                 {/* 특별 운영시간 */}
                 <div className={styles["info-item"]}>
                     <span className={styles["info-label"]}>휴무일</span>
-                    <span className={styles["info-value"]}>{effectiveHours.message}</span>
+                    <div className={styles["info-value"]}>
+                        <div>{effectiveHours.date}</div>
+                        <div>{effectiveHours.message}</div>
+                    </div>
                 </div>
             </div>
         </div>

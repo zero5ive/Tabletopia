@@ -31,6 +31,52 @@ export default function RestaurantList() {
         }
     }
 
+    /**
+ * 영업시간으로부터 영업 상태 메시지 생성
+ */
+const getOperatingStatus = (openingHours) => {
+    if (!openingHours || openingHours === "영업시간 정보 없음") {
+        return "영업시간 정보 없음";
+    }
+
+    if (openingHours === "휴무") {
+        return "휴무";
+    }
+
+    // "11:00 - 22:00" 형식 파싱
+    const [openTime, closeTime] = openingHours.split(' - ');
+    
+    if (!openTime || !closeTime) {
+        return openingHours;
+    }
+
+    // 현재 시간
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // 영업 시간 파싱
+    const [openHour, openMinute] = openTime.split(':').map(Number);
+    const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+
+    // 분을 포함한 시간 비교 (분 단위까지 계산)
+    const currentTotalMinutes = currentHour * 60 + currentMinute;
+    const openTotalMinutes = openHour * 60 + openMinute;
+    const closeTotalMinutes = closeHour * 60 + closeMinute;
+
+    // 영업 상태 판단
+    if (currentTotalMinutes < openTotalMinutes) {
+        return "영업 전";
+    } else if (currentTotalMinutes >= closeTotalMinutes) {
+        return "영업 종료";
+    } else {
+        // 영업 중 - 종료 시간 표시
+        const amPm = closeHour < 12 ? "오전" : "오후";
+        const displayHour = closeHour > 12 ? closeHour - 12 : (closeHour === 0 ? 12 : closeHour);
+        return `영업 중 (오늘 ${amPm} ${displayHour}:${closeMinute.toString().padStart(2, '0')}에 영업종료)`;
+    }
+};
+
     useEffect(() => {
         fetchRestaurantDetail(restaurantId);
     }, [restaurantId])
@@ -160,7 +206,7 @@ export default function RestaurantList() {
                     </div>
                     <div className={styles["operating-hours"]}>
                         <span>🕐</span>
-                        <span>영업 중 (오늘 오후 11:00에 영업종료)</span>
+                        <span>{getOperatingStatus(restaurantDetail.todayOpeningHours)}</span>
                     </div>
                 </div>
 
