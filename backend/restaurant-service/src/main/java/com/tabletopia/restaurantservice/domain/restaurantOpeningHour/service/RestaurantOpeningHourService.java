@@ -136,7 +136,12 @@ public class RestaurantOpeningHourService {
     if (specialOpt.isPresent()) {
       RestaurantSpecialHour special = specialOpt.get();
 
-      // 완전 휴무일
+      // specialInfo가 null 이거나 빈 문자열일 때 괄호 안 없애기
+      String info = (special.getSpecialInfo() != null && !special.getSpecialInfo().isBlank())
+          ? " (" + special.getSpecialInfo() + ")"
+          : "";
+
+      // 완전 휴무일 처리
       if (special.getIsClosed()) {
         return RestaurantEffectiveHourResponse.builder()
             .restaurantId(restaurantId)
@@ -145,24 +150,27 @@ public class RestaurantOpeningHourService {
             .isClosed(true)
             .openTime(null)
             .closeTime(null)
-            .message("특별휴무일 (" + special.getSpecialInfo() + ")")
+            .message("특별휴무일" + info)
             .build();
       }
 
-      // 단축 또는 임시 운영일
+      // 단축/임시 운영일 처리 (시간 표시)
       return RestaurantEffectiveHourResponse.builder()
           .restaurantId(restaurantId)
           .date(date)
           .type("SPECIAL")
           .isClosed(false)
-          .openTime(special.getOpenTime())
-          .closeTime(special.getCloseTime())
-          .message("특별 운영시간 적용 (" + special.getSpecialInfo() + ")")
+          .openTime(special.getIsClosed() ? null : special.getOpenTime())
+          .closeTime(special.getIsClosed() ? null : special.getCloseTime())
+          .message("특별 운영시간 적용" + info)
           .build();
     }
 
+
     // 2. 기본 운영시간 조회
-    int dayOfWeek = date.getDayOfWeek().getValue() % 7;
+    int dayOfWeek = date.getDayOfWeek().getValue();
+    if (dayOfWeek == 7) dayOfWeek = 0; // 일요일은 0으로 보정
+
     RestaurantOpeningHour regular =
         openingHourRepository.findByRestaurantIdAndDayOfWeek(restaurantId, dayOfWeek);
 
@@ -183,6 +191,8 @@ public class RestaurantOpeningHourService {
           .date(date)
           .type("REGULAR")
           .isClosed(true)
+          .openTime(null)
+          .closeTime(null)
           .message("정기휴무일")
           .build();
     }
@@ -195,7 +205,7 @@ public class RestaurantOpeningHourService {
         .isClosed(false)
         .openTime(regular.getOpenTime())
         .closeTime(regular.getCloseTime())
-        .message("기본 운영시간 적용")
+        .message(null)
         .build();
   }
 }

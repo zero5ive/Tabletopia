@@ -67,20 +67,22 @@ export default function OperatingInfoTab() {
     }, [restaurantId])
 
     // 운영시간 그룹핑 (월~금, 토~일 같은 형태로)
-    const groupedHours = openHours.reduce((acc, hour) => {
-        const key = `${hour.openTime}-${hour.closeTime}`;
-        if (!acc[key]) {
-            acc[key] = {
-                openTime: hour.openTime,
-                closeTime: hour.closeTime,
-                breakStartTime: hour.breakStartTime,
-                breakEndTime: hour.breakEndTime,
-                days: []
-            };
-        }
-        acc[key].days.push(getDayName(hour.dayOfWeek));
-        return acc;
-    }, {});
+    const groupedHours = openHours
+        .filter(h => h.openTime && h.closeTime)
+        .reduce((acc, hour) => {
+            const key = `${hour.openTime}-${hour.closeTime}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    openTime: hour.openTime,
+                    closeTime: hour.closeTime,
+                    breakStartTime: hour.breakStartTime,
+                    breakEndTime: hour.breakEndTime,
+                    days: []
+                };
+            }
+            acc[key].days.push(getDayName(hour.dayOfWeek));
+            return acc;
+        }, {});
 
     // 연속된 요일 표시 개선 (월, 화, 수 → 월~수)
     const formatDayRange = (days) => {
@@ -152,15 +154,36 @@ export default function OperatingInfoTab() {
                         )}
                     </div>
                 </div>
-
-                {/* 특별 운영시간 */}
-                <div className={styles["info-item"]}>
-                    <span className={styles["info-label"]}>휴무일</span>
-                    <div className={styles["info-value"]}>
-                        <div>{effectiveHours.date}</div>
-                        <div>{effectiveHours.message}</div>
+                {/* 휴무일 / 특별일 */}
+                <div className={styles['info-item']}>
+                    <span className={styles['info-label']}>휴무일</span>
+                    <div className={styles['info-value']}>
+                        {!effectiveHours ? (
+                            <span>정보 없음</span>
+                        ) : effectiveHours.closed ? (
+                            // 오늘 쉬는 날인 경우 (정기휴무 or 특별휴무)
+                            <>
+                                {effectiveHours.date && <div>{effectiveHours.date}</div>}
+                                <div>{effectiveHours.message || '휴무일'}</div>
+                            </>
+                        ) : effectiveHours.type === 'REGULAR' ? (
+                            // 오늘 정상 영업일
+                            <span>휴무일 없음</span>
+                        ) : effectiveHours.type === 'SPECIAL' ? (
+                            // 특별영업 (예: 단축영업)
+                            <>
+                                <div>{effectiveHours.date}</div>
+                                <div>
+                                    {`${effectiveHours.openTime?.substring(0, 5)} ~ ${effectiveHours.closeTime?.substring(0, 5)}`}
+                                </div>
+                                <div>{effectiveHours.message}</div>
+                            </>
+                        ) : (
+                            <span>휴무일 없음</span>
+                        )}
                     </div>
                 </div>
+
             </div>
         </div>
     );

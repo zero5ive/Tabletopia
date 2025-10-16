@@ -1,6 +1,7 @@
 package com.tabletopia.restaurantservice.domain.restaurant.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tabletopia.restaurantservice.domain.restaurantAccount.entity.RestaurantAccount;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
 import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.RestaurantFacility;
 import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
@@ -114,8 +115,8 @@ public class Restaurant {
   private List<RestaurantImage> restaurantImage = new ArrayList<>();
 
   /** 매장 소유 계정 (FK) */
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "restaurant_account_id", nullable = false)
-//  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//  private RestaurantAccount restaurantAccount;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "restaurant_account_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+  private RestaurantAccount restaurantAccount;
 }
