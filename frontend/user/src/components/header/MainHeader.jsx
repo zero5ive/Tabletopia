@@ -3,10 +3,15 @@ import styles from './Header.module.css';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import NotificationPopup from '../NotificationPopup'
+import { useWebSocket } from '../../contexts/WebSocketContext'
 
 export function MainHeader() {
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { notifications } = useWebSocket()
+
+    // 읽지 않은 알림 개수
+    const unreadCount = notifications.filter(n => !n.read).length
 
     // 토큰 유효성 검사 함수
     const isTokenValid = (token) => {
@@ -63,7 +68,17 @@ export function MainHeader() {
             <div className={styles.userActions}>
                 {isLoggedIn ? (
                     <>
-                        <button className="btn btn-outline" onClick={handleNotificationClick}>🔗 알림</button>
+                        <button
+                            className={`${styles.btn} ${styles.notificationBtn}`}
+                            onClick={handleNotificationClick}
+                        >
+                            🔔 알림
+                            {unreadCount > 0 && (
+                                <span className={styles.notificationBadge}>
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
                         <button
                             className={`${styles.btn} ${styles.iconButton}`}
                             onClick={handleMyPage}
