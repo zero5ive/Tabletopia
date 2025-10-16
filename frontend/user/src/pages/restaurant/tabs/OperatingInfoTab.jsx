@@ -153,8 +153,6 @@ export default function OperatingInfoTab() {
                     </div>
                 </div>
 
-
-
                 {/* 특별 운영시간 */}
                 <div className={styles["info-item"]}>
                     <span className={styles["info-label"]}>휴무일</span>
