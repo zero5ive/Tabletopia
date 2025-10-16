@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.user.service;
 import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
 import com.tabletopia.restaurantservice.domain.user.entity.User;
 import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
+import com.tabletopia.restaurantservice.domain.user.dto.UserUpdateDTO;
 import com.tabletopia.restaurantservice.domain.user.exception.UserNotFoundException;
 import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository;
 import com.tabletopia.restaurantservice.util.SecurityUtil;
@@ -47,6 +48,23 @@ public class UserService {
         log.debug("사용자 이메일: {}", currentUserEmail);
         User user = findByEmail(currentUserEmail);
         return UserInfoDTO.from(user);
+    }
+
+  /**
+   * @author 서예닮
+   * @since 2025-10-16
+   * 사용자의 정보를 수정하기
+   */
+    public void updateUser(UserUpdateDTO userUpdateDTO) {
+      // 현재 로그인한 유저 정보 가져오기
+      String currentUserEmail = SecurityUtil.getCurrentUserEmail();
+      User user = findByEmail(currentUserEmail);
+
+      // 수정 가능한 필드만 업데이트
+      user.setName(userUpdateDTO.getName());
+      user.setPhoneNumber(userUpdateDTO.getPhoneNumber());
+
+      userRepository.save(user);
     }
 }
 

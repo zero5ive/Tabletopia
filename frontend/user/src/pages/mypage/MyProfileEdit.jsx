@@ -1,32 +1,41 @@
 import styles from './MyProfileEdit.module.css'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { updateUser, getCurrentUser } from '../utils/UserApi';
 
 export default function MyProfileEdit() {
     // 프로필 데이터 상태 관리
     const [profile, setProfile] = useState({
-        profileImage: null,
-        name: '김철수',
-        email: 'user@example.com',
-        phone: '010-1234-5678',
-        nickname: '맛집헌터',
-        birth: '1990-01-01',
-        gender: 'male'
+        id: null,
+        name: '',
+        email: '',
+        phoneNumber: '',
     });
 
-    // 프로필 이미지 변경 핸들러
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setProfile(prev => ({
-                    ...prev,
-                    profileImage: event.target.result
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    // 컴포넌트 마운트 시 현재 유저 정보 불러오기
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const response = await getCurrentUser();
+                const userData = response.data;
+                setProfile({
+                    id: userData.id,
+                    name: userData.name,
+                    email: userData.email,
+                    phoneNumber: userData.phoneNumber
+                });
+            } catch (error) {
+                console.error('유저 정보 조회 실패:', error);
+                alert('유저 정보를 불러오지 못했습니다.');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
 
     // 입력 필드 변경 핸들러
     const handleInputChange = (field, value) => {
@@ -37,10 +46,47 @@ export default function MyProfileEdit() {
     };
 
     // 저장 핸들러
-    const handleSave = () => {
-        console.log('프로필 저장:', profile);
-        alert('프로필이 저장되었습니다!');
+    const handleSave = async () => {
+        if (loading) return;
+
+        // 유효성 검사
+        if (!profile.name || !profile.email || !profile.phoneNumber) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const userInfoDTO = {
+                name: profile.name,
+                phoneNumber: profile.phoneNumber
+            };
+
+            const response = await updateUser(userInfoDTO);
+            console.log('프로필 저장 성공:', response.data);
+            alert(response.data);
+        } catch (error) {
+            console.error('프로필 저장 실패:', error);
+
+            // 백엔드 validation 에러 메시지 표시
+            if (error.response && error.response.data && error.response.data.message) {
+                alert(error.response.data.message);
+            } else {
+                alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
+
+    // 초기 로딩 중일 때
+    if (initialLoading) {
+        return (
+            <div className={styles['main-panel']}>
+                <div className={styles['loading']}>로딩 중...</div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -50,35 +96,6 @@ export default function MyProfileEdit() {
                 </div>
                 <div className={styles['edit-container']}>
                     
-                    {/* 프로필 이미지 섹션 */}
-                    <div className={styles['profile-section']}>
-                        <div className={styles['profile-image-container']}>
-                            <div className={styles['profile-image-wrapper']}>
-                                {profile.profileImage ? (
-                                    <img 
-                                        src={profile.profileImage} 
-                                        alt="프로필" 
-                                        className={styles['profile-image']}
-                                    />
-                                ) : (
-                                    <div className={styles['profile-placeholder']}>
-                                        👤
-                                    </div>
-                                )}
-                                <label className={styles['image-upload-btn']}>
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        onChange={handleImageChange}
-                                        style={{ display: 'none' }}
-                                    />
-                                    📷
-                                </label>
-                            </div>
-                            <p className={styles['image-help-text']}>프로필 사진을 변경하려면 카메라 아이콘을 클릭하세요</p>
-                        </div>
-                    </div>
-
                     {/* 기본 정보 섹션 */}
                     <div className={styles['form-section']}>
                         <h3 className={styles['section-title']}>기본 정보</h3>
@@ -95,24 +112,14 @@ export default function MyProfileEdit() {
                         </div>
 
                         <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>닉네임</label>
-                            <input 
-                                type="text"
-                                className={styles['form-input']}
-                                value={profile.nickname}
-                                onChange={(e) => handleInputChange('nickname', e.target.value)}
-                                placeholder="닉네임을 입력하세요"
-                            />
-                        </div>
-
-                        <div className={styles['form-group']}>
                             <label className={styles['form-label']}>이메일</label>
                             <input 
                                 type="email"
                                 className={styles['form-input']}
                                 value={profile.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
-                                placeholder="이메일을 입력하세요"
+                                placeholder={profile.email}
+                                readOnly
+                                style={{ backgroundColor:'#f0f0f0', cursor: 'not-allowed' }}     
                             />
                         </div>
 
@@ -121,56 +128,21 @@ export default function MyProfileEdit() {
                             <input 
                                 type="tel"
                                 className={styles['form-input']}
-                                value={profile.phone}
-                                onChange={(e) => handleInputChange('phone', e.target.value)}
-                                placeholder="010-0000-0000"
+                                value={profile.phoneNumber}
+                                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                                placeholder={profile.phoneNumber}
                             />
-                        </div>
-
-                        <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>생년월일</label>
-                            <input 
-                                type="date"
-                                className={styles['form-input']}
-                                value={profile.birth}
-                                onChange={(e) => handleInputChange('birth', e.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>성별</label>
-                            <div className={styles['radio-group']}>
-                                <label className={styles['radio-label']}>
-                                    <input 
-                                        type="radio"
-                                        name="gender"
-                                        value="male"
-                                        checked={profile.gender === 'male'}
-                                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                                    />
-                                    <span>남성</span>
-                                </label>
-                                <label className={styles['radio-label']}>
-                                    <input 
-                                        type="radio"
-                                        name="gender"
-                                        value="female"
-                                        checked={profile.gender === 'female'}
-                                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                                    />
-                                    <span>여성</span>
-                                </label>
-                            </div>
                         </div>
                     </div>
 
                     {/* 저장 버튼 */}
                     <div className={styles['form-actions']}>
-                        <button 
+                        <button
                             className={styles['save-btn']}
                             onClick={handleSave}
+                            disabled={loading}
                         >
-                            저장하기
+                            {loading ? '저장 중...' : '저장하기'}
                         </button>
                     </div>
 

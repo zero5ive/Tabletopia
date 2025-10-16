@@ -23,4 +23,12 @@ api.interceptors.request.use(
     }
 );
 
+//현재 로그인한 유저 정보 조회
+export const getCurrentUser = () =>
+    api.get('/api/user/me')
+
+//마이페이지 유저정보 업데이트
+export const updateUser = (userData) =>
+    api.put(`/api/user/update`, userData)
+
 export default api
