@@ -83,4 +83,13 @@ public class RestaurantController {
     restaurantService.deleteRestaurant(id);
     return ResponseEntity.noContent().build();
   }
+
+  /**
+   * 상세레스토랑 조회 (유저)
+   */
+  @GetMapping("/{id}/detail")
+  public ResponseEntity<RestaurantSearchResponse> getRestaurantDetail(@PathVariable Long id) {
+    return ResponseEntity.ok(restaurantService.getRestaurantDetail(id));
+  }
+
 }

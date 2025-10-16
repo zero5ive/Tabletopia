@@ -42,3 +42,10 @@ export const searchRestaurants = async (params = {}) => {
     }
 };
 
+/*
+ 레스토랑 상세페이지 검색 
+*/
+export const getRestaurantDetail = (id) =>{
+    return axios.get(`${URL}/${id}/detail`)
+}
+

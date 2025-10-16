@@ -202,4 +202,14 @@ public class RestaurantService {
       default -> "";
     };
   }
+
+  /**
+   * 레스토랑 상세페이지 조회
+   */
+  public RestaurantSearchResponse getRestaurantDetail(Long restaurantId){
+    Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 레스토랑이 존재하지 않습니다. ID: " + restaurantId));
+
+    return RestaurantSearchResponse.from(restaurant);
+  }
 }
