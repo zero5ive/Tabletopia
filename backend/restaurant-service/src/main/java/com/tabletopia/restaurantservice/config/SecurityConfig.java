@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.List;
 import java.util.Map;
 
 import com.tabletopia.restaurantservice.domain.admin.service.AdminDetailsService;
@@ -83,10 +84,25 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowCredentials(true); // ⭐ 세션 쿠키 허용
+                    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    config.setExposedHeaders(List.of("Set-Cookie"));
+                    return config;
+                }))
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
+                .cors(cors->{})
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/api/login").permitAll()
+                        .requestMatchers("/admin/api/login",
+//                                "/admin/api/tables/1",
+                                "/admin/api/restaurants"
+//                                "/admin/api/me"
+                                ).permitAll()
+                                .requestMatchers("/admin/api/me").authenticated()
                         .anyRequest().authenticated()
                 )
 
@@ -111,7 +127,9 @@ public class SecurityConfig {
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/refresh",
-                                "/.well-known/**"
+                                "/.well-known/**",
+                                "/admin/api/tables/1",
+                                "/admin/api/restaurants"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
