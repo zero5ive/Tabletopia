@@ -41,7 +41,7 @@ export default function MenuTab() {
                     <div className={styles["menu-info"]}>
                         <div className={styles["menu-name"]}>{item.name}</div>
                         <div className={styles["menu-description"]}>{item.description}</div>
-                        <div className={styles["menu-price"]}>{item.price}</div>
+                        <div className={styles["menu-price"]}>{item.price.toLocaleString()}원</div>
                     </div>
                 </div>
             </div>

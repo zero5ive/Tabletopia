@@ -9,7 +9,7 @@ const mapContainerStyle = {
     height: '400px'
 };
 
-export default function LocationTab() {
+export default function LocationTab({ restaurantDetail }) {
     const [location, setLocation] = useState(null);
     const [searchParams] = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');
@@ -56,13 +56,13 @@ export default function LocationTab() {
                 <div className={styles["location-item"]}>
                     <span className={styles["location-label"]}>주소</span>
                     <span className={styles["location-value"]}>
-                        {location?.address || '주소 정보 없음'}
+                        {restaurantDetail?.address || '주소 정보 없음'}
                     </span>
                 </div>
                 <div className={styles["location-item"]}>
                     <span className={styles["location-label"]}>식당명</span>
                     <span className={styles["location-value"]}>
-                        {location?.name || '식당명 없음'}
+                        {restaurantDetail?.name || '식당명 없음'}
                     </span>
                 </div>
             </div>

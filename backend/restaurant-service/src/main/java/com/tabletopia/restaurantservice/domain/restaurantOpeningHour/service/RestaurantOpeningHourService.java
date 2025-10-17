@@ -122,17 +122,26 @@ public class RestaurantOpeningHourService {
    * 특정 날짜 기준 실제 적용되는 영업시간 조회
    *
    * 1. 특별 운영시간이 있으면 우선 적용
-   * 2. 없으면 요일별 기본 운영시간을 조회
+   * 2. 없으면 요일별 기본 운영시간을 반환
    * 3. 둘 다 없으면 "운영시간 정보 없음" 반환
    */
   @Transactional(readOnly = true)
   public RestaurantEffectiveHourResponse getEffectiveHour(Long restaurantId, LocalDate date) {
     if (date == null) date = LocalDate.now();
+    int dayOfWeek = date.getDayOfWeek().getValue();
 
-    // 1. 특별 운영시간 조회
+    if (dayOfWeek == 7) dayOfWeek = 0; // 일요일은 0으로 보정
+
+    // 기본 운영시간 조회
+    // 예약 인터벌을 조회하고자 기본 운영시간을 조회
+    RestaurantOpeningHour regular =
+        openingHourRepository.findByRestaurantIdAndDayOfWeek(restaurantId, dayOfWeek);
+
+    // 특별 운영시간 조회
     Optional<RestaurantSpecialHour> specialOpt =
         specialHourRepository.findByRestaurantIdAndSpecialDate(restaurantId, date);
 
+    // 특별 운영시간이 있는 경우
     if (specialOpt.isPresent()) {
       RestaurantSpecialHour special = specialOpt.get();
 
@@ -161,18 +170,11 @@ public class RestaurantOpeningHourService {
           .type("SPECIAL")
           .isClosed(false)
           .openTime(special.getIsClosed() ? null : special.getOpenTime())
+          .reservationInterval(regular.getReservationInterval()) // 기본 운영시간의 예약 인터벌 추가
           .closeTime(special.getIsClosed() ? null : special.getCloseTime())
           .message("특별 운영시간 적용" + info)
           .build();
     }
-
-
-    // 2. 기본 운영시간 조회
-    int dayOfWeek = date.getDayOfWeek().getValue();
-    if (dayOfWeek == 7) dayOfWeek = 0; // 일요일은 0으로 보정
-
-    RestaurantOpeningHour regular =
-        openingHourRepository.findByRestaurantIdAndDayOfWeek(restaurantId, dayOfWeek);
 
     if (regular == null) {
       return RestaurantEffectiveHourResponse.builder()
@@ -204,6 +206,7 @@ public class RestaurantOpeningHourService {
         .type("REGULAR")
         .isClosed(false)
         .openTime(regular.getOpenTime())
+        .reservationInterval(regular.getReservationInterval())
         .closeTime(regular.getCloseTime())
         .message(null)
         .build();

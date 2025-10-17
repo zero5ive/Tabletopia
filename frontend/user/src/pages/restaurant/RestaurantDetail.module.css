@@ -660,6 +660,16 @@
             cursor: not-allowed;
         }
 
+        .no-slots {
+            grid-column: 1 / -1;
+            padding: 24px;
+            text-align: center;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
         /* Waiting specific styles */
         .waiting-info {
             background: #fff8f2;
@@ -731,6 +741,17 @@
         .reservation-btn:hover {
             background: #e55a2b;
             transform: translateY(-2px);
+        }
+
+        .reservation-btn:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .reservation-btn:disabled:hover {
+            background: #adb5bd;
+            transform: none;
         }
 
         .quick-actions {
