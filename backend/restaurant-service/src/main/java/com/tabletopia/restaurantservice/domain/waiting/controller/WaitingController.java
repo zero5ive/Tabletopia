@@ -48,13 +48,23 @@ public class WaitingController {
    *
    * @author 성유진
    */
-  @GetMapping("/api/waitings/status")
+  @GetMapping("/api/admin/waitings/status")
   @ResponseBody
-  public Map<String, Boolean> getWaitingStatus(@RequestParam Long restaurantId) {
+  public Map<String, Boolean> getAdminWaitingStatus(@RequestParam Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
     log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
     return Map.of("isOpen", isOpen);
   }
+
+  @GetMapping("/api/user/waitings/status")
+  @ResponseBody
+  public Map<String, Boolean> getUserWaitingStatus(@RequestParam Long restaurantId) {
+    boolean isOpen = waitingService.isWaitingOpen(restaurantId);
+    log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
+    return Map.of("isOpen", isOpen);
+  }
+
+
 
   /**
    * 웨이팅 오픈
@@ -174,9 +184,26 @@ public class WaitingController {
    *
    * @author 성유진
    */
-  @GetMapping("/api/waitings/{restaurantId}")
+  @GetMapping("/api/admin/waitings/{restaurantId}")
   @ResponseBody
-  public ResponseEntity<Page<WaitingResponse>> getList(@PathVariable Long restaurantId,
+  public ResponseEntity<Page<WaitingResponse>> getAdminList(@PathVariable Long restaurantId,
+      @RequestParam String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+    // String을 Enum으로 변환
+    WaitingState waitingState = WaitingState.valueOf(status);
+
+    Page<WaitingResponse> waitingList = waitingService.getWaitingList(restaurantId, waitingState, pageable);
+
+    return  ResponseEntity.ok(waitingList);
+  }
+
+  @GetMapping("/api/user/waitings/{restaurantId}")
+  @ResponseBody
+  public ResponseEntity<Page<WaitingResponse>> getUserList(@PathVariable Long restaurantId,
       @RequestParam String status,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
@@ -196,9 +223,20 @@ public class WaitingController {
    *
    * @author 성유진
    */
-  @PutMapping("/api/waitings/{id}/cancel")
+  @PutMapping("/api/admin/waitings/{id}/cancel")
   @ResponseBody
-  public ResponseEntity<String>cancelWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+  public ResponseEntity<String>cancelAdminWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+
+    waitingService.cancelWaiting(id, restaurantId);
+    simpMessagingTemplate.convertAndSend("/topic/cancel",
+        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
+
+    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
+  }
+
+  @PutMapping("/api/user/waitings/{id}/cancel")
+  @ResponseBody
+  public ResponseEntity<String>cancelUserWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
     waitingService.cancelWaiting(id, restaurantId);
     simpMessagingTemplate.convertAndSend("/topic/cancel",

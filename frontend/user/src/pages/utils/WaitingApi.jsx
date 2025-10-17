@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/waitings";
+const URL="http://localhost:8002/api/user/waitings";
 
 // 웨이팅 오픈 상태 조회
 export const getWaitingStatus = (restaurantId) =>

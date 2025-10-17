@@ -23,7 +23,6 @@ import java.util.Map;
  * @since 2025-10-14
  */
 @RestController
-@RequestMapping("/api/facilities")
 public class RestaurantFacilityController {
 
   private final RestaurantFacilityService restaurantFacilityService;
@@ -38,8 +37,14 @@ public class RestaurantFacilityController {
    * @param restaurantId 매장 ID
    * @return 매장에 연결된 편의시설 DTO 리스트
    */
-  @GetMapping("/{restaurantId}")
-  public ResponseEntity<List<RestaurantFacilityResponse>> getFacilitiesByRestaurant(@PathVariable Long restaurantId) {
+  @GetMapping("/api/admin/facilities/{restaurantId}")
+  public ResponseEntity<List<RestaurantFacilityResponse>> getAdminFacilitiesByRestaurant(@PathVariable Long restaurantId) {
+    List<RestaurantFacilityResponse> response = restaurantFacilityService.getFacilitiesByRestaurant(restaurantId);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/api/admin/facilities/{restaurantId}")
+  public ResponseEntity<List<RestaurantFacilityResponse>> getUserFacilitiesByRestaurant(@PathVariable Long restaurantId) {
     List<RestaurantFacilityResponse> response = restaurantFacilityService.getFacilitiesByRestaurant(restaurantId);
     return ResponseEntity.ok(response);
   }
@@ -51,7 +56,7 @@ public class RestaurantFacilityController {
    * @param request facilityId 포함 요청 바디
    * @return 성공 시 200 OK
    */
-  @PostMapping("/{restaurantId}")
+  @PostMapping("/api/admin/facilities/{restaurantId}")
   public ResponseEntity<Void> addFacility(
       @PathVariable Long restaurantId,
       @RequestBody Map<String, Long> request
@@ -68,7 +73,7 @@ public class RestaurantFacilityController {
    * @param facilityId 시설 ID
    * @return 성공 시 204 No Content
    */
-  @DeleteMapping("/{restaurantId}/{facilityId}")
+  @DeleteMapping("/api/admin/facilities/{restaurantId}/{facilityId}")
   public ResponseEntity<Void> removeFacility(
       @PathVariable Long restaurantId,
       @PathVariable Long facilityId

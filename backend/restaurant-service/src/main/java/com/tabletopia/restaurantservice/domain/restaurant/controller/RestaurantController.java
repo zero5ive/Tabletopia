@@ -32,21 +32,26 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/admin/api/restaurants")
 @RequiredArgsConstructor
 public class RestaurantController {
 
   private final RestaurantService restaurantService;
 
   /** 전체 레스토랑 조회 */
-  @GetMapping
+  @GetMapping("/api/admin/restaurants")
   public ResponseEntity<List<Restaurant>> getAll() {
       return ResponseEntity.ok(restaurantService.getAllRestaurants());
   }
 
   /** 단일 레스토랑 조회 */
-  @GetMapping("/{id}")
-  public ResponseEntity<Restaurant> getById(@PathVariable Long id) {
+  @GetMapping("/api/admin/restaurants/{id}")
+  public ResponseEntity<Restaurant> getAdminById(@PathVariable Long id) {
+    return ResponseEntity.ok(restaurantService.getRestaurant(id));
+  }
+
+  /** 단일 레스토랑 조회 */
+  @GetMapping("/api/user/restaurants/{id}")
+  public ResponseEntity<Restaurant> getUserById(@PathVariable Long id) {
     return ResponseEntity.ok(restaurantService.getRestaurant(id));
   }
 
@@ -55,7 +60,7 @@ public class RestaurantController {
    * @param searchCondition 검색 조건
    * @return 검색 결과 페이지
    */
-  @GetMapping("/search")
+  @GetMapping("/api/admin/restaurants/search")
   public ResponseEntity<Page<RestaurantSearchResponse>> searchRestaurants(@ModelAttribute SearchCondition searchCondition){
     log.info("레스토랑 검색 요청: 조건 - {}", searchCondition);
     // 레스토랑 조회
@@ -67,19 +72,19 @@ public class RestaurantController {
   }
 
   /** 레스토랑 등록 */
-  @PostMapping
+  @PostMapping("/api/admin/restaurants")
   public ResponseEntity<Restaurant> create(@RequestBody Restaurant restaurant) {
     return ResponseEntity.ok(restaurantService.createRestaurant(restaurant));
   }
 
   /** 레스토랑 수정 */
-  @PutMapping("/{id}")
+  @PutMapping("/api/admin/restaurants/{id}")
   public ResponseEntity<Restaurant> update(@PathVariable Long id, @RequestBody Restaurant restaurant) {
     return ResponseEntity.ok(restaurantService.updateRestaurant(id, restaurant));
   }
 
   /** 레스토랑 삭제 (Soft Delete) */
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/api/admin/estaurants/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     restaurantService.deleteRestaurant(id);
     return ResponseEntity.noContent().build();
@@ -88,15 +93,15 @@ public class RestaurantController {
   /**
    * 상세레스토랑 조회 (유저)
    */
-  @GetMapping("/{id}/detail")
+  @GetMapping("api/user/restaurants/{id}/detail")
   public ResponseEntity<RestaurantSearchResponse> getRestaurantDetail(@PathVariable Long id) {
     return ResponseEntity.ok(restaurantService.getRestaurantDetail(id));
   }
 
   /**
-   * 레스토랑 위치 조회
+   * 레스토랑 위치 조회 (유저)
    */
-  @GetMapping("/{id}/location")
+  @GetMapping("/api/user/restaurants/{id}/location")
   public ResponseEntity<RestuarantLocationResponse> getRestaurantLocation(@PathVariable Long id) {
     return ResponseEntity.ok(restaurantService.getRestuarantLocation(id));
   }

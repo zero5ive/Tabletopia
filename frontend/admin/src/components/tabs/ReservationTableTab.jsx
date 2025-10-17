@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../../../user/src/hooks/useWebSocket';
 import axios from 'axios';
 
-export default function ReservationTableTab(){
+export default function ReservationTableTab(selectedRestaurant){
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [tableData, setTableData] = useState([]);

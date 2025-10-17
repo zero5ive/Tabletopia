@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api/restaurantcategories")
 @RequiredArgsConstructor
 public class RestaurantCategoryController {
 
@@ -37,14 +36,14 @@ public class RestaurantCategoryController {
   private final RestaurantService restaurantService;
 
   //카테고리 리스트
-  @GetMapping
+  @GetMapping("/api/user/restaurantcategories")
   public ResponseEntity<List<CategorySimpleResponse>> findAll() {
     List<CategorySimpleResponse> response = restaurantCategoryService.getRestaurantCategories();
     return ResponseEntity.ok(response);
   }
 
   //카테고리별 레스토랑 리스트
-  @GetMapping("/{id}")
+  @GetMapping("/api/user/restaurantcategories/{id}")
   public ResponseEntity<RestaurantCategoryResponse> getRestaurantsByCategory(
       @PathVariable Long id,
       @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {

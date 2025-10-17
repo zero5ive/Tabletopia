@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/hours/opening";
+const URL="http://localhost:8002/api/user/hours/opening";
 
 export const getOpeningHours = (id) => {
     return axios.get(`${URL}/${id}`);
@@ -13,7 +13,7 @@ export const getEffectiveHours = (id) => {
 export const getEffectiveOpeningHours = async (id, date) => {
     try {
         const response = await axios.get(
-            `http://localhost:8002/api/hours/opening/effective/${id}`,
+            `http://localhost:8002/api/user/hours/opening/effective/${id}`,
             {
                 params: { date }
             }
