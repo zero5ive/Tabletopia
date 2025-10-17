@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.admin.controller;
 
+import com.tabletopia.restaurantservice.domain.admin.dto.AdminDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminLoginDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminRegisterDTO;
 import com.tabletopia.restaurantservice.domain.admin.service.AdminService;
@@ -10,9 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+
 
 import java.util.Map;
 
@@ -28,11 +33,8 @@ public class AdminController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getAdminInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
-            return ResponseEntity.ok(Map.of("username", authentication.getName()));
-        }
-        return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        AdminDTO adminDTO = adminService.getAdminByEmail();
+        return ResponseEntity.ok(Map.of("admin", adminDTO));
     }
 
     @PostMapping("/login")
@@ -43,6 +45,12 @@ public class AdminController {
                     new UsernamePasswordAuthenticationToken(adminLoginDTO.getEmail(), adminLoginDTO.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 세션에 SecurityContext 저장
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+            HttpSession session = request.getSession(true);
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+
             log.debug("Admin login successful for user: {}", adminLoginDTO.getEmail());
             return ResponseEntity.ok(Map.of("success", true, "message", "Admin login successful"));
         } catch (Exception e) {
@@ -51,21 +59,12 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody AdminRegisterDTO adminRegisterDTO) {
-        log.debug("==============admin회원가입 요청 {}", adminRegisterDTO);
-        adminService.register(adminRegisterDTO);
-        return ResponseEntity.ok(Map.of("success", true, "message", "회원가입 성공"));
-    }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        request.getSession().invalidate();
+        request.getSession().invalidate(); // 세션 무효화
+        SecurityContextHolder.clearContext(); // SecurityContextHolder 클리어
         return ResponseEntity.ok(Map.of("success", true, "message", "Admin logout successful"));
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<?> getDashboardData() {
-        return ResponseEntity.ok(Map.of("data", "Some secret dashboard data for admins"));
-    }
 }

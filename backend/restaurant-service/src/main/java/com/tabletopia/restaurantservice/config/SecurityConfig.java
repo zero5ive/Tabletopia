@@ -36,7 +36,8 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
  *
  * @author 이세형
  * @since 2025-09-27
- * */
+ *
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -68,18 +69,25 @@ public class SecurityConfig {
         return provider;
     }
 
-        @Bean
-        public AuthenticationManager authenticationManager(
-                AuthenticationConfiguration authenticationConfiguration,
-                HttpSecurity http
-        ) throws Exception {
-            AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-            authenticationManagerBuilder
-                    .authenticationProvider(adminAuthenticationProvider())
-                    .authenticationProvider(userAuthenticationProvider());
-            return authenticationManagerBuilder.build();
-        }
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration,
+            HttpSecurity http
+    ) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder
+                .authenticationProvider(adminAuthenticationProvider())
+                .authenticationProvider(userAuthenticationProvider());
+        return authenticationManagerBuilder.build();
+    }
 
+    /**
+     * Session기반 admin로그인을 처리하기 위한 필터
+     *
+     * @author 이세형
+     * @since 2025-10-15
+     *
+     */
     @Bean
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
@@ -88,40 +96,45 @@ public class SecurityConfig {
                     var config = new org.springframework.web.cors.CorsConfiguration();
                     config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowCredentials(true); // ⭐ 세션 쿠키 허용
+                    config.setAllowCredentials(true); // 세션 쿠키 허용
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
                     config.setExposedHeaders(List.of("Set-Cookie"));
                     return config;
                 }))
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
-                .cors(cors->{})
+                .cors(cors -> {
+                })
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/api/login",
+                                .requestMatchers(
+                                        "/admin/api/login",
 //                                "/admin/api/tables/1",
-                                "/admin/api/restaurants"
+                                        "/admin/api/restaurants"
 //                                "/admin/api/me"
                                 ).permitAll()
-                                .requestMatchers("/admin/api/me").authenticated()
-                        .anyRequest().authenticated()
-                )
-
-                .logout(logout -> logout
-                        .logoutUrl("/admin/api/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                        })
+                                .requestMatchers("/admin/api/me", "/admin/api/logout").authenticated()
+                                .anyRequest().authenticated()
                 );
+
+
         return http.build();
     }
 
+    /**
+     * JWT기반 user로그인을 처리하기 위한 필터
+     *
+     * @author 이세형
+     * @since 2025-10-15
+     *
+     */
     @Bean
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/**")
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {}) // ✅ CORS 활성화 (중요!)
+                .cors(cors -> {
+                }) // CORS 활성화 (중요!)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/user/login",
