@@ -240,6 +240,7 @@ CREATE TABLE `restaurant` (
     `region_code` VARCHAR(20) NOT NULL,
     `phone_number` VARCHAR(20) NOT NULL,
     `description` VARCHAR(255) NOT NULL,
+    `is_waiting_open` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '웨이팅 오픈 여부',
     `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -247,6 +248,7 @@ CREATE TABLE `restaurant` (
     PRIMARY KEY (`id`),
     INDEX `idx_restaurant_region` (`region_code`),
     INDEX `idx_restaurant_category` (`restaurant_category_id`),
+    INDEX `idx_restaurant_waiting_open` (`is_waiting_open`),
     FOREIGN KEY (`restaurant_category_id`) REFERENCES `restaurant_category`(`id`),
     FOREIGN KEY (`admin_id`) REFERENCES `admin`(`id`)
 );

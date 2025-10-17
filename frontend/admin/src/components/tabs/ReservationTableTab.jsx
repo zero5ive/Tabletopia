@@ -187,7 +187,7 @@ export default function ReservationTableTab(){
   // 컴포넌트 마운트 시 테이블 데이터 로드
   useEffect(() => {
     fetchTableData();
-  }, [fetchTableData]);
+  }, [fetchTableData, selectedRestaurant]);
 
   // 날짜/시간 변경 시 테이블 상태 조회
   useEffect(() => {
