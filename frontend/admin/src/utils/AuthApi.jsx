@@ -3,7 +3,7 @@ import AdminApi from "./AdminApi";
 const logoutAdmin = async () => {
   try {
     // Axios POST 요청 (data 없이, config만 전달)
-    const response = await AdminApi.post('/admin/api/logout');
+    const response = await AdminApi.post('/api/admin/auth/logout');
 
     // Axios는 상태 코드 2xx이면 then으로 넘어옵니다.
     console.log('Logout successful:', response.data);

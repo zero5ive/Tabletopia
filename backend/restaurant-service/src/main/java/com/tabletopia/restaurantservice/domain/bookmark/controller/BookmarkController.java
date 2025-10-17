@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/bookmarks")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class BookmarkController {
 
@@ -36,7 +36,7 @@ public class BookmarkController {
    * @param userId 사용자 ID
    * @return 북마크 목록 조회
    */
-  @GetMapping("/users/{userId}")
+  @GetMapping("/bookmarks")
   public ResponseEntity<ApiResponse<Page<BookmarkResponse>>> getUserBookmarks(@PathVariable Long userId,
    @RequestParam(defaultValue = "0") int page,
    @RequestParam(defaultValue = "10") int size) {

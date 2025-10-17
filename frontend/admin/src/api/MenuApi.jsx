@@ -1,19 +1,22 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8002/api/restaurants";
+const api = axios.create({
+  baseURL: "http://localhost:8002/api/admin/restaurants",
+  withCredentials: true, // 세션 쿠키(JSESSIONID) 전송
+});
 
 export const getMenusByRestaurant = (restaurantId) =>
-  axios.get(`${BASE_URL}/${restaurantId}/menus`);
+  api.get(`/${restaurantId}/menus`);
 
 export const createMenu = (restaurantId, data) =>
-  axios.post(`${BASE_URL}/${restaurantId}/menus`, data, {
+  api.post(`/${restaurantId}/menus`, data, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const updateMenu = (restaurantId, menuId, data) =>
-  axios.put(`${BASE_URL}/${restaurantId}/menus/${menuId}`, data, {
+  api.put(`/${restaurantId}/menus/${menuId}`, data, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const deleteMenu = (restaurantId, menuId) =>
-  axios.delete(`${BASE_URL}/${restaurantId}/menus/${menuId}`);
+  api.delete(`/${restaurantId}/menus/${menuId}`);

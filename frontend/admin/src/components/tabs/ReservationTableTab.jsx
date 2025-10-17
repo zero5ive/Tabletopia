@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../../../user/src/hooks/useWebSocket';
 import axios from 'axios';
 
-export default function ReservationTableTab(){
+const api = axios.create({
+  baseURL: "http://localhost:8002/api/admin/restaurants",
+  withCredentials: true, // 세션 쿠키(JSESSIONID) 전송
+});
+
+export default function ReservationTableTab({selectedRestaurant}){
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [tableData, setTableData] = useState([]);
@@ -106,7 +111,7 @@ export default function ReservationTableTab(){
       setLoading(true);
       console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
 
-      const response = await axios.get(`http://localhost:8002/admin/api/tables/${restaurantId}`);
+      const response = await api.get(`/${restaurantId}/tables`);
       const data = response.data;
 
       if (Array.isArray(data) && data.length > 0) {

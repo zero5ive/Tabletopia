@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2025-10-14
  */
 @RestController
-@RequestMapping("/api/facilities")
+@RequestMapping("/api/user/facilities")
 public class FacilityController {
 
   private final FacilityService facilityService;

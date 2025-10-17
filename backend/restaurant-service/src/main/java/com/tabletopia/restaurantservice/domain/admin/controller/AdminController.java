@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.admin.controller;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminLoginDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminRegisterDTO;
+import com.tabletopia.restaurantservice.domain.admin.entity.Admin;
 import com.tabletopia.restaurantservice.domain.admin.service.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/api")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminController {
@@ -31,13 +32,26 @@ public class AdminController {
     private final AuthenticationManager authenticationManager;
 
 
-    @GetMapping("/me")
+    @GetMapping("/auth/me")
     public ResponseEntity<?> getAdminInfo() {
         AdminDTO adminDTO = adminService.getAdminByEmail();
         return ResponseEntity.ok(Map.of("admin", adminDTO));
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> register(@RequestBody AdminRegisterDTO adminRegisterDTO) {
+        log.debug("admin 회원가입 시도 요청이 있었습니다. email: {}", adminRegisterDTO.getEmail());
+        try {
+          Admin adminDTO = adminService.register(adminRegisterDTO);
+          log.debug("Admin register successful for user: {}", adminRegisterDTO.getEmail());
+            return ResponseEntity.ok(Map.of("success", true, "message", "Admin registration successful", "admin", adminDTO));
+        } catch (Exception e) {
+            log.error("Admin registration failed", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("success", false, "message", "회원가입에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody AdminLoginDTO adminLoginDTO) {
         log.debug("admin 로그인 시도 요청이 있었습니다................");
         try {
@@ -60,11 +74,25 @@ public class AdminController {
     }
 
 
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        request.getSession().invalidate(); // 세션 무효화
-        SecurityContextHolder.clearContext(); // SecurityContextHolder 클리어
-        return ResponseEntity.ok(Map.of("success", true, "message", "Admin logout successful"));
+        try {
+            // 1. SecurityContext 먼저 클리어
+            SecurityContextHolder.clearContext();
+
+            // 2. 세션이 존재하면 무효화 (새 세션 생성 안 함)
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+
+            log.debug("Admin logout successful");
+            return ResponseEntity.ok(Map.of("success", true, "message", "Admin logout successful"));
+        } catch (IllegalStateException e) {
+            // 세션이 이미 무효화된 경우
+            log.warn("Session already invalidated during logout", e);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Admin logout successful"));
+        }
     }
 
 }

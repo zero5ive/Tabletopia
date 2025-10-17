@@ -83,6 +83,7 @@ public class SecurityConfig {
 
     /**
      * Session기반 admin로그인을 처리하기 위한 필터
+     * 모든 /api/admin/** 경로에 세션 기반 인증 적용
      *
      * @author 이세형
      * @since 2025-10-15
@@ -94,34 +95,36 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
+                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000")); // 프론트 주소
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true); // 세션 쿠키 허용
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
                     config.setExposedHeaders(List.of("Set-Cookie"));
                     return config;
                 }))
-                .securityMatcher("/admin/**")
+                .securityMatcher("/api/admin/**")
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {
-                })
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers(
-                                        "/admin/api/login",
-//                                "/admin/api/tables/1",
-                                        "/admin/api/restaurants"
-//                                "/admin/api/me"
+                                .requestMatchers( // 로그인 엔드포인트는 인증 없이 접근 가능
+                                        "/api/admin/auth/login",
+                                        "/api/admin/auth/register"
                                 ).permitAll()
-                                .requestMatchers("/admin/api/me", "/admin/api/logout").authenticated()
+                                // 그 외 모든 /api/admin/** 경로는 인증 필요
                                 .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .securityContext(securityContext -> securityContext
+                        .requireExplicitSave(false) // 자동으로 SecurityContext를 세션에 저장
                 );
-
 
         return http.build();
     }
 
     /**
      * JWT기반 user로그인을 처리하기 위한 필터
+     * 모든 /api/user/** 경로에 JWT 기반 인증 적용
      *
      * @author 이세형
      * @since 2025-10-15
@@ -131,26 +134,62 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/**")
+                .securityMatcher("/api/user/**")
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {
-                }) // CORS 활성화 (중요!)
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowCredentials(true);
+                    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    return config;
+                }))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/user/login",
-                                "/api/user/register",
-                                "/api/user/refresh",
-                                "/.well-known/**",
-                                "/admin/api/tables/1",
-                                "/admin/api/restaurants",
-                                 "/api/restaurants/**",
-                                "/api/restaurantcategories/**"
+                            // 인증 없이 접근 가능한 public 엔드포인트
+                                "/api/user/auth/login",
+                                "/api/user/auth/register",
+                                "/api/user/auth/refresh",
+                                "/api/user/restaurants/**",
+                                "/api/user/categories/**",
+                                "/api/user/facilities/**",
+                                "/api/user/waiting/status",
+                                "/.well-known/**"
                         ).permitAll()
+                        // 그 외 모든 /api/user/** 경로는 JWT 인증 필요
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    /**
+     * WebSocket과 기타 경로를 위한 필터 체인
+     * /ws, /uploads 등 추가 경로 처리
+     *
+     * @author 이세형
+     * @since 2025-10-17
+     */
+    @Bean
+    @Order(3)
+    public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/ws/**", "/uploads/**", "/actuator/**")
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowCredentials(true);
+                    config.setAllowedHeaders(List.of("*"));
+                    return config;
+                }))
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().permitAll()
+                );
 
         return http.build();
     }

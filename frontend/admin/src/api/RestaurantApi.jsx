@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8002/admin/api",
+  baseURL: "http://localhost:8002/api/admin",
   withCredentials: true, // ★ 세션 쿠키(JSESSIONID) 전송 필수
 });
 
