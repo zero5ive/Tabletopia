@@ -146,6 +146,8 @@ export default function RestaurantList() {
         const reservationStep1 = {
             restaurantId: restaurantId,
             restaurantName: restaurantDetail.name,
+            restaurantAddress: restaurantDetail.address,
+            restaurantPhone: restaurantDetail.tel,
             date: date,
             time: selectedTime,
             peopleCount: people

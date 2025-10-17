@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import styles from './SignUp.module.css';
+import axios from 'axios';
+import AdminApi from '../../utils/AdminApi';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -176,28 +178,25 @@ const SignUp = () => {
     try {
       const fullEmail = getFullEmail();
 
-      const response = await fetch('/api/user/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          phoneNumber: formData.phoneNumber,
-          email: fullEmail, // 완전한 이메일 주소 전송
-          password: formData.password
-        })
+      const response = await AdminApi.post('/admin/api/register', {
+        email: fullEmail, // 완전한 이메일 주소 전송
+        password: formData.password,
+        name: formData.name
       });
 
-      const data = await response.json();
+      const data = response.data;
+      console.log("reponse는",response);
+      
       console.log("회원가입 시도한 유저 객체는===",data);
       
       if (data.success) {
         // 회원가입 성공
         console.log("success가 true여서 회원가입 성공폼을 불러오는 if true에 진입했습니다.");
         
-        navigate('/users/new/success', {
+        navigate('/admins/signup/success', {
           state: {
             userName: formData.name,  // 서버에서 받은 이름
-            userEmail: formData.email
+            userEmail: fullEmail
           }
         });
       } else {

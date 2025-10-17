@@ -163,12 +163,15 @@ public class TableSelectionService {
    * @author 김예진
    * @since 2025-10-11
    */
-  public void addConnectedUser(Long restaurantId, String sessionId) {
+  public void addConnectedUser(Long restaurantId, String userEmail, String sessionId) {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
       // Set에 추가 (중복 방지)
-      redisTemplate.opsForSet().add(redisKey, sessionId);
+//      redisTemplate.opsForSet().add(redisKey, sessionId, userEmail);
+
+      // Hash에 추가
+      redisTemplate.opsForHash().put(redisKey, sessionId, userEmail);
 
       // TTL 갱신 (30분)
       redisTemplate.expire(redisKey, CONNECTED_USERS_TTL, TimeUnit.MINUTES);
@@ -189,7 +192,7 @@ public class TableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      redisTemplate.opsForSet().remove(redisKey, sessionId);
+      redisTemplate.opsForHash().delete(redisKey, sessionId);
       log.debug("접속자 제거: restaurantId={}, sessionId={}", restaurantId, sessionId);
     } catch (Exception e) {
       log.error("접속자 제거 실패: restaurantId={}, sessionId={}", restaurantId, sessionId, e);
@@ -197,7 +200,7 @@ public class TableSelectionService {
   }
 
   /**
-   * 레스토랑의 전체 접속자 목록 조회
+   * 레스토랑의 전체 접속자 목록 조회 (세션ID 목록)
    *
    * @author 김예진
    * @since 2025-10-11
@@ -206,9 +209,9 @@ public class TableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      Set<Object> users = redisTemplate.opsForSet().members(redisKey);
-      log.debug("접속자 조회: restaurantId={}, count={}", restaurantId, users != null ? users.size() : 0);
-      return users;
+      Set<Object> sessionIds = redisTemplate.opsForHash().keys(redisKey);
+      log.debug("접속자 조회: restaurantId={}, count={}", restaurantId, sessionIds != null ? sessionIds.size() : 0);
+      return sessionIds;
     } catch (Exception e) {
       log.error("접속자 조회 실패: restaurantId={}", restaurantId, e);
       return Set.of();
@@ -225,7 +228,7 @@ public class TableSelectionService {
     String redisKey = CONNECTED_USERS_PREFIX + restaurantId;
 
     try {
-      Long count = redisTemplate.opsForSet().size(redisKey);
+      Long count = redisTemplate.opsForHash().size(redisKey);
       return count != null ? count : 0L;
     } catch (Exception e) {
       log.error("접속자 수 조회 실패: restaurantId={}", restaurantId, e);

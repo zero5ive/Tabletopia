@@ -24,7 +24,12 @@ public class UserConnectedResponse {
   /**
    * 새로 접속한 사용자 세션 ID
    */
-  private String newUser;
+  private String sessionId;
+
+  /**
+   * 새로 접속한 사용자 이메일
+   */
+  private String email;
 
   /**
    * 현재 접속 중인 모든 사용자 목록
@@ -44,13 +49,14 @@ public class UserConnectedResponse {
   /**
    * 정적 팩토리 메서드
    *
-   * @param newUser 새로 접속한 사용자 세션 ID
+   * @param sessionId 새로 접속한 사용자 세션 ID
    * @param connectedUsers 현재 접속 중인 모든 사용자 목록
    * @return UserConnectedResponse 인스턴스
    */
-  public static UserConnectedResponse of(String newUser, Set<String> connectedUsers) {
+  public static UserConnectedResponse of(String sessionId, String email, Set<String> connectedUsers) {
     UserConnectedResponse response = new UserConnectedResponse();
-    response.newUser = newUser;
+    response.sessionId = sessionId;
+    response.email = email;
     response.connectedUsers = connectedUsers;
     response.totalCount = connectedUsers != null ? connectedUsers.size() : 0;
     response.timestamp = System.currentTimeMillis();

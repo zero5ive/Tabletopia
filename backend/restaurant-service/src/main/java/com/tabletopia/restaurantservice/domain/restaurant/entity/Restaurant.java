@@ -121,7 +121,7 @@ public class Restaurant {
 
   /** 매장 소유 계정 (FK) */
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "restaurant_account_id", nullable = false)
+  @JoinColumn(name = "admin_id", nullable = false)
   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private RestaurantAccount restaurantAccount;
 }
