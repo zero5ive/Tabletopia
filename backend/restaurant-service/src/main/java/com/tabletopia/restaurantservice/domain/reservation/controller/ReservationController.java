@@ -1,9 +1,11 @@
 package com.tabletopia.restaurantservice.domain.reservation.controller;
 
+import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.dto.ApiResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/realtime")
 @RequiredArgsConstructor
 public class ReservationController {
+
   private final ReservationService reservationService;
-
-
-
-
 
   /**
    * 전체 예약 조회
@@ -58,21 +57,20 @@ public class ReservationController {
     return ResponseEntity.ok(ApiResponse.success("예약 조회 성공", reservations));
   }
 
-  /**
-   * 예약이 불가한 테이블들 조회
-      * TODO 예약이 가능한 테이블 조회로 바꾸기
-   */
-  @GetMapping("/restaurants/{restaurantId}/unavailable-tables")
-  public ResponseEntity<ApiResponse<List<UnavailableTableResponse>>> getUnavailableTablesAt(
-      @PathVariable Long restaurantId,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reservation_at) {
-
-    List<UnavailableTableResponse> unavailableTables = reservationService.getUnavailableTablesAt(restaurantId, reservation_at);
-
-    return ResponseEntity.ok(
-        ApiResponse.success("예약 불가능한 테이블 조회 성공", unavailableTables)
-    );
-  }
+//  /**
+//   * 예약이 불가한 테이블들 조회
+//   */
+//  @GetMapping("/restaurants/{restaurantId}/unavailable-tables")
+//  public ResponseEntity<ApiResponse<List<UnavailableTableResponse>>> getUnavailableTablesAt(
+//      @PathVariable Long restaurantId,
+//      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reservation_at) {
+//
+//    List<UnavailableTableResponse> unavailableTables = reservationService.getUnavailableTablesAt(restaurantId, reservation_at);
+//
+//    return ResponseEntity.ok(
+//        ApiResponse.success("예약 불가능한 테이블 조회 성공", unavailableTables)
+//    );
+//  }
 
   /**
    * 예약 내역 조회 메서드
@@ -90,5 +88,27 @@ public class ReservationController {
     );
   }
 
+  /**
+   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회
+   *
+   * @param restaurantId 레스토랑 id
+   * @param date 요청날짜
+   * @return 타임슬롯별 예약가능여부
+   * @author 김예진
+   * @since 2025-10-17
+   */
+  @GetMapping("/restaurants/{restaurantId}/available-timeslots")
+  public ResponseEntity<ApiResponse<TimeSlotAvailabilityResponse>> getAvailableTimeSlots(
+      @PathVariable Long restaurantId,
+      LocalDate date
+  ){
+    log.debug("타임슬롯별 예약 가능 여부 조회 api 호출: restaurantId={}, date={}", restaurantId, date);
+
+    TimeSlotAvailabilityResponse response = reservationService.getAvailableTimeSlots(restaurantId, date);
+
+    return ResponseEntity.ok(
+        ApiResponse.success("타임슬롯 예약 가능 여부 조회 성공", response)
+    );
+  }
 
  }

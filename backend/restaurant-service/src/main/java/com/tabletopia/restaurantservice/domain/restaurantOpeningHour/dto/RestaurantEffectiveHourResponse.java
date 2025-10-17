@@ -41,6 +41,9 @@ public class RestaurantEffectiveHourResponse {
   /** 오픈 시간 */
   private LocalTime openTime;
 
+  /** 예약 텀 */
+  private Integer reservationInterval;
+
   /** 마감 시간 */
   private LocalTime closeTime;
 

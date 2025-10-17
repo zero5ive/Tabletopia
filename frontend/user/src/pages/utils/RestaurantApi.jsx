@@ -55,3 +55,7 @@ export const getRestaurantDetail = (id) =>{
 export const getRestaurantLocation = (id) => {
     return axios.get(`${URL}/${id}/location`);
 }
+
+/**
+ * 레스토랑 타임슬롯 조회
+ */

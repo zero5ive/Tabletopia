@@ -2,20 +2,26 @@ package com.tabletopia.restaurantservice.domain.reservation.service;
 
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest.CustomerInfo;
+import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
 import com.tabletopia.restaurantservice.domain.reservation.dto.TableSelectionInfo;
+import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
 import com.tabletopia.restaurantservice.domain.reservation.dto.TableStatus;
+import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
+import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse.TimeSlotInfo;
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
+import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
+import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
-import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
-import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
-import com.tabletopia.restaurantservice.domain.user.entity.User;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +45,7 @@ public class ReservationService {
   private final RestaurantTableService restaurantTableService;
   private final TableSelectionService tableSelectionService;
   private final UserService userService;
+  private final RestaurantOpeningHourService openingHourService;
 
   private final SimpMessagingTemplate messagingTemplate;
 
@@ -310,5 +317,96 @@ public class ReservationService {
         return reservationRepository.findByUserId(userId);
     }
   }
+
+  /**
+   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회
+   * 각 타임슬롯마다 예약 가능한 테이블이 1개라도 있으면 예약 가능으로 프론트엔드에서 표시하기 위한 메서드
+   *
+   * @param restaurantId 레스토랑 아이디
+   * @param date 조회날짜
+   * @return 타임슬롯별 예약 가능 여부
+   * @author 김예진
+   * @since 2025-10-17
+   */
+  public TimeSlotAvailabilityResponse getAvailableTimeSlots(Long restaurantId, LocalDate date){
+    // 운영시간 조회
+    RestaurantEffectiveHourResponse effectiveHour = openingHourService.getEffectiveHour(restaurantId, date);
+
+    // 휴무일인 경우 빈 타임슬롯 반환
+    if (effectiveHour.isClosed()){
+      return TimeSlotAvailabilityResponse.builder()
+          .restaurantId(restaurantId)
+          .date(date)
+          .isOpen(false)
+          .timeSlots(List.of())
+          .build();
+    }
+
+    // 레스토랑의 모든 테이블 조회
+    List<RestaurantTable> tables = restaurantTableService.getTablesByRestaurant(restaurantId);
+
+    // 타임슬롯 생성
+    List<LocalTime> timeSlots = generateTimeSlot(effectiveHour);
+
+    // 타임슬롯 별 예약 가능 여부 확인
+    List<TimeSlotInfo> timeSlotInfoList = timeSlots.stream()
+        .map(timeSlot -> {
+          // 예약 일시 포맷팅
+          // date(LocalDate)와 timeSlot(LocalTime)을 넣어서 reservationDateTime(LocalDateTime)으로 포맷팅
+          LocalDateTime reservationDateTime = LocalDateTime.of(date, timeSlot);
+
+          // 해당 일시에 예약된 테이블 id 목록
+          List<Long> reservedTablesIds = reservationRepository
+              .findReservationsByRestaurantIdAndReservationAt(restaurantId, reservationDateTime)
+              .stream()
+              .map(Reservation::getRestaurantTableId)
+              .toList();
+
+          // 예약 가능한 테이블 수 계산
+          int avaliableTableCount = tables.size() - reservedTablesIds.size();
+
+          // 타임슬롯 정보 객체 반환
+          return TimeSlotInfo.builder()
+              .time(timeSlot.toString()) // 11:00 형식
+              .isAvailable(avaliableTableCount > 0) // 0보다 크면 true, 아니면 false
+              .availableTableCount(avaliableTableCount) // 예약 가능 테이블 수
+              .build();
+        }).toList();
+
+    return TimeSlotAvailabilityResponse.builder()
+        .date(date)
+        .restaurantId(restaurantId)
+        .isOpen(true)
+        .openTime(effectiveHour.getOpenTime())
+        .closeTime(effectiveHour.getCloseTime())
+        .timeSlots(timeSlotInfoList)
+        .reservationInterval(effectiveHour.getReservationInterval())
+        .build();
+  }
+
+  /**
+   * 타임슬롯을 생성하는 메서드
+   * @param effectiveHour 실제 영업시간 정보
+   * @return 타임슬롯
+   * @author 김예진
+   * @since 2025-10-17
+   */
+  private static List<LocalTime> generateTimeSlot(RestaurantEffectiveHourResponse effectiveHour) {
+    // 영업시간 정보 추출
+    LocalTime openTime = effectiveHour.getOpenTime();
+    LocalTime closeTime = effectiveHour.getCloseTime();
+    Integer reservationInterval = effectiveHour.getReservationInterval();
+
+    // 타임슬롯 생성
+    List<LocalTime> slots = new ArrayList<>();
+    LocalTime currentTime = openTime;
+    while (currentTime.isBefore(closeTime)) {
+      slots.add(currentTime);
+      currentTime = currentTime.plusMinutes(reservationInterval);
+    }
+
+    return slots;
+  }
+
 
 }
