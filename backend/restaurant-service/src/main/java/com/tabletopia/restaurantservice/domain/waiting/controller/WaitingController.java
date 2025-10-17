@@ -44,23 +44,40 @@ public class WaitingController {
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   /**
+   * 웨이팅 오픈 상태 조회 REST API
+   *
+   * @author 성유진
+   */
+  @GetMapping("/api/waitings/status")
+  @ResponseBody
+  public Map<String, Boolean> getWaitingStatus(@RequestParam Long restaurantId) {
+    boolean isOpen = waitingService.isWaitingOpen(restaurantId);
+    log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
+    return Map.of("isOpen", isOpen);
+  }
+
+  /**
    * 웨이팅 오픈
    *
    * @author 성유진
    */
   @MessageMapping("/waiting/open")
-  public void open(){
-
-    log.debug("웨이팅 서버 접속");
+  public void open(@Payload Map<String, Long> payload){
+    Long restaurantId = payload.get("restaurantId");
+    log.debug("웨이팅 오픈 요청 - restaurantId: {}", restaurantId);
 
     // 웨이팅 오픈 상태 저장
-    waitingService.setWaitingOpen(true);
+    waitingService.openWaiting(restaurantId);
 
     WaitingEvent waitingEvent = new WaitingEvent();
     waitingEvent.setType("OPEN");
     waitingEvent.setContent("웨이팅 등록 가능");
 
-    simpMessagingTemplate.convertAndSend("/topic/open", waitingEvent);
+    // 해당 레스토랑 채널로만 전송
+    simpMessagingTemplate.convertAndSend(
+        "/topic/restaurant/" + restaurantId + "/open",
+        waitingEvent
+    );
 
   }
 
@@ -70,18 +87,23 @@ public class WaitingController {
    * @author 성유진
    */
   @MessageMapping("/waiting/close")
-  public void close(){
+  public void close(@Payload Map<String, Long> payload) {
+    Long restaurantId = payload.get("restaurantId");
 
-    log.debug("웨이팅 닫기 요청 받음");
+    log.debug("웨이팅 닫기 요청 - restaurantId: {}", restaurantId);
 
-    // 웨이팅 닫기 상태 저장
-    waitingService.setWaitingOpen(false);
+    // DB에 닫기 상태 저장
+    waitingService.closeWaiting(restaurantId);
 
-    WaitingEvent  waitingEvent = new WaitingEvent();
+    WaitingEvent waitingEvent = new WaitingEvent();
     waitingEvent.setType("CLOSE");
     waitingEvent.setContent("웨이팅 등록 중단");
 
-    simpMessagingTemplate.convertAndSend("/topic/close", waitingEvent);
+    // 해당 레스토랑 채널로만 전송
+    simpMessagingTemplate.convertAndSend(
+        "/topic/restaurant/" + restaurantId + "/close",
+        waitingEvent
+    );
   }
 
   /**
@@ -91,10 +113,40 @@ public class WaitingController {
    */
   @MessageMapping("/waiting/regist")
   public void regist(@Payload WaitingRequest waitingRequest,
-      SimpMessageHeaderAccessor headerAccessor) {
+      SimpMessageHeaderAccessor accessor) {
 
     log.debug("웨이팅 등록 요청 받음");
-    String sessionId = (String) headerAccessor.getHeader("simpSessionId");
+
+
+    String sessionId = accessor.getSessionId();
+
+    // 사용자 이메일을 저장할 변수 초기화
+    String userEmail = null;
+
+    // WebSocket 세션에서 인증 정보 확인
+    if (accessor.getUser() != null) {
+      // User 객체의 getName()은 일반적으로 username(이메일)을 반환
+      // CONNECT 시 setUser()로 설정한 Authentication 객체가 반환됨
+      userEmail = accessor.getUser().getName();
+
+      log.debug("WebSocket 세션에서 인증 정보 확인: {}", userEmail);
+    } else {
+      // 인증 정보가 없는 경우 (JWT 토큰이 없거나 유효하지 않은 경우)
+      log.warn("WebSocket 세션에 인증 정보가 없습니다. 세션 ID: {}", sessionId);
+      // 이 경우 userEmail은 null로 남음
+    }
+
+    if (!waitingService.isWaitingOpen(waitingRequest.getRestaurantId())) {
+      log.warn("웨이팅이 닫혀있음");
+
+      WaitingEvent errorEvent = new WaitingEvent();
+      errorEvent.setType("ERROR");
+      errorEvent.setSender(waitingRequest.getUserId());
+      errorEvent.setContent("현재 웨이팅 등록이 불가능합니다.");
+
+      simpMessagingTemplate.convertAndSend("/topic/regist", errorEvent);
+      return;
+    }
 
     //  Service 호출 (엔티티 반환받음)
     Waiting waiting = waitingService.registerWaiting(
@@ -115,19 +167,6 @@ public class WaitingController {
 
     log.debug("웨이팅 등록 완료 (세션: {}, userId: {})",
         sessionId, waitingRequest.getUserId());
-  }
-
-  /**
-   * 웨이팅 오픈 상태 조회 REST API
-   *
-   * @author 성유진
-   */
-  @GetMapping("/api/waiting/status")
-  @ResponseBody
-  public Map<String, Boolean> getWaitingStatus() {
-    boolean isOpen = waitingService.isWaitingOpen();
-    log.debug("웨이팅 상태 조회 요청 - isOpen: {}", isOpen);
-    return Map.of("isOpen", isOpen);
   }
 
   /**

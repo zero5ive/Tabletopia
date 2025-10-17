@@ -142,7 +142,9 @@ public class SecurityConfig {
                                 "/api/user/refresh",
                                 "/.well-known/**",
                                 "/admin/api/tables/1",
-                                "/admin/api/restaurants"
+                                "/admin/api/restaurants",
+                                 "/api/restaurants/**",
+                                "/api/restaurantcategories/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
