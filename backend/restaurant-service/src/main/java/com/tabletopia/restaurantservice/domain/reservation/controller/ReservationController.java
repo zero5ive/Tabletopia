@@ -4,18 +4,21 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabil
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository;
+import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.dto.ApiResponse;
+import com.tabletopia.restaurantservice.util.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
 
   private final ReservationService reservationService;
+  private final UserService userService;
 
   /**
    * 전체 예약 조회
@@ -78,11 +82,12 @@ public class ReservationController {
    * @author 서예닮
    * @since 2025-10-16
    */
-  @GetMapping("/restaurants/user/{userId}")
-  public ResponseEntity<ApiResponse<List<Reservation>>> getReservationsByUserId(
-      @PathVariable Long userId
-  ,@RequestParam(required = false) String status){
-    List<Reservation> reservationsList= reservationService.getReservations(userId,status);
+  @GetMapping("/my-reservations")
+  public ResponseEntity<ApiResponse<List<Reservation>>> getMyReservations(@RequestParam(required = false) String status){
+    String currentUserEmail = SecurityUtil.getCurrentUserEmail();
+    User user = userService.findByEmail(currentUserEmail);
+
+    List<Reservation> reservationsList= reservationService.getReservations(user.getId(),status);
     return ResponseEntity.ok(
         ApiResponse.success("예약 내역 조회 성공", reservationsList)
     );
