@@ -32,7 +32,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/restaurants")
+@RequestMapping("/admin/api/restaurants")
 @RequiredArgsConstructor
 public class RestaurantController {
 

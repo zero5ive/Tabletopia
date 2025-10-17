@@ -1,12 +1,7 @@
 package com.tabletopia.restaurantservice.domain.user.controller;
 
-import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.tabletopia.restaurantservice.domain.refreshtoken.service.RefreshTokenService;
-import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationRequest;
-import com.tabletopia.restaurantservice.domain.user.dto.AuthenticationResponse;
-import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
-import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
-import com.tabletopia.restaurantservice.domain.user.dto.UserUpdateDTO;
+import com.tabletopia.restaurantservice.domain.user.dto.*;
 import com.tabletopia.restaurantservice.domain.user.service.CustomUserDetailsService;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.util.JwtUtil;
@@ -69,7 +64,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request) {
         try {
-            log.debug("로그인 요청: {}", request.getEmail());
+            log.debug("로그인 요청: {},{}", request.getEmail(), request.getPassword());
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -85,6 +80,7 @@ public class UserController {
                     .secure(false)
                     .httpOnly(true)
                     .build();
+            log.debug("들-=====어갈 쿠키는"+ cookie.toString());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())

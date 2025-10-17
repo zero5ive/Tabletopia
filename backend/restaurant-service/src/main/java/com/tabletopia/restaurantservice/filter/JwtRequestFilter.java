@@ -46,8 +46,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+            log.debug("Extracted JWT: {}", jwt);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                log.debug("Extracted username from JWT: {}", username);
             } catch (IllegalArgumentException e) {
                 log.error("JWT claims string is empty.", e);
             } catch (ExpiredJwtException e) {
@@ -55,18 +57,30 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (SignatureException | MalformedJwtException | UnsupportedJwtException e) {
                 log.error("Invalid JWT token.", e);
             }
+        } else {
+            log.debug("Authorization header is missing or does not start with Bearer.");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            log.debug("Attempting to authenticate user: {}", username);
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            log.debug("Loaded UserDetails for {}: {}", username, userDetails != null ? userDetails.getUsername() : "null");
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
+                log.debug("JWT token is valid for user: {}", username);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                log.debug("SecurityContextHolder populated with user: {}", username);
+            } else {
+                log.warn("JWT token validation failed for user: {}", username);
             }
+        } else if (username == null) {
+            log.debug("Username is null, skipping authentication.");
+        } else {
+            log.debug("SecurityContextHolder already contains authentication for user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         }
         chain.doFilter(request, response);
     }
