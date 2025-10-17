@@ -37,7 +37,7 @@ public class RestaurantCategoryController {
   private final RestaurantService restaurantService;
 
   //카테고리 리스트
-  @GetMapping("/api/user/restaurantcategories")
+  @GetMapping
   public ResponseEntity<List<CategorySimpleResponse>> findAll() {
     List<CategorySimpleResponse> response = restaurantCategoryService.getRestaurantCategories();
     return ResponseEntity.ok(response);

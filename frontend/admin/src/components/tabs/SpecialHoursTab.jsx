@@ -3,6 +3,7 @@ import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./SpecialHoursTab.css";
+import RestaurantApi from '../../api/RestaurantApi';
 
 export default function SpecialHoursTab({ selectedRestaurant }) {
   const [specialHours, setSpecialHours] = useState([]);
@@ -21,8 +22,8 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
   const loadSpecialHours = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:8002/api/hours/special/${selectedRestaurant.id}`
+      const res = await RestaurantApi.get(
+        `/restaurants/${selectedRestaurant.id}/hours/special`
       );
       const formatted = res.data.map((h) => ({
         ...h,
