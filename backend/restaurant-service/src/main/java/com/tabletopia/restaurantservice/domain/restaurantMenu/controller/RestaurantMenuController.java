@@ -19,20 +19,25 @@ import java.util.List;
  * @since 2025-10-10
  */
 @RestController
-@RequestMapping("/api/restaurants/{restaurantId}/menus")
 @RequiredArgsConstructor
 public class RestaurantMenuController {
 
   private final RestaurantMenuService menuService;
 
   // 특정 매장의 메뉴 목록 조회
-  @GetMapping
-  public List<RestaurantMenuResponse> getMenus(@PathVariable Long restaurantId) {
+  @GetMapping("/api/admin/restaurants/{restaurantId}/menus")
+  public List<RestaurantMenuResponse> getAdminMenus(@PathVariable Long restaurantId) {
+    return menuService.getMenusByRestaurant(restaurantId);
+  }
+
+  // 특정 매장의 메뉴 목록 조회
+  @GetMapping("/api/user/restaurants/{restaurantId}/menus")
+  public List<RestaurantMenuResponse> getUSerMenus(@PathVariable Long restaurantId) {
     return menuService.getMenusByRestaurant(restaurantId);
   }
 
   // 새 메뉴 등록 (이미지 포함)
-  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/api/admin/restaurants/{restaurantId}/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public RestaurantMenuResponse createMenu(
       @PathVariable Long restaurantId,
       @ModelAttribute RestaurantMenuRequest dto
@@ -41,7 +46,7 @@ public class RestaurantMenuController {
   }
 
   // 메뉴 수정 (이미지 포함 가능)
-  @PutMapping(value = "/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(value = "/api/admin/restaurants/{restaurantId}/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public RestaurantMenuResponse updateMenu(
       @PathVariable Long restaurantId,
       @PathVariable Long menuId,
@@ -51,7 +56,7 @@ public class RestaurantMenuController {
   }
 
   // 메뉴 삭제 (Soft Delete)
-  @DeleteMapping("/{menuId}")
+  @DeleteMapping("/api/admin/restaurants/{restaurantId}/menus/{menuId}")
   public void deleteMenu(@PathVariable Long menuId) {
     menuService.deleteMenu(menuId);
   }

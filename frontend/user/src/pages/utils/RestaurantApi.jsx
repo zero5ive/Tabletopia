@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/restaurants";
+const URL="http://localhost:8002/api/user/restaurants";
 
 /**
  * 레스토랑 전체 목록 조회
