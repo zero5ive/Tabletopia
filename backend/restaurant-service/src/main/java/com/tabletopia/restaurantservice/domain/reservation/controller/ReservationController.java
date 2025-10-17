@@ -8,11 +8,8 @@ import com.tabletopia.restaurantservice.domain.user.entity.User;
 import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.dto.ApiResponse;
-<<<<<<< HEAD
 import com.tabletopia.restaurantservice.util.SecurityUtil;
-=======
 import java.time.LocalDate;
->>>>>>> 028b2932848757b04388e062cebcc220499fa753
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -96,8 +93,6 @@ public class ReservationController {
     );
   }
 
-<<<<<<< HEAD
-=======
   /**
    * 특정 날짜의 타임슬롯별 예약 가능 여부 조회
    *
@@ -121,5 +116,4 @@ public class ReservationController {
     );
   }
 
->>>>>>> 028b2932848757b04388e062cebcc220499fa753
  }
