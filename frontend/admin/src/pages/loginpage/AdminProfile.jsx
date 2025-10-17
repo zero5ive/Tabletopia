@@ -9,7 +9,7 @@ function AdminProfile() {
         const fetchAdmin = async () => {
             try {
                 // 이제 그냥 get 요청만 보내면 인터셉터가 알아서 헤더를 추가해줍니다.
-                const response = await AdminApi.get('/admin/api/me');
+                const response = await AdminApi.get('/api/admin/auth/me');
                 console.log(response.data.admin);
                 
                 setAdmin(response.data.admin);

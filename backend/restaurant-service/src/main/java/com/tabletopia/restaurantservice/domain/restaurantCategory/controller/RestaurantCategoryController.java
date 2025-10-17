@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
+@RequestMapping("/api/user/categories")
 @RequiredArgsConstructor
 public class RestaurantCategoryController {
 
@@ -43,7 +44,7 @@ public class RestaurantCategoryController {
   }
 
   //카테고리별 레스토랑 리스트
-  @GetMapping("/api/user/restaurantcategories/{id}")
+  @GetMapping("/{id}/restaurants")
   public ResponseEntity<RestaurantCategoryResponse> getRestaurantsByCategory(
       @PathVariable Long id,
       @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {

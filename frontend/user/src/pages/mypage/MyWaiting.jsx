@@ -33,16 +33,11 @@ export default function MyReservation() {
         };
     }, []);
 
-    // 탭이 바뀌면 필터링 및 1페이지로 리셋
-    useEffect(() => {
-        filterAndPaginate();
-    }, [activeTab, allWaitingList, currentPage]);
-
     const fetchAllWaitingList = async () => {
         try {
             setLoading(true);
-            // 모든 데이터 가져오기
-            const response = await getUserWaitingList(userId, 0, 1000);
+            // 모든 데이터 가져오기 (page=0, size=1000)
+            const response = await getUserWaitingList(0, 1000);
             console.log(response);
             setAllWaitingList(response.data.content);
         } catch (error) {
@@ -52,7 +47,8 @@ export default function MyReservation() {
         }
     };
 
-    const filterAndPaginate = () => {
+    // 탭이 바뀌면 필터링 및 1페이지로 리셋
+    useEffect(() => {
         // 1. 탭에 따라 필터링
         let filtered;
         if (activeTab === 'WAITING') {
@@ -67,7 +63,7 @@ export default function MyReservation() {
         const endIndex = startIndex + pageSize;
         const paginated = filtered.slice(startIndex, endIndex);
         setDisplayList(paginated);
-    };
+    }, [activeTab, allWaitingList, currentPage]);
 
     //페이지 변경 시 
     const handlePageChange = (pageNumber) => {

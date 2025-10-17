@@ -14,7 +14,7 @@ export default function ReviewsTab({ selectedRestaurant }) {
     if (!selectedRestaurant) return
     setLoading(true)
     try {
-      const res = await axios.get(`http://localhost:8002/api/restaurants/${selectedRestaurant.id}/reviews`)
+      const res = await axios.get(`http://localhost:8002/api/user/restaurants/${selectedRestaurant.id}/reviews`)
       setReviews(res.data)
     } catch (err) {
       console.error("리뷰 목록 로드 실패:", err)

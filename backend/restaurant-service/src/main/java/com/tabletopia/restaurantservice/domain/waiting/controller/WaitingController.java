@@ -44,16 +44,34 @@ public class WaitingController {
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   /**
-   * 웨이팅 오픈 상태 조회 REST API
+   * 웨이팅 오픈 상태 조회 REST API (사용자용)
    *
    * @author 성유진
    */
-  @GetMapping("/api/admin/waitings/status")
+  @GetMapping("/api/user/waiting/status")
   @ResponseBody
-  public Map<String, Boolean> getAdminWaitingStatus(@RequestParam Long restaurantId) {
+  public Map<String, Object> getWaitingStatus(@RequestParam Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
-    log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
-    return Map.of("isOpen", isOpen);
+
+    // 대기 중인 팀 수 조회
+    Pageable pageable = PageRequest.of(0, 1000);
+    Page<WaitingResponse> waitingList = waitingService.getWaitingList(restaurantId, WaitingState.WAITING, pageable);
+
+    long team2 = waitingList.getContent().stream()
+        .filter(w -> w.getPeopleCount() >= 1 && w.getPeopleCount() <= 2)
+        .count();
+    long team4 = waitingList.getContent().stream()
+        .filter(w -> w.getPeopleCount() >= 3)
+        .count();
+
+    log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}, team2: {}, team4: {}",
+        restaurantId, isOpen, team2, team4);
+
+    return Map.of(
+        "isOpen", isOpen,
+        "team2", team2,
+        "team4", team4
+    );
   }
 
   @GetMapping("/api/user/waitings/status")
@@ -180,11 +198,11 @@ public class WaitingController {
   }
 
   /**
-   * 웨이팅 리스트 조회
+   * 웨이팅 리스트 조회 (관리자용)
    *
    * @author 성유진
    */
-  @GetMapping("/api/admin/waitings/{restaurantId}")
+  @GetMapping("/api/admin/restaurants/{restaurantId}/waiting")
   @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getAdminList(@PathVariable Long restaurantId,
       @RequestParam String status,
@@ -219,11 +237,11 @@ public class WaitingController {
   }
 
   /**
-   * 웨이팅 취소
+   * 웨이팅 취소 (사용자용)
    *
    * @author 성유진
    */
-  @PutMapping("/api/admin/waitings/{id}/cancel")
+  @PutMapping("/api/user/waiting/{id}/cancel")
   @ResponseBody
   public ResponseEntity<String>cancelAdminWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
@@ -246,13 +264,28 @@ public class WaitingController {
   }
 
   /**
-   * 웨이팅 호출
+   * 웨이팅 취소 (관리자용)
+   *
+   * @author 성유진
+   */
+  @PutMapping("/api/admin/waiting/{id}/cancel")
+  @ResponseBody
+  public ResponseEntity<String>cancelWaitingAdmin(@PathVariable Long id, @RequestParam Long restaurantId) {
+
+    waitingService.cancelWaiting(id, restaurantId);
+    simpMessagingTemplate.convertAndSend("/topic/cancel",
+        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
+
+    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
+  }
+
+  /**
+   * 웨이팅 호출 (관리자용)
    *
    * @author 서예닮
    * @since 2025-10-13
    */
-  //웨이팅 호출
-  @PutMapping("/api/waitings/{id}/called")
+  @PutMapping("/api/admin/waiting/{id}/called")
   @ResponseBody
   public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
     Waiting  waiting  =waitingService.callWaiting(id, restaurantId);
@@ -262,8 +295,13 @@ public class WaitingController {
     return ResponseEntity.ok("웨이팅이 호출되었습니다.");
   }
 
-  //웨이팅 착석
-  @PutMapping("/api/waitings/{id}/seated")
+  /**
+   * 웨이팅 착석 (관리자용)
+   *
+   * @author 서예닮
+   * @since 2025-10-13
+   */
+  @PutMapping("/api/admin/waiting/{id}/seated")
   @ResponseBody
   public  ResponseEntity<String> seatedWaiting(@PathVariable Long id, @RequestParam Long restaurantId){
     Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId);
@@ -274,12 +312,12 @@ public class WaitingController {
   }
 
   /**
-   * 내 앞에 대기 중인 팀 수 조회
+   * 내 앞에 대기 중인 팀 수 조회 (사용자용)
    *
    * @author 서예닮
    * @since 2025-10-14
    */
-  @GetMapping("/api/waitings/teams-ahead")
+  @GetMapping("/api/user/waiting/teams-ahead")
   @ResponseBody
   public ResponseEntity<Map<String, Integer>> getTeamsAhead(
       @RequestParam Long restaurantId,
@@ -289,17 +327,20 @@ public class WaitingController {
   }
 
   /**
-   * 사용자의 웨이팅 내역 조회 (앞 대기팀 수 포함)
+   * 사용자의 웨이팅 내역 조회 (사용자용)
    *
    * @author 서예닮
    * @since 2025-10-15
    */
-  @GetMapping("/api/waitings/user/{userId}")
+  @GetMapping("/api/user/waiting/history")
   @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getUserWaitingList(
-      @PathVariable Long userId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
+
+    // TODO: JWT 토큰에서 실제 userId 추출하도록 수정 필요
+    // 현재는 테스트용으로 하드코딩
+    Long userId = 1L;
 
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);

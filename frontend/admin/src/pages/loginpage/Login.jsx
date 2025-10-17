@@ -95,7 +95,7 @@ const Login = () => {
         const fullEmail = `${formData.emailLocal}@${formData.emailDomain}`;
 
         try {
-            const response = await AdminApi.post('/admin/api/login', {
+            const response = await AdminApi.post('/api/admin/auth/login', {
                 email: fullEmail,
                 password: formData.password
             });

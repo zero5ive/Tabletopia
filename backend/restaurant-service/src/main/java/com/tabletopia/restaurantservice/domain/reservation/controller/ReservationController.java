@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/realtime")
 @RequiredArgsConstructor
 public class ReservationController {
 
@@ -39,10 +38,10 @@ public class ReservationController {
   private final UserService userService;
 
   /**
-   * 전체 예약 조회
+   * 전체 예약 조회 (관리자용)
    * @return
    */
-  @GetMapping("/reservations")
+  @GetMapping("/api/admin/reservations")
   public ResponseEntity<ApiResponse<List<Reservation>>> getReservations(){
     List<Reservation> reservations = reservationService.findAllReservations();
 
@@ -50,11 +49,11 @@ public class ReservationController {
   }
 
   /**
-   * 특정 레스토랑의 예약 조회
+   * 특정 레스토랑의 예약 조회 (관리자용)
    * @param restaurantId
    * @return
    */
-  @GetMapping("/reservations/restaurants/{restaurantId}")
+  @GetMapping("/api/admin/restaurants/{restaurantId}/reservations")
   public ResponseEntity<ApiResponse<List<Reservation>>> getReservationsByRestaurantId(@PathVariable Long restaurantId){
     List<Reservation> reservations = reservationService.findReservationsByRestaurantId(restaurantId);
 
@@ -77,12 +76,12 @@ public class ReservationController {
 //  }
 
   /**
-   * 예약 내역 조회 메서드
+   * 예약 내역 조회 메서드 (사용자용)
    *
    * @author 서예닮
    * @since 2025-10-16
    */
-  @GetMapping("/my-reservations")
+  @GetMapping("/api/user/reservations/my")
   public ResponseEntity<ApiResponse<List<Reservation>>> getMyReservations(@RequestParam(required = false) String status){
     String currentUserEmail = SecurityUtil.getCurrentUserEmail();
     User user = userService.findByEmail(currentUserEmail);
@@ -94,7 +93,7 @@ public class ReservationController {
   }
 
   /**
-   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회
+   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회 (사용자용)
    *
    * @param restaurantId 레스토랑 id
    * @param date 요청날짜
@@ -102,7 +101,7 @@ public class ReservationController {
    * @author 김예진
    * @since 2025-10-17
    */
-  @GetMapping("/restaurants/{restaurantId}/available-timeslots")
+  @GetMapping("/api/user/restaurants/{restaurantId}/timeslots")
   public ResponseEntity<ApiResponse<TimeSlotAvailabilityResponse>> getAvailableTimeSlots(
       @PathVariable Long restaurantId,
       LocalDate date

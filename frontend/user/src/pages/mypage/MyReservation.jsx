@@ -22,8 +22,14 @@ export default function MyReservation() {
     const fetchReservations = async (status) => {
         setLoading(true)
         try {
+            const token = localStorage.getItem('accessToken')
             const response = await UserApi.get(
-                `/api/realtime/my-reservations?status=${status}`
+                `/api/user/reservations/my?status=${status}`,
+                {
+                    headers: {
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                }
             )
             const data = response.data
 

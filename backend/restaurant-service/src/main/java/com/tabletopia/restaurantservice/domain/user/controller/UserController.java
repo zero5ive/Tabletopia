@@ -48,7 +48,7 @@ public class UserController {
     /**
      * 회원가입 처리
      */
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDTO userDto) {
         log.debug("=====회원가입 요청 {}", userDto);
         userService.register(userDto);
@@ -61,7 +61,7 @@ public class UserController {
     /**
      * 로그인 처리
      */
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request) {
         try {
             log.debug("로그인 요청: {},{}", request.getEmail(), request.getPassword());
@@ -97,7 +97,7 @@ public class UserController {
      * Access Token 재발급
      *
      */
-    @PostMapping("/refresh")
+    @PostMapping("/auth/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         return refreshTokenService.validateRefreshToken(refreshToken)
                 .map(token -> {
@@ -111,7 +111,7 @@ public class UserController {
     /**
      * 로그아웃 처리
      */
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<Map<String, Object>> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
         if (refreshToken != null) {
             refreshTokenService.deleteRefreshToken(refreshToken);
@@ -129,7 +129,7 @@ public class UserController {
     /**
      * 현재 로그인된 사용자 정보 조회
      */
-    @GetMapping("/me")
+    @GetMapping("/auth/me")
     public ResponseEntity<UserInfoDTO> getCurrentUser() {
         String name = userService.getCurrentUserInfo().getName();
         log.debug("가져온 이름은"+ name+"입니다.");
@@ -141,7 +141,7 @@ public class UserController {
    * @since 2025-10-16
    *  로그인된 사용자 정보 변경
    */
-  @PutMapping("/update")
+  @PutMapping("/profile/update")
   public ResponseEntity<String> updateUser(@RequestBody @Valid UserUpdateDTO userUpdateDTO) {
     userService.updateUser(userUpdateDTO);
     return ResponseEntity.ok("프로필이 저장되었습니다");
