@@ -32,7 +32,6 @@ import java.util.List;
  * @since 2025-10-13
  */
 @RestController
-@RequestMapping("/api/hours/opening")
 @RequiredArgsConstructor
 public class RestaurantOpeningHourController {
 
@@ -44,8 +43,16 @@ public class RestaurantOpeningHourController {
    * @param restaurantId 매장 ID
    * @return 운영시간 리스트
    */
-  @GetMapping("/{restaurantId}")
-  public ResponseEntity<List<RestaurantOpeningHourResponse>> getOpeningHours(
+  @GetMapping("/api/admin/hours/opening/{restaurantId}")
+  public ResponseEntity<List<RestaurantOpeningHourResponse>> getAdminOpeningHours(
+      @PathVariable Long restaurantId) {
+
+    List<RestaurantOpeningHourResponse> result = openingHourService.getOpeningHours(restaurantId);
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/api/user/hours/opening/{restaurantId}")
+  public ResponseEntity<List<RestaurantOpeningHourResponse>> getUserOpeningHours(
       @PathVariable Long restaurantId) {
 
     List<RestaurantOpeningHourResponse> result = openingHourService.getOpeningHours(restaurantId);
@@ -61,7 +68,7 @@ public class RestaurantOpeningHourController {
    * @param requestList 프론트엔드에서 전달된 운영시간 요청 리스트
    * @return 성공 메시지
    */
-  @PostMapping("/{restaurantId}")
+  @PostMapping("/api/admin/hours/opening/{restaurantId}")
   public ResponseEntity<String> saveOpeningHours(
       @PathVariable Long restaurantId,
       @RequestBody List<RestaurantOpeningHourRequest> requestList) {
@@ -77,8 +84,8 @@ public class RestaurantOpeningHourController {
    * @param date 조회 날짜 (없으면 오늘 날짜로 기본 처리)
    * @return 실제 적용되는 운영시간 정보
    */
-  @GetMapping("/effective/{restaurantId}")
-  public ResponseEntity<RestaurantEffectiveHourResponse> getEffectiveHours(
+  @GetMapping("/api/admin/hours/opening/effective/{restaurantId}")
+  public ResponseEntity<RestaurantEffectiveHourResponse> getAdminEffectiveHours(
       @PathVariable Long restaurantId,
       @RequestParam(name = "date", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -87,4 +94,16 @@ public class RestaurantOpeningHourController {
     RestaurantEffectiveHourResponse result = openingHourService.getEffectiveHour(restaurantId, date);
     return ResponseEntity.ok(result);
   }
+
+  @GetMapping("/api/user/hours/opening/effective/{restaurantId}")
+  public ResponseEntity<RestaurantEffectiveHourResponse> getUserEffectiveHours(
+      @PathVariable Long restaurantId,
+      @RequestParam(name = "date", required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+      LocalDate date) {
+
+    RestaurantEffectiveHourResponse result = openingHourService.getEffectiveHour(restaurantId, date);
+    return ResponseEntity.ok(result);
+  }
+
 }

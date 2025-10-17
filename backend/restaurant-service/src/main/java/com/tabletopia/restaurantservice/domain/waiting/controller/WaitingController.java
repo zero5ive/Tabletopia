@@ -74,6 +74,16 @@ public class WaitingController {
     );
   }
 
+  @GetMapping("/api/user/waitings/status")
+  @ResponseBody
+  public Map<String, Boolean> getUserWaitingStatus(@RequestParam Long restaurantId) {
+    boolean isOpen = waitingService.isWaitingOpen(restaurantId);
+    log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
+    return Map.of("isOpen", isOpen);
+  }
+
+
+
   /**
    * 웨이팅 오픈
    *
@@ -194,7 +204,24 @@ public class WaitingController {
    */
   @GetMapping("/api/admin/restaurants/{restaurantId}/waiting")
   @ResponseBody
-  public ResponseEntity<Page<WaitingResponse>> getList(@PathVariable Long restaurantId,
+  public ResponseEntity<Page<WaitingResponse>> getAdminList(@PathVariable Long restaurantId,
+      @RequestParam String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+    // String을 Enum으로 변환
+    WaitingState waitingState = WaitingState.valueOf(status);
+
+    Page<WaitingResponse> waitingList = waitingService.getWaitingList(restaurantId, waitingState, pageable);
+
+    return  ResponseEntity.ok(waitingList);
+  }
+
+  @GetMapping("/api/user/waitings/{restaurantId}")
+  @ResponseBody
+  public ResponseEntity<Page<WaitingResponse>> getUserList(@PathVariable Long restaurantId,
       @RequestParam String status,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
@@ -216,7 +243,18 @@ public class WaitingController {
    */
   @PutMapping("/api/user/waiting/{id}/cancel")
   @ResponseBody
-  public ResponseEntity<String>cancelWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+  public ResponseEntity<String>cancelAdminWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
+
+    waitingService.cancelWaiting(id, restaurantId);
+    simpMessagingTemplate.convertAndSend("/topic/cancel",
+        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
+
+    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
+  }
+
+  @PutMapping("/api/user/waitings/{id}/cancel")
+  @ResponseBody
+  public ResponseEntity<String>cancelUserWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
     waitingService.cancelWaiting(id, restaurantId);
     simpMessagingTemplate.convertAndSend("/topic/cancel",
