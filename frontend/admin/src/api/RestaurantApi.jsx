@@ -1,9 +1,12 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8002/api/restaurants";
+const api = axios.create({
+  baseURL: "http://localhost:8002/admin/api",
+  withCredentials: true, // ★ 세션 쿠키(JSESSIONID) 전송 필수
+});
 
-export const createRestaurant = (data) => axios.post(BASE_URL, data);
-export const getAllRestaurants = () => axios.get(BASE_URL);
-export const getRestaurantById = (id) => axios.get(`${BASE_URL}/${id}`);
-export const updateRestaurant = (id, data) => axios.put(`${BASE_URL}/${id}`, data);
-export const deleteRestaurant = (id) => axios.delete(`${BASE_URL}/${id}`);
+export const createRestaurant = (data) => api.post("/restaurants", data);
+export const getAllRestaurants = () => api.get("/restaurants");
+export const getRestaurantById = (id) => api.get(`/restaurants/${id}`);
+export const updateRestaurant = (id, data) => api.put(`/restaurants/${id}`, data);
+export const deleteRestaurant = (id) => api.delete(`/restaurants/${id}`);
