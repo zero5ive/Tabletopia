@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './MyWaiting.module.css'
+import UserApi from '../utils/UserApi'
 
 export default function MyReservation() {
     const [activeTab, setActiveTab] = useState('PENDING')
     const [reservations, setReservations] = useState([])
     const [loading, setLoading] = useState(false)
-
-    // TODO: 실제 userId는 로그인 정보에서 가져와야 함
-    const userId = 1
 
     const tabs = [
         { key: 'PENDING', label: '대기중' },
@@ -24,10 +22,10 @@ export default function MyReservation() {
     const fetchReservations = async (status) => {
         setLoading(true)
         try {
-            const response = await fetch(
-                `http://localhost:8002/api/realtime/restaurants/user/${userId}?status=${status}`
+            const response = await UserApi.get(
+                `/api/realtime/my-reservations?status=${status}`
             )
-            const data = await response.json()
+            const data = response.data
 
             if (data.success) {
                 setReservations(data.data)

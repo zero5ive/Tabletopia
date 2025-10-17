@@ -10,6 +10,7 @@ export default function MyPage() {
     // 유저 정보 조회 함수 (자식 컴포넌트에서도 호출 가능)
     const refreshUserData = useCallback(async () => {
         try {
+            console.log(response);
             const response = await getCurrentUser();
             setUserData(response.data);
         } catch (error) {
