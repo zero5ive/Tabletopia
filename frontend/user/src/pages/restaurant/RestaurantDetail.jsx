@@ -11,7 +11,7 @@ import ReviewsTab from "./tabs/ReviewsTab";
 import { useLoadScript } from '@react-google-maps/api';
 import { getRestaurantDetail } from "../utils/RestaurantApi";
 import { useSearchParams } from 'react-router-dom';
-
+import { getAvailableTimeSlots } from "../utils/OpeningHourApi";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -22,6 +22,9 @@ export default function RestaurantList() {
     const [searchParams] = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0); // 선택된 이미지 인덱스
+
+    const [effectiveHours, setEffectiveHours] = useState(null)
+    const [timeSlots, setTimeSlots] = useState([]); // 예약 타임 슬롯
 
     const fetchRestaurantDetail = async (restaurantId) => {
         try {
@@ -79,19 +82,25 @@ export default function RestaurantList() {
         }
     };
 
+    // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기
+    const today = new Date().toISOString().split('T')[0];
+
+    const [date, setDate] = useState(today); // 초기 날짜를 오늘로 설정
+
+    /**
+     * 초기 로드
+     */
     useEffect(() => {
-        fetchRestaurantDetail(restaurantId);
+        if (restaurantId) {
+            fetchRestaurantDetail(restaurantId);
+            fetchAvailableTimeSlots(restaurantId, today);
+        }
     }, [restaurantId])
 
     // Google Maps API 로드
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     });
-
-    // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기
-    const today = new Date().toISOString().split('T')[0];
-
-    const [date, setDate] = useState(today); // 초기 날짜를 오늘로 설정
     const [reservationType, setReservationType] = useState("reservation"); //예약, 웨이팅
     const [activeTab, setActiveTab] = useState("menu"); //상세설명, 메뉴 소개
     const [people, setPeople] = useState(1); //인원 수
@@ -101,31 +110,80 @@ export default function RestaurantList() {
     const decrement = () => setPeople(people => people > 1 ? people - 1 : 1);
 
     /**
+     * 특정 날짜의 타임슬롯 예약 가능 여부 조회
+     * 백엔드에서 운영시간 + 예약 상태를 통합해서 반환
+     */
+    const fetchAvailableTimeSlots = async (restaurantId, date) => {
+        try {
+            const response = await getAvailableTimeSlots(restaurantId, date);
+            console.log('타임슬롯 예약 가능 여부:', response.data);
+
+            const data = response.data.data; // ApiResponse 구조: { success, message, data }
+
+            // 휴무일이거나 영업하지 않는 경우
+            if (!data.isOpen || !data.timeSlots || data.timeSlots.length === 0) {
+                setTimeSlots([]);
+                setEffectiveHours({ isClosed: true });
+                return;
+            }
+
+            // 모든 타임슬롯을 객체 형태로 저장 (예약 가능 여부 포함)
+            const slots = data.timeSlots.map(slot => ({
+                time: slot.time,
+                isAvailable: slot.isAvailable,
+                availableTableCount: slot.availableTableCount
+            }));
+
+            setTimeSlots(slots);
+
+            // effectiveHours도 업데이트 (기존 로직 호환용)
+            setEffectiveHours({
+                isClosed: false,
+                openTime: data.openTime,
+                closeTime: data.closeTime,
+                reservationInterval: data.reservationInterval
+            });
+        } catch (error) {
+            console.error('타임슬롯 조회 실패:', error);
+            setTimeSlots([]);
+            setEffectiveHours({ isClosed: true });
+        }
+    }
+
+
+    /**
      * 날짜 변경 핸들러
-     * 날짜가 변경되면 선택된 시간을 초기화
-     * 
+     * 날짜가 변경되면 선택된 시간을 초기화하고 해당 날짜의 타임슬롯을 조회
+     *
      * @param {Event} e - 날짜 입력 이벤트
      * @author 김예진
      * @since 2025-09-23
      */
     const handleDateChange = (e) => {
-        setDate(e.target.value);
+        const newDate = e.target.value;
+        setDate(newDate);
         setSelectedTime(""); // 날짜 변경 시 선택된 시간 초기화
+        fetchAvailableTimeSlots(restaurantId, newDate); // 선택된 날짜의 타임슬롯 조회
     };
     /*
      * 이미 선택된 시간을 다시 클릭하면 선택 취소, 새로운 시간 클릭하면 해당 시간 선택
-     * 
-     * @param {string} time - 선택할 시간 (예: "18:00")
+     *
+     * @param {object} slot - 타임슬롯 객체 { time, isAvailable }
      * @author 김예진
      * @since 2025-09-23
      */
-    const handleTimeSlotClick = (time) => {
-        if (selectedTime === time) {
+    const handleTimeSlotClick = (slot) => {
+        // 예약 불가능한 슬롯이면 클릭 무시
+        if (!slot.isAvailable) {
+            return;
+        }
+
+        if (selectedTime === slot.time) {
             // 이미 선택된 시간을 다시 클릭하면 선택 취소
             setSelectedTime("");
         } else {
             // 새로운 시간 선택
-            setSelectedTime(time);
+            setSelectedTime(slot.time);
         }
     };
 
@@ -252,7 +310,7 @@ export default function RestaurantList() {
                     {activeTab === 'menu' && <MenuTab />}
 
                     {/* 위치 탭 */}
-                    {activeTab === 'location' && <LocationTab />}
+                    {activeTab === 'location' && <LocationTab restaurantDetail={restaurantDetail}/>}
 
                     {/* 편의시설 탭 */}
                     {activeTab === 'facilities' && <FacilitiesTab />}
@@ -305,43 +363,34 @@ export default function RestaurantList() {
                         </div>
 
                         <div className={styles["available-times"]}>
-                            <div
-                                className={`${styles["time-slot"]} ${styles["disabled"]}`}
-                            >
-                                17:30
-                            </div>
-                            <div
-                                className={`${styles["time-slot"]} ${selectedTime === '18:00' ? styles['selected'] : ''}`}
-                                onClick={() => handleTimeSlotClick('18:00')}
-                            >
-                                18:00
-                            </div>
-                            <div
-                                className={`${styles["time-slot"]} ${selectedTime === '19:00' ? styles['selected'] : ''}`}
-                                onClick={() => handleTimeSlotClick('19:00')}
-                            >
-                                19:00
-                            </div>
-                            <div
-                                className={`${styles["time-slot"]} ${selectedTime === '19:30' ? styles['selected'] : ''}`}
-                                onClick={() => handleTimeSlotClick('19:30')}
-                            >
-                                19:30
-                            </div>
-                            <div
-                                className={`${styles["time-slot"]} ${selectedTime === '20:00' ? styles['selected'] : ''}`}
-                                onClick={() => handleTimeSlotClick('20:00')}
-                            >
-                                20:00
-                            </div>
-                            <div
-                                className={`${styles["time-slot"]} ${styles["disabled"]}`}
-                            >
-                                20:30
-                            </div>
+                            {timeSlots.length === 0 ? (
+                                <div className={styles["no-slots"]}>
+                                    {effectiveHours?.isClosed
+                                        ? "오늘은 휴무입니다"
+                                        : "예약 가능한 시간이 없습니다"}
+                                </div>
+                            ) : (
+                                timeSlots.map((slot) => (
+                                    <div
+                                        key={slot.time}
+                                        className={`${styles["time-slot"]}
+                                                    ${selectedTime === slot.time ? styles['selected'] : ''}
+                                                    ${!slot.isAvailable ? styles['disabled'] : ''}`}
+                                        onClick={() => handleTimeSlotClick(slot)}
+                                    >
+                                        {slot.time}
+                                    </div>
+                                ))
+                            )}
                         </div>
 
-                        <button className={styles["reservation-btn"]} onClick={handleReservation}>예약하기</button>
+                        <button
+                            className={styles["reservation-btn"]}
+                            onClick={handleReservation}
+                            disabled={timeSlots.length === 0}
+                        >
+                            예약하기
+                        </button>
                     </div>
 
                     {/* <!-- Waiting Content --> */}
