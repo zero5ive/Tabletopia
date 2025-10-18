@@ -2,6 +2,7 @@ import styles from './MyWaiting.module.css'
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from 'react';
 import { getUserWaitingList, waitingCancel } from '../utils/WaitingApi';
+import { getCurrentUser } from '../utils/UserApi';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -12,16 +13,30 @@ export default function MyReservation() {
     const [activeTab, setActiveTab] = useState('WAITING'); // 'WAITING' 또는 'COMPLETED' (웨이팅중 or 이용내역)
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+    const [userId, setUserId] = useState(null); // 현재 로그인한 사용자 ID
     const pageSize = 10; // 한 페이지에 보여줄 개수
-
-    // 임시 유저아이디
-    const userId = 1;
 
     // WebSocket 클라이언트
     const stompClient = useRef(null);
 
-    // 전체 데이터 가져오기
+    // 현재 로그인한 사용자 정보 가져오기
     useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await getCurrentUser();
+                setUserId(response.data.id);
+                console.log('현재 사용자 ID:', response.data.id);
+            } catch (error) {
+                console.error('사용자 정보 조회 실패:', error);
+            }
+        };
+        fetchCurrentUser();
+    }, []);
+
+    // 전체 데이터 가져오기 및 WebSocket 연결
+    useEffect(() => {
+        if (!userId) return; // userId가 없으면 실행하지 않음
+
         fetchAllWaitingList();
         connectWebSocket();
 
@@ -31,17 +46,32 @@ export default function MyReservation() {
                 stompClient.current.deactivate();
             }
         };
-    }, []);
+    }, [userId]);
 
     const fetchAllWaitingList = async () => {
         try {
             setLoading(true);
+            console.log('웨이팅 내역 조회 시작');
+            console.log('저장된 토큰:', localStorage.getItem('accessToken'));
+
             // 모든 데이터 가져오기 (page=0, size=1000)
             const response = await getUserWaitingList(0, 1000);
-            console.log(response);
-            setAllWaitingList(response.data.content);
+            console.log('웨이팅 내역 조회 응답:', response);
+            console.log('웨이팅 내역 데이터:', response.data);
+
+            if (response.data && response.data.content) {
+                setAllWaitingList(response.data.content);
+                console.log('웨이팅 개수:', response.data.content.length);
+            } else {
+                console.warn('응답 데이터 형식이 예상과 다릅니다:', response.data);
+                setAllWaitingList([]);
+            }
         } catch (error) {
             console.error('웨이팅 내역 조회 실패:', error);
+            console.error('에러 상세:', error.response?.data);
+            console.error('에러 상태:', error.response?.status);
+            alert(`웨이팅 내역 조회 실패: ${error.response?.data?.message || error.message}`);
+            setAllWaitingList([]);
         } finally {
             setLoading(false);
         }
@@ -123,21 +153,21 @@ export default function MyReservation() {
             onConnect: () => {
                 console.log('WebSocket 연결 성공');
 
-                // 웨이팅 호출 구독
-                client.subscribe('/topic/call', (message) => {
-                    console.log('웨이팅 호출:', message.body);
+                // 개인화된 웨이팅 호출 구독
+                client.subscribe(`/topic/user/${userId}/call`, (message) => {
+                    console.log('웨이팅 호출 알림:', message.body);
                     handleWebSocketMessage(JSON.parse(message.body));
                 });
 
-                // 웨이팅 착석 구독
-                client.subscribe('/topic/seated', (message) => {
-                    console.log('웨이팅 착석:', message.body);
+                // 개인화된 웨이팅 착석 구독
+                client.subscribe(`/topic/user/${userId}/seated`, (message) => {
+                    console.log('웨이팅 착석 알림:', message.body);
                     handleWebSocketMessage(JSON.parse(message.body));
                 });
 
-                // 웨이팅 취소 구독
-                client.subscribe('/topic/cancel', (message) => {
-                    console.log('웨이팅 취소:', message.body);
+                // 개인화된 웨이팅 취소 구독
+                client.subscribe(`/topic/user/${userId}/cancel`, (message) => {
+                    console.log('웨이팅 취소 알림:', message.body);
                     handleWebSocketMessage(JSON.parse(message.body));
                 });
             },

@@ -142,7 +142,6 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
   /**관리자 웨이팅 취소*/
-  // ✅ 이렇게 하세요!
   public Waiting cancelAdminWaiting(Long id, Long restaurantId) {
     Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
         .orElseThrow(() -> new EntityNotFoundException("웨이팅을 찾을 수 없습니다."));

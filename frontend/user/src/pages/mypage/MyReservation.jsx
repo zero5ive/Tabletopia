@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './MyWaiting.module.css'
-import UserApi from '../utils/UserApi'
+import { getReservations } from '../utils/UserApi';
 
 export default function MyReservation() {
     const [activeTab, setActiveTab] = useState('PENDING')
@@ -22,15 +22,8 @@ export default function MyReservation() {
     const fetchReservations = async (status) => {
         setLoading(true)
         try {
-            const token = localStorage.getItem('accessToken')
-            const response = await UserApi.get(
-                `/api/user/reservations/my?status=${status}`,
-                {
-                    headers: {
-                        'Authorization': token ? `Bearer ${token}` : ''
-                    }
-                }
-            )
+            const response = await getReservations(status)
+
             const data = response.data
 
             if (data.success) {
@@ -41,6 +34,11 @@ export default function MyReservation() {
             }
         } catch (error) {
             console.error('예약 내역 조회 에러:', error)
+            console.error('에러 상세:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            })
             setReservations([])
         } finally {
             setLoading(false)
