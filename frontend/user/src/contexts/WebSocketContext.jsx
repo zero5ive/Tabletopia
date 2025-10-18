@@ -59,6 +59,9 @@ export const WebSocketProvider = ({ children }) => {
         const socket = new SockJS('http://localhost:8002/ws')
         const client = new Client({
             webSocketFactory: () => socket,
+            connectHeaders: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            },
             onConnect: () => {
                 console.log('사용자 WebSocket 연결 성공')
                 setIsConnected(true)

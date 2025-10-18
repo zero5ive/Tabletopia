@@ -39,4 +39,7 @@ public interface WaitingService {
 
   //사용자의 웨이팅 내역 조회 (앞 대기팀 수 포함)
   public Page<WaitingResponse> getUserWaitingList(Long userId, Pageable pageable);
+
+  //관리자가 웨이팅 취소
+  public Waiting cancelAdminWaiting(Long id, Long restaurantId);
 }

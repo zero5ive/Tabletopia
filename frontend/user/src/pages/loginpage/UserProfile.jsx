@@ -9,7 +9,7 @@ function UserProfile() {
         const fetchUser = async () => {
             try {
                 // 이제 그냥 get 요청만 보내면 인터셉터가 알아서 헤더를 추가해줍니다.
-                const response = await userApi.get('/api/user/me');
+                const response = await userApi.get('/api/user/auth/me');
                 console.log(response.data);
                 
                 setUser(response.data);

@@ -115,9 +115,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             try {
               // JWT 토큰에서 사용자 이름(이메일) 추출
               String username = jwtUtil.extractUsername(token);
+              log.debug("JWT에서 추출한 username: {}", username);
 
               // 사용자 이름으로 UserDetails 객체 로드 (DB에서 사용자 정보 조회)
               UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+              log.debug("UserDetails username: {}", userDetails.getUsername());
 
               // Spring Security의 Authentication 객체 생성
               // 사용자 정보, 비밀번호(빈 문자열), 권한 정보를 담음
@@ -126,6 +128,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                   "", // credentials: 비밀번호 (JWT 인증이므로 빈 값)
                   userDetails.getAuthorities()  // authorities: 사용자 권한 목록
               );
+              log.debug("Authentication 객체 생성 완료. getName(): {}", auth.getName());
 
               // WebSocket 세션에 인증 정보 등록
               // 이후 @MessageMapping에서 accessor.getUser()로 접근 가능
