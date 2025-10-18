@@ -2,13 +2,13 @@
 -- Tabletopia 프로젝트 더미 데이터 (외래 키 수정 완료)
 -- ==========================================
 
--- SNS 제공자
-INSERT INTO `sns_provider` (`name`)
-VALUES
-   ('KAKAO'),
-   ('NAVER'),
-   ('GOOGLE'),
-   ('FACEBOOK');
+-- -- SNS 제공자
+-- INSERT INTO `sns_provider` (`name`)
+-- VALUES
+--    ('KAKAO'),
+--    ('NAVER'),
+--    ('GOOGLE'),
+--    ('FACEBOOK');
 
 -- 사용자 데이터
 INSERT INTO `user` (`email`, `password`, `name`, `phone_number`, `sns_provider_id`)
