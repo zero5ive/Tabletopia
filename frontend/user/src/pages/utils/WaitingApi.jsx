@@ -27,7 +27,7 @@ export const getUserWaitingList = (page = 0, size = 10) => {
 //웨이팅 대기 취소
 export const waitingCancel = (id, restaurantId) => {
     const token = localStorage.getItem('accessToken');
-    return api.put(`/${id}/cancel?restaurantId=${restaurantId}`, null, {
+    return axios.put(`http://localhost:8002/api/user/waitings/${id}/cancel?restaurantId=${restaurantId}`, null, {
         headers: {
             'Authorization': token ? `Bearer ${token}` : ''
         }

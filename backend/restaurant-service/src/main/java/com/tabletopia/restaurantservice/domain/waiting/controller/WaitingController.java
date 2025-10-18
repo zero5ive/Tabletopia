@@ -1,5 +1,11 @@
 package com.tabletopia.restaurantservice.domain.waiting.controller;
 
+import com.tabletopia.restaurantservice.domain.admin.dto.AdminDTO;
+import com.tabletopia.restaurantservice.domain.admin.service.AdminService;
+import com.tabletopia.restaurantservice.domain.user.controller.UserController;
+import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingEvent;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingRequest;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
@@ -7,9 +13,7 @@ import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
 import com.tabletopia.restaurantservice.domain.waiting.service.WaitingNotificationService;
 import com.tabletopia.restaurantservice.domain.waiting.service.WaitingService;
-import com.tabletopia.restaurantservice.domain.user.entity.User;
-import com.tabletopia.restaurantservice.domain.user.service.UserService;
-import com.tabletopia.restaurantservice.util.SecurityUtil;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +50,7 @@ public class WaitingController {
   private final WaitingNotificationService waitingNotificationService;
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final UserService userService;
+  private final AdminService adminService;
 
   /**
    * 웨이팅 오픈 상태 조회 REST API (사용자용)
@@ -149,56 +154,64 @@ public class WaitingController {
 
     log.debug("웨이팅 등록 요청 받음");
 
-
     String sessionId = accessor.getSessionId();
+    log.debug("sessionId: {}", sessionId);
 
-    // 사용자 이메일을 저장할 변수 초기화
-    String userEmail = null;
-
-    // WebSocket 세션에서 인증 정보 확인
-    if (accessor.getUser() != null) {
-      // User 객체의 getName()은 일반적으로 username(이메일)을 반환
-      // CONNECT 시 setUser()로 설정한 Authentication 객체가 반환됨
-      userEmail = accessor.getUser().getName();
-
-      log.debug("WebSocket 세션에서 인증 정보 확인: {}", userEmail);
-    } else {
-      // 인증 정보가 없는 경우 (JWT 토큰이 없거나 유효하지 않은 경우)
-      log.warn("WebSocket 세션에 인증 정보가 없습니다. 세션 ID: {}", sessionId);
-      // 이 경우 userEmail은 null로 남음
-    }
-
-    if (!waitingService.isWaitingOpen(waitingRequest.getRestaurantId())) {
-      log.warn("웨이팅이 닫혀있음");
-
-      WaitingEvent errorEvent = new WaitingEvent();
-      errorEvent.setType("ERROR");
-      errorEvent.setSender(waitingRequest.getUserId());
-      errorEvent.setContent("현재 웨이팅 등록이 불가능합니다.");
-
-      simpMessagingTemplate.convertAndSend("/topic/regist", errorEvent);
+    // 1. 인증 정보 확인
+    if (accessor.getUser() == null) {
+      log.warn("인증되지 않은 요청. 세션 ID: {}", sessionId);
+      sendErrorEvent("인증이 필요합니다.");
       return;
     }
 
-    //  Service 호출 (엔티티 반환받음)
-    Waiting waiting = waitingService.registerWaiting(
-        waitingRequest.getRestaurantId(),
-        waitingRequest.getUserId(),
-        waitingRequest.getPeopleCount()
-    );
 
-    //  Controller에서 엔티티를 사용해서 응답 생성
-    WaitingEvent waitingEvent = new WaitingEvent();
-    waitingEvent.setType("REGIST");
-    waitingEvent.setContent("웨이팅 등록");
-    waitingEvent.setSender(waitingRequest.getUserId());
-    waitingEvent.setContent(
-        waiting.getRestaurantNameSnapshot() +  "에 " + waiting.getPeopleCount()+ "명 등록");
+    // 2. 인증된 사용자 정보 조회
+    String userEmail = accessor.getUser().getName();
+    User user = userService.findByEmail(userEmail);
 
-    simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
+    log.debug("웨이팅 등록 요청 - 유저: {}, 전화번호: {}",
+        user.getName(), user.getPhoneNumber());
 
-    log.debug("웨이팅 등록 완료 (세션: {}, userId: {})",
-        sessionId, waitingRequest.getUserId());
+
+    // 3. 웨이팅 오픈 확인
+    if (!waitingService.isWaitingOpen(waitingRequest.getRestaurantId())) {
+      log.warn("웨이팅이 닫혀있음");
+      sendErrorEvent("현재 웨이팅 등록이 불가능합니다.");
+      return;
+    }
+
+    try {
+      //  Service 호출 (엔티티 반환받음)
+      Waiting waiting = waitingService.registerWaiting(
+          waitingRequest.getRestaurantId(),
+          user.getId(),
+          waitingRequest.getPeopleCount()
+      );
+
+      //  Controller에서 엔티티를 사용해서 응답 생성
+      WaitingEvent waitingEvent = new WaitingEvent();
+      waitingEvent.setType("REGIST");
+      waitingEvent.setRestaurantId(waitingRequest.getRestaurantId());
+      waitingEvent.setSender(user.getId());
+      waitingEvent.setSenderName(user.getName());
+      waitingEvent.setTel(user.getPhoneNumber());
+      waitingEvent.setContent(
+          waiting.getRestaurantNameSnapshot() +  "에 " + waiting.getPeopleCount()+ "명 등록");
+
+      simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
+
+      log.debug("웨이팅 등록 완료 (세션: {}, userId: {})",
+          sessionId, user.getId());
+
+    } catch (com.tabletopia.restaurantservice.domain.waiting.exception.WaitingRegistException e) {
+      log.warn("중복 웨이팅 등록 시도 - userId: {}, message: {}", user.getId(), e.getMessage());
+      sendErrorEvent("이미 등록하셨습니다.");
+    } catch (Exception e) {
+      log.error("웨이팅 등록 실패 - userId: {}, error: {}", user.getId(), e.getMessage());
+      sendErrorEvent("웨이팅 등록에 실패했습니다.");
+    }
+
+
   }
 
   /**
@@ -245,24 +258,17 @@ public class WaitingController {
    *
    * @author 성유진
    */
-  @PutMapping("/api/user/waiting/{id}/cancel")
-  @ResponseBody
-  public ResponseEntity<String>cancelAdminWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
-
-    Waiting waiting = waitingService.cancelWaiting(id, restaurantId);
-    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "cancel");
-
-    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
-  }
-
   @PutMapping("/api/user/waitings/{id}/cancel")
   @ResponseBody
   public ResponseEntity<String>cancelUserWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
-    Waiting waiting = waitingService.cancelWaiting(id, restaurantId);
-    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "cancel");
+    waitingService.cancelWaiting(id, restaurantId);
+    simpMessagingTemplate.convertAndSend("/topic/cancel",
+        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
 
     return ResponseEntity.ok("웨이팅이 취소되었습니다.");
+
+
   }
 
   /**
@@ -272,12 +278,32 @@ public class WaitingController {
    */
   @PutMapping("/api/admin/waiting/{id}/cancel")
   @ResponseBody
-  public ResponseEntity<String>cancelWaitingAdmin(@PathVariable Long id, @RequestParam Long restaurantId) {
+  public ResponseEntity<WaitingResponse>cancelWaitingAdmin(@PathVariable Long id, @RequestParam Long restaurantId) {
 
-    Waiting waiting = waitingService.cancelWaiting(id, restaurantId);
-    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "cancel");
+    Waiting waiting = waitingService.cancelAdminWaiting(id, restaurantId);
+    AdminDTO admin = adminService.getAdminByEmail();
+    log.debug("웨이팅 취소한 관리자 아이디 : " + admin.getEmail());
 
-    return ResponseEntity.ok("웨이팅이 취소되었습니다.");
+    WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
+
+
+    WaitingEvent cancelEvent = new WaitingEvent();
+    cancelEvent.setType("CANCEL");
+    cancelEvent.setWaitingId(waiting.getId());
+    cancelEvent.setSender(waiting.getUser().getId());  //  웨이팅한 사용자 ID
+    cancelEvent.setAdminName(admin.getEmail());  //  취소한 관리자 email
+    cancelEvent.setRestaurantId(restaurantId);
+    cancelEvent.setContent("웨이팅이 취소되었습니다.");
+    cancelEvent.setTimestamp(LocalDateTime.now());
+
+    // 4. ✅ Topic으로 전송 (해당 사용자가 프론트에서 받음)
+    simpMessagingTemplate.convertAndSend("/topic/cancel", cancelEvent);
+
+    log.info("웨이팅 취소 완료 - waitingNumber: {}, userId: {}",
+        waiting.getWaitingNumber(), waiting.getUser().getId());
+
+    // 5. ✅ Response DTO 반환
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -291,7 +317,7 @@ public class WaitingController {
   public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
     Waiting  waiting  =waitingService.callWaiting(id, restaurantId);
 
-    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "call");
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/call");
 
     return ResponseEntity.ok("웨이팅이 호출되었습니다.");
   }
@@ -304,14 +330,10 @@ public class WaitingController {
    */
   @PutMapping("/api/admin/waiting/{id}/seated")
   @ResponseBody
-  public  ResponseEntity<String> seatedWaiting(
-      @PathVariable Long id,
-      @RequestParam Long restaurantId,
-      @RequestParam(required = false) Long tableId){
+  public  ResponseEntity<String> seatedWaiting(@PathVariable Long id, @RequestParam Long restaurantId){
+    Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId);
 
-    Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId, tableId);
-
-    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "seated");
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/seated");
 
     return ResponseEntity.ok("착석되었습니다.");
   }
@@ -341,13 +363,17 @@ public class WaitingController {
   @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getUserWaitingList(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Principal principal) {
 
     try {
       // JWT 토큰에서 현재 사용자 정보 추출
-      String currentUserEmail = SecurityUtil.getCurrentUserEmail();
+      String currentUserEmail = principal.getName();
       User user = userService.findByEmail(currentUserEmail);
       Long userId = user.getId();
+
+      log.info("웨이팅 내역 조회 - userId: {}, email: {}, page: {}, size: {}",
+          userId, currentUserEmail, page, size);
 
       Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
       Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);
@@ -358,4 +384,12 @@ public class WaitingController {
       throw e;
     }
   }
+
+  //에러 메서드
+  private void sendErrorEvent(String message) {
+    WaitingEvent errorEvent = new WaitingEvent();
+    errorEvent.setType("ERROR");
+    errorEvent.setContent(message);
+    simpMessagingTemplate.convertAndSend("/topic/regist", errorEvent);
+    }
 }

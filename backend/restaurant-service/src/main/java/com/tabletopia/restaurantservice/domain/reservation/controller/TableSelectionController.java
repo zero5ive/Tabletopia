@@ -42,8 +42,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * 실시간 테이블 선택 웹소켓 컨트롤러
- * 테이블 선택 시 실시간으로 상태 변경 (빨간불/초록불)
+ * 실시간 테이블 선택 웹소켓 컨트롤러 테이블 선택 시 실시간으로 상태 변경 (빨간불/초록불)
  *
  * @author 김예진
  * @since 2025-09-26
@@ -61,11 +60,13 @@ public class TableSelectionController {
   private final UserService userService;
 
   // =============== 테이블 실시간 선택 로직 =============== //
+
   /**
    * 레스토랑 테이블 예약 접속 처리
+   *
    * @param restaurantId 레스토랑 id
-   * @param accessor STOMP 헤더 접근자
-   * @param message 접속 메시지
+   * @param accessor     STOMP 헤더 접근자
+   * @param message      접속 메시지
    * @author 김예진
    * @since 2025-09-25
    */
@@ -111,6 +112,7 @@ public class TableSelectionController {
 
   /**
    * 웹소켓 세션에서 인증 정보를 확인하고 사용자의 email을 받아오는 메서드
+   *
    * @param accessor
    * @param sessionId
    * @return
@@ -136,13 +138,12 @@ public class TableSelectionController {
   }
 
   /**
-   * 테이블 선택 요청
-   * 사용자가 선택한 레스토랑의 특정 테이블을 선점
+   * 테이블 선택 요청 사용자가 선택한 레스토랑의 특정 테이블을 선점
    *
    * @param restaurantId 레스토랑 ID
-   * @param tableId 테이블 ID
-   * @param request 예약 요청 정보 (날짜, 시간 등)
-   * @param accessor WebSocket 세션 정보 접근자
+   * @param tableId      테이블 ID
+   * @param request      예약 요청 정보 (날짜, 시간 등)
+   * @param accessor     WebSocket 세션 정보 접근자
    * @author 김예진
    * @since 2025-09-29
    */
@@ -152,19 +153,20 @@ public class TableSelectionController {
       @DestinationVariable Long tableId,
       TableSelectionRequest request,
       SimpMessageHeaderAccessor accessor // 헤더 접근
-      ){
+  ) {
     // 웹소켓 세션 ID 추출
     String sessionId = accessor.getSessionId();
 
     String userEmail = getUserEmail(accessor, sessionId);
 
     // 선점 키 생성
-    String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(), request.getTime());
+    String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(),
+        request.getTime());
     log.debug("생성된 선점키 {}", selectionKey);
 
     // 1. 이미 예약이 완료된 테이블인지 확인
     String timeSlot = formatTimeSlot(request.getDate(), request.getTime());
-    if (isTableReserved(restaurantId, tableId, timeSlot)){
+    if (isTableReserved(restaurantId, tableId, timeSlot)) {
       log.debug("테이블 {} 이미 예약됨", tableId);
 
       // 해당 사용자에게 에러 메시지 전송
@@ -173,7 +175,7 @@ public class TableSelectionController {
     }
 
     // 2. 선점 정보 생성
-    LocalDateTime now =  LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now();
     LocalDateTime expiryTime = now.plusMinutes(5);
 
     // 테이블 선점 정보 생성
@@ -190,10 +192,10 @@ public class TableSelectionController {
     // SETNX 방식으로 동시에 여러 사용자가 선택해도 한 명만 성공하도록
     boolean success = tableSelectionService.trySelectTable(selectionKey, selectionInfo);
 
-    if (success){
+    if (success) {
       // 3-1. 선점 성공
       // 3-1-1. 실제 예약 여부 재확인
-      if (isTableReserved(restaurantId, tableId, timeSlot)){
+      if (isTableReserved(restaurantId, tableId, timeSlot)) {
         // 이미 예약된 테이블이므로 선점 정보를 삭제하여 선점 롤백
         tableSelectionService.deleteTableSelection(selectionKey);
         log.debug("선점 후 예약 확인 - 이미 예약된 테이블이므로 선점 롤백: 테이블 {}", tableId);
@@ -201,7 +203,8 @@ public class TableSelectionController {
         return;
       }
       // 3-1-2. 선점 정상 성공
-      log.debug("테이블 선점 성공: 테이블 {}, 세션 {}, 사용자 {}, 만료시간 {}", tableId, sessionId, userEmail, selectionInfo.getExpiryTime());
+      log.debug("테이블 선점 성공: 테이블 {}, 세션 {}, 사용자 {}, 만료시간 {}", tableId, sessionId, userEmail,
+          selectionInfo.getExpiryTime());
 
       // 모든 클라이언트에게 보낼 테이블 상태 정보 생성
       TableStatus updatedTableStatus = new TableStatus();
@@ -214,7 +217,7 @@ public class TableSelectionController {
 
       // 모든 클라이언트들에 상태 변경을 브로드 캐스트
       sendTableStatusUpdate(restaurantId, tableId, updatedTableStatus, true, "테이블이 선택되었습니다.");
-    } else{
+    } else {
       // 3-2. 선점 실패
       log.debug("테이블 선점 실패: 테이블 {}, 세션 {}", tableId, sessionId);
 
@@ -224,11 +227,10 @@ public class TableSelectionController {
   }
 
   /**
-   * 특정 시간대의 테이블 상태 조회
-   * 테이블 선택 팝업이 열릴 때 호출
+   * 특정 시간대의 테이블 상태 조회 테이블 선택 팝업이 열릴 때 호출
    *
    * @param restaurantId 레스토랑 ID
-   * @param request 날짜, 시간 정보
+   * @param request      날짜, 시간 정보
    * @return 각 테이블의 현재 상태 (초록불/빨간불)
    * @author 김예진
    * @since 2025-09-25
@@ -238,7 +240,8 @@ public class TableSelectionController {
   public TableStatusResponse getTableStatus(
       @DestinationVariable Long restaurantId,
       TableStatusRequest request) {
-    log.debug("테이블 상태 조회: 레스토랑 {}, 날짜 {}, 시간 {}", restaurantId, request.getDate(), request.getTime());
+    log.debug("테이블 상태 조회: 레스토랑 {}, 날짜 {}, 시간 {}", restaurantId, request.getDate(),
+        request.getTime());
 
     try {
       // 레스토랑 테이블 목록 조회
@@ -265,15 +268,16 @@ public class TableSelectionController {
         status.setShape(table.getShape());
 
         // Redis에서 테이블 상태 판단
-        String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(), request.getTime());
+        String selectionKey = createSelectionKey(restaurantId, tableId, request.getDate(),
+            request.getTime());
         TableSelectionInfo selection = tableSelectionService.getTableSelection(selectionKey);
 
         if (selection != null && !tableSelectionService.isSelectionExpired(selection)) {
           // Redis에 선점 정보가 있고, 만료되지 않음
-          if (selection.getStatus() == TableSelectStatus.RESERVED){
+          if (selection.getStatus() == TableSelectStatus.RESERVED) {
             // 예약 완료된 상태
             status.setStatus(TableSelectStatus.RESERVED);
-          } else{
+          } else {
             // 다른 사용자가 임시 선점한 상태 (PENDING)
             status.setStatus(TableSelectStatus.PENDING);
             status.setUserEmail(selection.getEmail());
@@ -301,7 +305,7 @@ public class TableSelectionController {
   /**
    * 예약 등록 (사용자용)
    *
-   * @param request 예약 요청 정보
+   * @param request   예약 요청 정보
    * @param principal JWT 인증 정보 (Spring Security)
    * @return 예약 결과
    * @author 김예진
@@ -338,7 +342,8 @@ public class TableSelectionController {
       }
 
       // Service에서 검증 및 예약 등록 처리
-      Long reservationId = reservationService.createReservationWithValidation(request, authenticatedEmail);
+      Long reservationId = reservationService.createReservationWithValidation(request,
+          authenticatedEmail);
 
       log.debug("예약 등록 성공: ID={}, 사용자={}", reservationId, authenticatedEmail);
       return Map.of(
@@ -383,21 +388,26 @@ public class TableSelectionController {
   private boolean isTableReserved(Long restaurantId, Long restaurantTableId, String timeSlot) {
     try {
       // Redis 캐시 확인
-      Boolean cachedResult = tableSelectionService.getCachedReservationStatus(restaurantId, restaurantTableId, timeSlot);
+      Boolean cachedResult = tableSelectionService.getCachedReservationStatus(restaurantId,
+          restaurantTableId, timeSlot);
 
       // 캐시 히트인 경우
       if (cachedResult != null) {
-        log.debug("예약 확인 (캐시): tableId={}, timeSlot={}, result={}", restaurantTableId, timeSlot, cachedResult);
+        log.debug("예약 확인 (캐시): tableId={}, timeSlot={}, result={}", restaurantTableId, timeSlot,
+            cachedResult);
         return cachedResult;
       }
 
       // 캐시 미스
-       boolean isReserved = reservationService.isTableReserved(restaurantId, restaurantTableId, timeSlot);
+      boolean isReserved = reservationService.isTableReserved(restaurantId, restaurantTableId,
+          timeSlot);
 
       // 결과를 Redis에 캐싱 (10분 TTL)
-      tableSelectionService.cacheReservationStatus(restaurantId, restaurantTableId, timeSlot, isReserved);
+      tableSelectionService.cacheReservationStatus(restaurantId, restaurantTableId, timeSlot,
+          isReserved);
 
-      log.debug("예약 확인 (DB): tableId={}, timeSlot={}, result={}", restaurantTableId, timeSlot, isReserved);
+      log.debug("예약 확인 (DB): tableId={}, timeSlot={}, result={}", restaurantTableId, timeSlot,
+          isReserved);
       return isReserved;
     } catch (Exception e) {
       log.error("예약 확인 실패: tableId={}, timeSlot={}", restaurantTableId, timeSlot, e);
@@ -407,10 +417,12 @@ public class TableSelectionController {
 
   /**
    * 테이블 상태 업데이트 전송
+   *
    * @author 김예진
    * @since 2025-10-01
    */
-  private void sendTableStatusUpdate(Long restaurantId, Long tableId, TableStatus tableStatus, boolean success, String message) {
+  private void sendTableStatusUpdate(Long restaurantId, Long tableId, TableStatus tableStatus,
+      boolean success, String message) {
 
     TableStatusUpdateMessage updateMessage = new TableStatusUpdateMessage(
         success, message, tableId, tableStatus
@@ -424,13 +436,14 @@ public class TableSelectionController {
 
   /**
    * 특정 사용자에게만 에러 메시지 전송
+   *
    * @param sessionId 에러를 받을 사용자의 세션 ID
-   * @param tableId 선점 실패한 테이블 ID
-   * @param message 에러 메시지
+   * @param tableId   선점 실패한 테이블 ID
+   * @param message   에러 메시지
    * @author 김예진
    * @since 2025-10-11
    */
-  private void sendTableSelectionError(String sessionId, Long tableId, String message){
+  private void sendTableSelectionError(String sessionId, Long tableId, String message) {
     TableSelectionErrorResponse response = TableSelectionErrorResponse.of(tableId, message);
     messagingTemplate.convertAndSendToUser( // 특정 사용자에게만 메시지 전송
         sessionId, // 해당 세션 id의 사용자에게만 전송
