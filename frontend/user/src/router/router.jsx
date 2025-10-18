@@ -28,6 +28,8 @@ import MyReview from "../pages/mypage/MyReview";
 import MyBookMark from "../pages/mypage/MyBookmark";
 import ReviewWrite from "../pages/mypage/ReviewWrite";
 import MyProfile from "../pages/mypage/MyProfileEdit";
+import Payment from "../pages/reservationpage/Payment";
+import PaymentSuccess from "../pages/reservationpage/PaymentSuccess";
 
 const router = createBrowserRouter([
     // 챗봇 하위 자식
@@ -109,6 +111,14 @@ const router = createBrowserRouter([
             {
                 path: "confirm-info",
                 element: <ConfirmInfo />
+            },
+            {
+                path: "payment",
+                element: <Payment/>
+            },
+            {
+                path: "payment/success",
+                element: <PaymentSuccess />
             }
         ]
     },

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'; // ✅ useRef import
-import { updateUser, getCurrentUser } from '../utils/UserApi';
+import { useNavigate } from 'react-router-dom';
+import { updateUser, getCurrentUser, createReservation } from '../utils/UserApi';
 import styles from './ConfirmInfo.module.css';
-import axios from 'axios';
 
 const ReservationConfirm = () => {
+  const navigate = useNavigate();
   const isNavigatingRef = useRef(false);
   const hasCleanedUpRef = useRef(false);
 
@@ -27,7 +28,7 @@ const ReservationConfirm = () => {
 
     if (!data) {
       alert('예약 정보가 없습니다. 이전 단계로 돌아갑니다.');
-      window.location.href = '/reservations/table';
+      navigate('/reservations/table');
       return;
     }
 
@@ -146,7 +147,7 @@ const ReservationConfirm = () => {
    */
   const handleGoBack = () => {
     isNavigatingRef.current = true; // ✅ 정상 이동
-    window.location.href = '/reservations/table';
+    navigate('/reservations/table');
   };
 
   /**
@@ -198,17 +199,7 @@ const ReservationConfirm = () => {
 
     try {
       // 예약정보 등록
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.post(
-        'http://localhost:8002/api/user/reservations',
-        finalData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await createReservation(finalData);
 
       console.log('예약 등록 응답:', response.data);
 
@@ -223,8 +214,8 @@ const ReservationConfirm = () => {
         sessionStorage.removeItem('activeTableSelection');
         hasCleanedUpRef.current = true;
 
-        // 결제 페이지로 이동
-        window.location.href = '/reservations/payment';
+        // 결제페이지는 Toss 내부지원페이지 이용, 만들어야 될 것은 결제중을 알리는 모달
+        navigate('/reservations/payment');
       } else {
         // 성공 응답이지만 success: false인 경우
         const errorMessage = response.data?.message || '예약 등록에 실패했습니다.';

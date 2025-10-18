@@ -31,36 +31,7 @@ const SignUpSuccess = () => {
         }
     };
 
-    // 자동 리다이렉트 타이머 (선택사항)
-    useEffect(() => {
-        createParticles();
-
-        // 자동 리다이렉트를 원한다면 주석 해제
-        const timer = setTimeout(() => {
-          setShowRedirectTimer(true);
-        }, 3000);
-
-        const redirectTimer = setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              window.location.href = '/users/loginform';
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-
-        return () => {
-          clearTimeout(timer);
-          clearInterval(redirectTimer);
-        };
-    }, []);
-
     const handleLoginClick = () => {
-        window.location.href = '/users/loginform';
-    };
-
-    const handleHomeClick = () => {
         window.location.href = '/';
     };
 
@@ -116,12 +87,6 @@ const SignUpSuccess = () => {
                     >
                         로그인하기
                     </button>
-                    <button
-                        onClick={handleHomeClick}
-                        className={`${styles.btn} ${styles.btnSecondary}`}
-                    >
-                        홈으로
-                    </button>
                 </div>
 
                 {/* 추가 정보 */}
@@ -131,16 +96,6 @@ const SignUpSuccess = () => {
                         <span>로그인 후 테이블토피아를 이용해보세요</span>
                     </div>
                 </div>
-
-                {/* 자동 리다이렉트 타이머 (선택사항) */}
-                {showRedirectTimer && (
-                    <div className={styles.redirectTimer}>
-                        <div className={styles.timerCircle}></div>
-                        <span id="timerText">
-                            {countdown}초 후 로그인 페이지로 이동합니다...
-                        </span>
-                    </div>
-                )}
             </div>
         </div>
     );
