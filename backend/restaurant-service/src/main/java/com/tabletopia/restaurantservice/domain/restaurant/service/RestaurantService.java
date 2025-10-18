@@ -1,6 +1,5 @@
 package com.tabletopia.restaurantservice.domain.restaurant.service;
 
-import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantCategoryWithPage;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantSearchResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestuarantLocationResponse;
@@ -217,7 +216,7 @@ public class RestaurantService {
   /**
    *레스토랑 위치 조회
    */
-  public RestuarantLocationResponse getRestuarantLocation(Long restaurantId){
+  public RestuarantLocationResponse getRestaurantLocation(Long restaurantId){
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
         .orElseThrow(()-> new RuntimeException("해당 레스토랑이 존재하지 않습니다." + restaurantId));
 

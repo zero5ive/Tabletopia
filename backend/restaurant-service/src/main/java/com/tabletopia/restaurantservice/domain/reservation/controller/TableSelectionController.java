@@ -128,7 +128,7 @@ public class TableSelectionController {
       // User 객체의 getName()은 일반적으로 username(이메일)을 반환
       // CONNECT 시 setUser()로 설정한 Authentication 객체가 반환됨
       userEmail = accessor.getUser().getName();
-      log.debug("WebSocket 세션에서 인증 정보 확인: {}", userEmail);
+      log.debug("WebSocket 세션에서 인증 정보 확인: 이메일 {}", userEmail);
     } else {
       // 인증 정보가 없는 경우 (JWT 토큰이 없거나 유효하지 않은 경우)
       log.warn("WebSocket 세션에 인증 정보가 없습니다. 세션 ID: {}", sessionId);

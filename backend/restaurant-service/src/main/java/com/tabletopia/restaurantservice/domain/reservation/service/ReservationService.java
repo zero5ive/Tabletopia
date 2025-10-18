@@ -9,6 +9,7 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.TableStatus;
 import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
 import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse.TimeSlotInfo;
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
+import com.tabletopia.restaurantservice.domain.reservation.dto.UpdateReservationStatusRequest;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +54,7 @@ public class ReservationService {
   /**
    * 예약 등록 (검증 포함)
    *
-   * @param request 예약 요청 정보
+   * @param request            예약 요청 정보
    * @param authenticatedEmail JWT에서 추출한 인증된 사용자 이메일
    * @return 생성된 예약 ID
    * @throws IllegalStateException 검증 실패 시
@@ -109,7 +111,7 @@ public class ReservationService {
   /**
    * 예약 검증 로직
    *
-   * @param selection Redis 선점 정보
+   * @param selection          Redis 선점 정보
    * @param authenticatedEmail JWT에서 추출한 인증된 이메일
    * @throws IllegalStateException 검증 실패 시
    * @author 김예진
@@ -155,10 +157,28 @@ public class ReservationService {
     tableStatus.setTableId(request.getRestaurantTableId());
     tableStatus.setStatus(TableSelectStatus.RESERVED);
 
+    // 1. 테이블 상태 업데이트 브로드캐스트 (모든 사용자 + 관리자)
     messagingTemplate.convertAndSend(
         String.format("/topic/restaurant/%d/tables/status", request.getRestaurantId()),
         tableStatus
     );
+
+    // 2. 관리자에게 새 예약 알림 전송
+    messagingTemplate.convertAndSend(
+        String.format("/topic/restaurant/%d/tables/status", request.getRestaurantId()),
+        Map.of(
+            "type", "NEW_RESERVATION",
+            "restaurantId", request.getRestaurantId(),
+            "tableId", request.getRestaurantTableId(),
+            "tableName", request.getRestaurantTableNameSnapshot(),
+            "customerName", request.getCustomerInfo().getName(),
+            "peopleCount", request.getPeopleCount(),
+            "reservationDate", request.getDate(),
+            "reservationTime", request.getTime(),
+            "message", "새로운 예약이 들어왔습니다!"
+        )
+    );
+
     log.debug("예약 완료 브로드캐스트 전송: 레스토랑ID={}, 테이블ID={}",
         request.getRestaurantId(), request.getRestaurantTableId());
   }
@@ -183,7 +203,7 @@ public class ReservationService {
    * @author 김예진
    * @since 2025-09-24
    */
-  private Long createReservation(ReservationRequest request){
+  private Long createReservation(ReservationRequest request) {
     log.debug("예약 생성 요청: {}", request);
     // 요청에서 예약자 정보 꺼내기
     CustomerInfo reservationCustomerInfo = request.getCustomerInfo();
@@ -192,14 +212,14 @@ public class ReservationService {
         request.getRestaurantPhone());
     TableSnapshot tableSnapshot = new TableSnapshot(request.getRestaurantTableNameSnapshot(), request.getPeopleCount());
 
-    Reservation reservation = Reservation.createReservation(
-        userService.findByEmail(reservationCustomerInfo.getEmail()).getId(),
-        request.getRestaurantId(),
-        request.getRestaurantTableId(),
-        request.getPeopleCount(),
-        request.getReservationDateTime(),
-        restaurantSnapshot,
-        tableSnapshot
+// 사용자 ID 조회
+    Long userId = userService.findByEmail(reservationCustomerInfo.getEmail()).getId();
+
+// Reservation 엔티티 생성
+    Reservation reservation = Reservation.fromRequest(
+        userId,
+        request,
+        tableSnapshot.getRestaurantTableCapacity()
     );
 
     // 예약 저장
@@ -218,9 +238,6 @@ public class ReservationService {
             restaurantId, restaurantTableId, LocalDateTime.parse(reservationAt)
         ) != null;
   }
-
-
-
 
 
   /**
@@ -289,8 +306,7 @@ public class ReservationService {
   }
 
   /**
-   * 예약 내역 상태별 조회
-   * 프론트엔드 4개 탭: PENDING(대기중), CONFIRMED(확정), COMPLETED(완료), COMPLETED_GROUP(취소+노쇼)
+   * 예약 내역 상태별 조회 프론트엔드 4개 탭: PENDING(대기중), CONFIRMED(확정), COMPLETED(완료), COMPLETED_GROUP(취소+노쇼)
    *
    * @author 서예닮
    * @since 2025-10-16
@@ -319,21 +335,20 @@ public class ReservationService {
   }
 
   /**
-   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회
-   * 각 타임슬롯마다 예약 가능한 테이블이 1개라도 있으면 예약 가능으로 프론트엔드에서 표시하기 위한 메서드
+   * 특정 날짜의 타임슬롯별 예약 가능 여부 조회 각 타임슬롯마다 예약 가능한 테이블이 1개라도 있으면 예약 가능으로 프론트엔드에서 표시하기 위한 메서드
    *
    * @param restaurantId 레스토랑 아이디
-   * @param date 조회날짜
+   * @param date         조회날짜
    * @return 타임슬롯별 예약 가능 여부
    * @author 김예진
    * @since 2025-10-17
    */
-  public TimeSlotAvailabilityResponse getAvailableTimeSlots(Long restaurantId, LocalDate date){
+  public TimeSlotAvailabilityResponse getAvailableTimeSlots(Long restaurantId, LocalDate date) {
     // 운영시간 조회
     RestaurantEffectiveHourResponse effectiveHour = openingHourService.getEffectiveHour(restaurantId, date);
 
     // 휴무일인 경우 빈 타임슬롯 반환
-    if (effectiveHour.isClosed()){
+    if (effectiveHour.isClosed()) {
       return TimeSlotAvailabilityResponse.builder()
           .restaurantId(restaurantId)
           .date(date)
@@ -386,12 +401,14 @@ public class ReservationService {
 
   /**
    * 타임슬롯을 생성하는 메서드
+   * TODO 레스토랑 예약시간 클래스로 이동
+   *
    * @param effectiveHour 실제 영업시간 정보
    * @return 타임슬롯
    * @author 김예진
    * @since 2025-10-17
    */
-  private static List<LocalTime> generateTimeSlot(RestaurantEffectiveHourResponse effectiveHour) {
+  public List<LocalTime> generateTimeSlot(RestaurantEffectiveHourResponse effectiveHour) {
     // 영업시간 정보 추출
     LocalTime openTime = effectiveHour.getOpenTime();
     LocalTime closeTime = effectiveHour.getCloseTime();
@@ -408,5 +425,119 @@ public class ReservationService {
     return slots;
   }
 
+
+  /**
+   * 예약 상태를 변경
+   *
+   * @param restaurantId
+   * @param reservationId
+   * @param request
+   */
+  @Transactional
+  public void updateReservationStatus(
+      Long restaurantId,
+      Long reservationId,
+      UpdateReservationStatusRequest request) {
+    // 1. 예약 조회
+    Reservation reservation = reservationRepository.findById(reservationId)
+        .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다"));
+
+    // 2. 레스토랑 ID 검증
+    if (!reservation.getRestaurantId().equals(restaurantId)) {
+      throw new IllegalArgumentException("해당 레스토랑의 예약이 아닙니다");
+    }
+
+    // 3. 상태 변경 전 웹소켓 알림용 정보 저장
+    Long tableId = reservation.getRestaurantTableId();
+    LocalDateTime reservationAt = reservation.getReservationAt();
+    ReservationStatus oldStatus = reservation.getReservationState();
+
+    // 4. 상태 변경
+    String status = request.getStatus();
+    switch (status) {
+      case "APPROVED":
+        // PENDING -> CONFIRMED
+        reservation.confirmReservation();
+        break;
+
+      case "CANCELED":
+        // PENDING/CONFIRMED -> CANCELLED
+        reservation.cancelReservation(request.getReason());
+        break;
+
+      case "VISITED":
+        // CONFIRMED -> COMPLETED
+        reservation.completeReservation();
+        break;
+
+      case "NO_SHOW":
+        // CONFIRMED -> NO_SHOW
+        reservation.markAsNoShow();
+        break;
+
+      default:
+        throw new IllegalArgumentException("유효하지 않은 상태입니다: " + status);
+    }
+
+    // 5. 저장 (JPA dirty checking으로 자동 저장되지만 명시적으로 호출 가능)
+    reservationRepository.save(reservation);
+
+    // 6. Redis 캐시 무효화
+    // 예약 취소 시 해당 시간대의 좌석을 다시 예약 가능하게 하도록
+    if (status.equals("CANCELED")) {
+      String timeSlot = formatTimeSlot(reservationAt);
+      tableSelectionService.deleteCachedReservationStatus(reservationId, tableId, timeSlot);
+      log.debug("취소로 예약 캐시 무효화: restaurantId={}, tableId={}, timeSlot={}", restaurantId, tableId, timeSlot);
+    }
+
+    // 7. 웹소켓으로 사용자들에게 테이블 상태 변경 알림
+    notifyTableStatusChange(restaurantId, tableId, reservationAt, reservation.getReservationState());
+  }
+
+  /**
+   * 예약 상태 변경을 웹소켓으로 알림
+   * @param restaurantId 레스토랑 id
+   * @param tableId 테이블 id
+   * @param reservationAt 예약 시간
+   * @param newStatus 변경된 상태
+   */
+  private void notifyTableStatusChange(Long restaurantId, Long tableId, LocalDateTime reservationAt, ReservationStatus newStatus) {
+    try{
+    TableStatus tableStatus = new TableStatus();
+    tableStatus.setTableId(tableId);
+
+    if (newStatus == ReservationStatus.CANCELLED) {
+      tableStatus.setStatus(TableSelectStatus.AVAILABLE);
+    }
+
+    // 웹소켓 메시지 발송
+    messagingTemplate.convertAndSend(
+        String.format("/topic/restaurant/%d/tables/status", restaurantId),
+        Map.of(
+            "success", true,
+            "message", "예약 상태 변경",
+            "tableId", tableId,
+            "tableStatus", tableStatus
+        )
+    );
+
+    log.debug("테이블 상태 변경 알림 발송: restaurantId={}, tableId = {}, newStatus = {}", restaurantId, tableId, newStatus);
+  } catch(Exception e) {
+      log.error("테이블 상태 변경 알림 발송 실패: restaurantId={}, tableId = {}", restaurantId, tableId, e);
+        // 웹소켓 알림 실패해도 예약 상태 변경은 성공으로 처리
+  }
+  }
+
+  /**
+ * LocalDateTime을 "yyyy-MM-ddTHH:mm" 형식으로 변환
+ *
+ * @param dateTime
+ * @return yyyy-MM-ddTHH:mm
+ * @author 김예진
+ * @since 2025-10-18
+ */
+private String formatTimeSlot(LocalDateTime dateTime) {
+  return dateTime.toString().substring(0, 16);
+}
 
 }

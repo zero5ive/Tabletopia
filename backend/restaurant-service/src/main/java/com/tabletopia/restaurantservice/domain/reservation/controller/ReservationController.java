@@ -2,6 +2,7 @@ package com.tabletopia.restaurantservice.domain.reservation.controller;
 
 import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
 import com.tabletopia.restaurantservice.domain.reservation.dto.UnavailableTableResponse;
+import com.tabletopia.restaurantservice.domain.reservation.dto.UpdateReservationStatusRequest;
 import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.domain.user.entity.User;
@@ -18,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -113,6 +116,30 @@ public class ReservationController {
     return ResponseEntity.ok(
         ApiResponse.success("타임슬롯 예약 가능 여부 조회 성공", response)
     );
+  }
+
+  /**
+   * 예약 상태 변경 (관리자용)
+   * PENDING -> CONFIRMED (승인)
+   * PENDING/CONFIRMED -> CANCELLED (취소)
+   * CONFIRMED -> COMPLETED (방문)
+   * CONFIRMED -> NO_SHOW (미방문)
+   *
+   * @param restaurantId
+   * @param reservationId
+   * @param request
+   * @return
+   * @author 김예진
+   * @since 2025-10-18
+   */
+  @PatchMapping("/api/admin/restaurants/{restaurantId}/reservations/{reservationId}/status") // 일부 수정
+  public ResponseEntity<ApiResponse<Void>> updateReservationStatus(
+      @PathVariable Long restaurantId,
+      @PathVariable Long reservationId,
+      @RequestBody UpdateReservationStatusRequest request) {
+
+    reservationService.updateReservationStatus(restaurantId, reservationId, request);
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 
  }
