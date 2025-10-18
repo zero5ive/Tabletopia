@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
+import { getCurrentUser } from '../pages/utils/UserApi'
 
 const WebSocketContext = createContext()
 
@@ -15,6 +16,7 @@ export const useWebSocket = () => {
 export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null)
     const [isConnected, setIsConnected] = useState(false)
+    const [userId, setUserId] = useState(null)
 
     // localStorage에서 알림 불러오기 및 24시간 지난 알림 제거
     const [notifications, setNotifications] = useState(() => {
@@ -55,7 +57,24 @@ export const WebSocketProvider = ({ children }) => {
         return () => clearInterval(cleanupInterval)
     }, [])
 
+    // 현재 로그인한 사용자 정보 가져오기
     useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await getCurrentUser()
+                setUserId(response.data.id)
+                console.log('WebSocketContext - 현재 사용자 ID:', response.data.id)
+            } catch (error) {
+                console.error('WebSocketContext - 사용자 정보 조회 실패:', error)
+            }
+        }
+        fetchCurrentUser()
+    }, [])
+
+    // WebSocket 연결 (userId가 있을 때만)
+    useEffect(() => {
+        if (!userId) return
+
         const socket = new SockJS('http://localhost:8002/ws')
         const client = new Client({
             webSocketFactory: () => socket,
@@ -66,11 +85,11 @@ export const WebSocketProvider = ({ children }) => {
                 console.log('사용자 WebSocket 연결 성공')
                 setIsConnected(true)
 
-                // 웨이팅 호출 알림 구독
-                client.subscribe('/topic/call', (msg) => {
+                // 개인화된 웨이팅 호출 알림 구독
+                client.subscribe(`/topic/user/${userId}/call`, (msg) => {
                     console.log('웨이팅 호출 메시지 받음:', msg.body)
                     const alert = JSON.parse(msg.body)
-                    if (alert.waitingState === 'CALLED') {  // WaitingState.CALLED 체크
+                    if (alert.waitingState === 'CALLED') {
                         addNotification({
                             id: Date.now(),
                             type: 'WAITING_CALLED',
@@ -85,11 +104,30 @@ export const WebSocketProvider = ({ children }) => {
                     }
                 })
 
-                // 웨이팅 취소 알림 구독
-                client.subscribe('/topic/cancel', (msg) => {
+                // 개인화된 웨이팅 착석 알림 구독
+                client.subscribe(`/topic/user/${userId}/seated`, (msg) => {
+                    console.log('웨이팅 착석 메시지 받음:', msg.body)
+                    const alert = JSON.parse(msg.body)
+                    if (alert.waitingState === 'SEATED') {
+                        addNotification({
+                            id: Date.now(),
+                            type: 'WAITING_SEATED',
+                            title: '웨이팅 착석',
+                            name: alert.restaurantName,
+                            message: `착석이 완료되었습니다.`,
+                            time: alert.createdAt,
+                            timestamp: Date.now(),
+                            read: false,
+                            userId: alert.userId
+                        })
+                    }
+                })
+
+                // 개인화된 웨이팅 취소 알림 구독
+                client.subscribe(`/topic/user/${userId}/cancel`, (msg) => {
                     console.log('웨이팅 취소 메시지 받음:', msg.body)
                     const alert = JSON.parse(msg.body)
-                    if (alert.type === 'CANCEL') {
+                    if (alert.waitingState === 'CANCELLED') {
                         addNotification({
                             id: Date.now(),
                             title: '웨이팅 취소',
@@ -103,32 +141,12 @@ export const WebSocketProvider = ({ children }) => {
                     }
                 })
 
-                // 웨이팅 상태 변경 알림 구독
-                client.subscribe('/topic/status', (msg) => {
-                    console.log('웨이팅 상태 변경 메시지 받음:', msg.body)
-                    const alert = JSON.parse(msg.body)
-                    if (alert.type === 'STATUS_CHANGE') {
-                        addNotification({
-                            id: Date.now(),
-                            title: '웨이팅 상태 변경',
-                            message: alert.message,
-                            time: '방금 전',
-                            timestamp: Date.now(),
-                            read: false,
-                            userId: alert.userId
-                        })
-                    }
-                })
-
                 //웨이팅 등록 구독
                 client.subscribe('/topic/regist', (msg) => {
+                    console.log('서버로부터 메시지 받음:', msg.body)
+                    const alert = JSON.parse(msg.body)
 
-                    console.log('서버로부터 메시지 받음:', msg.body);
-
-                    const alert = JSON.parse(msg.body);
-                    // 본인이 보낸 메시지만 처리
-                    // if (alert.sender === myUserId) {
-                    if (alert.type === 'REGIST') {
+                    if (alert.type === 'REGIST' && alert.sender === userId) {
                         addNotification({
                             id: Date.now(),
                             title: '웨이팅 등록',
@@ -137,8 +155,7 @@ export const WebSocketProvider = ({ children }) => {
                             read: false,
                         })
                     }
-                    // }
-                });
+                })
             },
             onStompError: (frame) => {
                 console.error('사용자 STOMP 에러:', frame)
@@ -158,7 +175,7 @@ export const WebSocketProvider = ({ children }) => {
                 client.deactivate()
             }
         }
-    }, [])
+    }, [userId])
 
     const addNotification = (notification) => {
         setNotifications(prev => [notification, ...prev])

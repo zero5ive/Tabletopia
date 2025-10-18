@@ -363,16 +363,26 @@ public class WaitingController {
   @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getUserWaitingList(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Principal principal) {
 
-    // TODO: JWT 토큰에서 실제 userId 추출하도록 수정 필요
-    // 현재는 테스트용으로 하드코딩
-    Long userId = 1L;
+    try {
+      // JWT 토큰에서 현재 사용자 정보 추출
+      String currentUserEmail = principal.getName();
+      User user = userService.findByEmail(currentUserEmail);
+      Long userId = user.getId();
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);
+      log.info("웨이팅 내역 조회 - userId: {}, email: {}, page: {}, size: {}",
+          userId, currentUserEmail, page, size);
 
-    return ResponseEntity.ok(waitingList);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+      Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);
+
+      return ResponseEntity.ok(waitingList);
+    } catch (RuntimeException e) {
+      log.error("웨이팅 내역 조회 실패: {}", e.getMessage(), e);
+      throw e;
+    }
   }
 
   //에러 메서드
