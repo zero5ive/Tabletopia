@@ -1,6 +1,11 @@
 import { useEffect, useState, useRef } from "react"
 import axios from "axios"
 
+const api = axios.create({
+  baseURL: "http://localhost:8002/api/admin/restaurants",
+  withCredentials: true, // 세션 쿠키(JSESSIONID) 전송
+});
+
 export default function ImagesTab({ selectedRestaurant }) {
   const [images, setImages] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
@@ -20,7 +25,7 @@ export default function ImagesTab({ selectedRestaurant }) {
     if (!selectedRestaurant) return
     setLoading(true)
     try {
-      const res = await axios.get(`http://localhost:8002/api/images/${selectedRestaurant.id}`)
+      const res = await api.get(`/${selectedRestaurant.id}/images`)
       setImages(res.data)
     } catch (err) {
       console.error("이미지 목록 로드 실패:", err)
@@ -35,7 +40,7 @@ export default function ImagesTab({ selectedRestaurant }) {
     for (let file of files) formData.append("files", file)
     try {
       setLoading(true)
-      await axios.post(`http://localhost:8002/api/images/${selectedRestaurant.id}`, formData, {
+      await api.post(`/${selectedRestaurant.id}/images`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       await loadImages()
@@ -50,7 +55,7 @@ export default function ImagesTab({ selectedRestaurant }) {
 
   const handleSetMain = async (id) => {
     try {
-      await axios.put(`http://localhost:8002/api/images/main/${id}`)
+      await api.put(`/${selectedRestaurant.id}/images/${id}/main`)
       loadImages()
     } catch (err) {
       console.error("대표 이미지 설정 실패:", err)
@@ -60,7 +65,7 @@ export default function ImagesTab({ selectedRestaurant }) {
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return
     try {
-      await axios.delete(`http://localhost:8002/api/images/${id}`)
+      await api.delete(`/${selectedRestaurant.id}/images/${id}`)
       loadImages()
     } catch (err) {
       console.error("이미지 삭제 실패:", err)

@@ -178,7 +178,7 @@ const SignUp = () => {
     try {
       const fullEmail = getFullEmail();
 
-      const response = await AdminApi.post('/admin/api/register', {
+      const response = await AdminApi.post('/api/admin/auth/register', {
         email: fullEmail, // 완전한 이메일 주소 전송
         password: formData.password,
         name: formData.name

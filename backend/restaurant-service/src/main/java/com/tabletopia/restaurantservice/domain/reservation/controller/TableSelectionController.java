@@ -50,7 +50,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Slf4j
 @Controller
-@RequestMapping("/api/realtime")
 @RequiredArgsConstructor
 public class TableSelectionController {
 
@@ -300,7 +299,7 @@ public class TableSelectionController {
   }
 
   /**
-   * 예약 등록
+   * 예약 등록 (사용자용)
    *
    * @param request 예약 요청 정보
    * @param principal JWT 인증 정보 (Spring Security)
@@ -308,7 +307,7 @@ public class TableSelectionController {
    * @author 김예진
    * @since 2025-09-24
    */
-  @PostMapping("/reservation")
+  @PostMapping("/api/user/reservations")
   @ResponseBody
   public Map<String, Object> registerReservation(
       @RequestBody ReservationRequest request,

@@ -1,19 +1,35 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/waitings";
+const api = axios.create({
+  baseURL: "http://localhost:8002/api/user/waiting",
+  withCredentials: true, // JWT 토큰 전송
+});
 
 // 웨이팅 오픈 상태 조회
 export const getWaitingStatus = (restaurantId) =>
-    axios.get(`${URL}/status?restaurantId=${restaurantId}`);
+    api.get(`/status?restaurantId=${restaurantId}`);
 
-//리스트 조회
+//리스트 조회 (관리자용 - 사용자는 사용하지 않을 것으로 예상)
 export const getWaitingList=(restaurantId, status = 'WAITING', size = 1000)=>
-    axios.get(`${URL}/${restaurantId}?status=${status}&size=${size}`); //웨이팅 리스트
+    axios.get(`http://localhost:8002/api/admin/restaurants/${restaurantId}/waiting?status=${status}&size=${size}`);
 
 // 사용자의 웨이팅 내역 조회
-export const getUserWaitingList = (userId, page = 0, size = 10) =>
-    axios.get(`${URL}/user/${userId}?page=${page}&size=${size}`);
+export const getUserWaitingList = (page = 0, size = 10) => {
+    console.log('getUserWaitingList 호출:', { page, size });
+    const token = localStorage.getItem('accessToken');
+    return api.get(`/history?page=${page}&size=${size}`, {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    });
+};
 
 //웨이팅 대기 취소
-export const waitingCancel = (id, restaurantId) =>
-    axios.put(`${URL}/${id}/cancel?restaurantId=${restaurantId}`)
+export const waitingCancel = (id, restaurantId) => {
+    const token = localStorage.getItem('accessToken');
+    return api.put(`/${id}/cancel?restaurantId=${restaurantId}`, null, {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    });
+}

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+const api = axios.create({
+  baseURL: "http://localhost:8002/api",
+  withCredentials: true, // 세션 쿠키(JSESSIONID) 전송
+});
+
 export default function FacilitiesTab({ selectedRestaurant }) {
   const [facilities, setFacilities] = useState([]);
   const [checkedFacilities, setCheckedFacilities] = useState({});
@@ -47,9 +52,9 @@ export default function FacilitiesTab({ selectedRestaurant }) {
   const loadFacilities = async () => {
     try {
       const [allRes, assignedRes] = await Promise.all([
-        axios.get("http://localhost:8002/api/facilities"),
-        axios.get(
-          `http://localhost:8002/api/facilities/${selectedRestaurant.id}`
+        api.get("/user/facilities"),
+        api.get(
+          `/admin/restaurants/${selectedRestaurant.id}/facilities`
         ),
       ]);
 
@@ -70,13 +75,13 @@ export default function FacilitiesTab({ selectedRestaurant }) {
 
     try {
       if (isChecked) {
-        await axios.post(
-          `http://localhost:8002/api/facilities/${selectedRestaurant.id}`,
+        await api.post(
+          `/admin/restaurants/${selectedRestaurant.id}/facilities`,
           { facilityId }
         );
       } else {
-        await axios.delete(
-          `http://localhost:8002/api/facilities/${selectedRestaurant.id}/${facilityId}`
+        await api.delete(
+          `/admin/restaurants/${selectedRestaurant.id}/facilities/${facilityId}`
         );
       }
     } catch (error) {

@@ -1,22 +1,22 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/restaurants";
+const URL="http://localhost:8002/api/user";
 
 /**
  * 레스토랑 전체 목록 조회
- * @returns 
+ * @returns
  */
-export const getRestaurantList = () => 
-    axios.get(URL);
+export const getRestaurantList = () =>
+    axios.get(`${URL}/restaurants`);
 
-export const getRestaurant = (id) => 
-    axios.get(`${URL}/${id}`);
+export const getRestaurant = (id) =>
+    axios.get(`${URL}/restaurants/${id}`);
 
 // export const getRestaurantByCategory = async (categoryId, page = 0, size = 1) => {
-//     return await axios.get(`/api/restaurantcategories/${categoryId}`, {
-//         params: { 
-//             page: page, 
-//             size: size 
+//     return await axios.get(`/api/user/categories/${categoryId}/restaurants`, {
+//         params: {
+//             page: page,
+//             size: size
 //         }
     // });
 // };
@@ -30,11 +30,11 @@ export const searchRestaurants = async (params = {}) => {
         const cleanParams = Object.fromEntries(
             Object.entries(params).filter(([_, value]) => value != null && value !== '')
         );
-        
-        const response = await axios.get(`${URL}/search`, {
+
+        const response = await axios.get(`${URL}/restaurants/search`, {
             params: cleanParams
         });
-        
+
         return response;
     } catch (error) {
         console.error('레스토랑 검색 실패:', error);
@@ -46,16 +46,12 @@ export const searchRestaurants = async (params = {}) => {
  레스토랑 상세페이지 (사진, 리뷰 등)
 */
 export const getRestaurantDetail = (id) =>{
-    return axios.get(`${URL}/${id}/detail`);
+    return axios.get(`${URL}/restaurants/${id}/detail`);
 }
 
 /*
 레스토랑 위치
 */
 export const getRestaurantLocation = (id) => {
-    return axios.get(`${URL}/${id}/location`);
+    return axios.get(`${URL}/restaurants/${id}/location`);
 }
-
-/**
- * 레스토랑 타임슬롯 조회
- */

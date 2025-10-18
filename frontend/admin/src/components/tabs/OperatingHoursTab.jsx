@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./OperatingHoursTab.css";
+import RestaurantApi from '../../api/RestaurantApi';
 
 export default function OperatingHoursTab({ selectedRestaurant }) {
   const [hours, setHours] = useState([]);
@@ -16,8 +17,8 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
   const loadOperatingHours = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:8002/api/hours/opening/${selectedRestaurant.id}`
+      const res = await RestaurantApi.get(
+        `/restaurants/${selectedRestaurant.id}/hours/opening`
       );
 
       if (res.data.length === 0) {

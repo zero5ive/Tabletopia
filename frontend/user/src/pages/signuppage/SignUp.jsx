@@ -180,7 +180,7 @@ const SignUp = () => {
     try {
       const fullEmail = getFullEmail();
 
-      const response = await axios.post('http://localhost:8002/api/user/register', {
+      const response = await axios.post('http://localhost:8002/api/user/auth/register', {
         name: formData.name,
         phoneNumber: formData.phoneNumber,
         email: fullEmail,

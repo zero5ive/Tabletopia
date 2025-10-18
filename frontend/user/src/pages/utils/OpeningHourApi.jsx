@@ -1,19 +1,19 @@
 import axios from "axios";
 
-const URL="http://localhost:8002/api/hours/opening";
+const BASE_URL="http://localhost:8002/api/user/restaurants";
 
 export const getOpeningHours = (id) => {
-    return axios.get(`${URL}/${id}`);
+    return axios.get(`${BASE_URL}/${id}/hours/opening`);
 }
 
 export const getEffectiveHours = (id) => {
-    return axios.get(`${URL}/effective/${id}`);
+    return axios.get(`${BASE_URL}/${id}/hours/effective`);
 }
 
 export const getEffectiveOpeningHours = async (id, date) => {
     try {
         const response = await axios.get(
-            `http://localhost:8002/api/hours/opening/effective/${id}`,
+            `${BASE_URL}/${id}/hours/effective`,
             {
                 params: { date }
             }
@@ -28,7 +28,7 @@ export const getEffectiveOpeningHours = async (id, date) => {
 export const getAvailableTimeSlots = async (restaurantId, date) => {
     try {
         const response = await axios.get(
-            `http://localhost:8002/api/realtime/restaurants/${restaurantId}/available-timeslots`,
+            `${BASE_URL}/${restaurantId}/timeslots`,
             {
                 params: { date }
             }

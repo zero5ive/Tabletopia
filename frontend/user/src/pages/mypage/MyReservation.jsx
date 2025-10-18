@@ -23,6 +23,7 @@ export default function MyReservation() {
         setLoading(true)
         try {
             const response = await getReservations(status)
+
             const data = response.data
 
             if (data.success) {

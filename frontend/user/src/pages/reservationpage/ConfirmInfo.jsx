@@ -200,7 +200,7 @@ const ReservationConfirm = () => {
       // 예약정보 등록
       const token = localStorage.getItem('accessToken');
       const response = await axios.post(
-        'http://localhost:8002/api/realtime/reservation',
+        'http://localhost:8002/api/user/reservations',
         finalData,
         {
           headers: {
