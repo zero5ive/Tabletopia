@@ -55,3 +55,15 @@ export const getRestaurantDetail = (id) =>{
 export const getRestaurantLocation = (id) => {
     return axios.get(`${URL}/restaurants/${id}/location`);
 }
+
+/*북마크 등록*/
+export const addBookmark = (userId, restaurantId) => {
+    return axios.post(`${URL}/bookmarks`, {
+        userId,
+        restaurantId
+    }, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    });
+}
