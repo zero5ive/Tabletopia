@@ -2,11 +2,14 @@ package com.tabletopia.restaurantservice.domain.waiting.repository;
 
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -48,4 +51,19 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
   Page<Waiting> findByUserId(
       Long userId,
       Pageable pageable);
+
+  //동시에 웨이팅 할 경우 lock을 통해 웨이팅 등록 권한 획득
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT MAX(w.waitingNumber) FROM Waiting w " +
+      "WHERE w.restaurant.id = :restaurantId " +
+      "AND DATE(w.createdAt) = CURRENT_DATE")
+  Integer findMaxWaitingNumberByRestaurantIdTodayWithLock(
+      @Param("restaurantId") Long restaurantId);
+
+  // 중복 확인용 메서드
+  boolean existsByRestaurantIdAndUserIdAndWaitingStateIn(
+      Long restaurantId,
+      Long userId,
+      List<WaitingState> waitingState);
+
 }

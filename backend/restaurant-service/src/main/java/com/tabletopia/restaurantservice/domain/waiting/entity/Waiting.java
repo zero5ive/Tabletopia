@@ -2,6 +2,7 @@ package com.tabletopia.restaurantservice.domain.waiting.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -30,10 +31,13 @@ public class Waiting {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id", nullable = false)
-  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "restaurantFacilities"})
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "waitings"})
   private Restaurant restaurant;
 
-  private Long userId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+  private User user;
 
   private Integer peopleCount;
 
@@ -63,12 +67,12 @@ public class Waiting {
   // 생성자 (필수 값 초기화)
   // ======================================
   public Waiting(Restaurant restaurant,
-      Long userId,
+      User user,
       Integer peopleCount,
       String restaurantNameSnapshot) {
 
     this.restaurant = restaurant;
-    this.userId = userId;
+    this.user = user;
     this.peopleCount = peopleCount;
     this.restaurantNameSnapshot = restaurantNameSnapshot;
     this.waitingNumber = 0;
@@ -92,5 +96,11 @@ public class Waiting {
 
   //calledAt 설정 메서드
   public void setCalledAt(LocalDateTime calledAt) {this.calledAt = calledAt;}
+
+  //assignedTableName 설정 메서드
+  public void setAssignedTableName(String assignedTableName) {this.assignedTableName = assignedTableName;}
+
+  //assignedTableCapacity 설정 메서드
+  public void setAssignedTableCapacity(Integer assignedTableCapacity) {this.assignedTableCapacity = assignedTableCapacity;}
 
 }

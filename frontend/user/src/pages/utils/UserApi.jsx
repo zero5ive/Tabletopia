@@ -43,4 +43,16 @@ export const processPayment = (paymentData) =>
 export const confirmPayment = (confirmationData) =>
     UserApi.post('/api/user/payment/confirm', confirmationData);
 
+//마이페이지 예약 내역 조회
+export const getReservations = (status)=>
+    UserApi.get(`/api/user/reservations/my?status=${status}`)
+
+//마이페이지 북마크 목록 조회
+export const getBookmarks = (page = 0, size = 10) =>
+    UserApi.get(`/api/user/bookmarks?page=${page}&size=${size}`)
+
+//북마크 삭제
+export const deleteBookmark = (bookmarkId) =>
+    UserApi.delete(`/api/user/bookmarks/${bookmarkId}`)
+
 export default UserApi

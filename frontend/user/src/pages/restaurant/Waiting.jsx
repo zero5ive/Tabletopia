@@ -9,12 +9,14 @@ import axios from 'axios';
 import { getRestaurant } from '../utils/RestaurantApi';
 import { useSearchParams } from 'react-router-dom';
 import { getWaitingStatus } from '../utils/WaitingApi';
+// import UserApi from '../utils/UserApi';
+import { updateUser, getCurrentUser } from '../utils/UserApi';
 
 export default function Waiting({ reservationType }) {
 
   const [people, setPeople] = useState(1); // 초기 인원 수
   const [stompClient, setStompClient] = useState(null);
-  const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)
+  // const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)
   const [isWaitingOpen, setIsWaitingOpen] = useState(false); //웨이팅 오픈
   const [team2, setTeam2] = useState(0);
   const [team4, setTeam4] = useState(0);
@@ -22,6 +24,12 @@ export default function Waiting({ reservationType }) {
   const restaurantId = searchParams.get('restaurantId');
   const [restaurant, setRestaurant] = useState(null);
 
+  const [customerInfo, setCustomerInfo] = useState({
+    id: '',
+    name: '',
+    phoneNumber: '',
+    email: ''
+  });
 
   const fetchRestaurant = async (restaurantId) => {
     const response = await getRestaurant(restaurantId);
@@ -34,6 +42,29 @@ export default function Waiting({ reservationType }) {
     fetchRestaurant(restaurantId);
   }, [restaurantId])
 
+  useEffect(() => {
+    // 사용자 정보 불러오기
+    const fetchUserInfo = async () => {
+      try {
+
+        const response = await getCurrentUser();
+        // const response = await UserApi.get('/api/user/auth/me');
+        const userData = response.data;
+        setCustomerInfo({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber
+        });
+        console.log('사용이메일 ', userData.email);
+      } catch (error) {
+        console.error('유저 정보 조회 실패:', error);
+        alert('유저 정보를 불러오지 못했습니다.');
+      }
+    };
+    fetchUserInfo();
+  }, []);
+
   const increment = () => {
     setPeople(prev => prev + 1);
   };
@@ -44,7 +75,7 @@ export default function Waiting({ reservationType }) {
 
   //웨이팅 상태 및 팀 수 조회 함수
   const fetchWaitingStatus = async () => {
-     if (!restaurantId) return;
+    if (!restaurantId) return;
     const response = await getWaitingStatus(restaurantId);
     console.log('웨이팅 상태', response);
 
@@ -57,14 +88,24 @@ export default function Waiting({ reservationType }) {
 
   useEffect(() => {
 
-    if (!restaurantId) return;
+    // customerInfo.id가 로드되지 않았으면 대기
+    if (!restaurantId || !customerInfo.id) {
+      console.log('restaurantId 또는 customerInfo.id 대기 중...');
+      return;
+    }
+
+    console.log('WebSocket 연결 시작 - customerInfo.id:', customerInfo.id);
 
     // 1. 웨이팅 상태 및 팀 수 조회
     fetchWaitingStatus();
 
+
     // 3. 웹소켓 연결 및 실시간 업데이트 구독
     const socket = new SockJS('http://localhost:8002/ws');
-    const client = new Client({
+
+    // JWT 토큰이 있는 경우에만 connectHeaders에 추가
+    const token = localStorage.getItem('accessToken');
+    const clientConfig = {
       webSocketFactory: () => socket,
       debug: (str) => {
         console.log('STOMP Debug:', str);
@@ -105,8 +146,16 @@ export default function Waiting({ reservationType }) {
           console.log('서버로부터 메시지 받음:', msg.body);
 
           const alert = JSON.parse(msg.body);
+          console.log('웨이팅 하는 id ', customerInfo.id)
+
+          if (alert.type === 'ERROR') {
+            // 에러 메시지는 모든 사용자에게 전달되므로 무조건 표시
+            window.alert(alert.content);
+            return;
+          }
+
           // 본인이 보낸 메시지만 처리
-          if (alert.sender === myUserId) {
+          if (Number(alert.sender) === Number(customerInfo.id)) {
             if (alert.type === 'REGIST') {
               window.alert('웨이팅이 등록되었습니다.')
               fetchWaitingStatus();
@@ -121,7 +170,16 @@ export default function Waiting({ reservationType }) {
       onStompError: (frame) => {
         console.error('STOMP 에러:', frame);
       }
-    });
+    };
+
+    // JWT 토큰이 있는 경우에만 Authorization 헤더 추가
+    if (token) {
+      clientConfig.connectHeaders = {
+        Authorization: `Bearer ${token}`
+      };
+    }
+
+    const client = new Client(clientConfig);
     client.activate();
     setStompClient(client);
 
@@ -131,7 +189,7 @@ export default function Waiting({ reservationType }) {
         client.deactivate();
       }
     };
-  }, [restaurantId]);
+  }, [restaurantId, customerInfo.id]);
 
 
   if (!restaurant) return <div>레스토랑 로딩중 ...</div>
@@ -159,7 +217,8 @@ export default function Waiting({ reservationType }) {
       stompClient.publish({
         destination: `/app/waiting/regist`,
         body: JSON.stringify({
-          userId: 1,
+          userName: customerInfo.name,
+          userNumber : customerInfo.phoneNumber,
           restaurantName: restaurant.name,
           peopleCount: people,
           restaurantId: restaurantId,

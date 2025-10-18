@@ -33,13 +33,16 @@ public class WaitingResponse {
   public static WaitingResponse from(Waiting waiting, Long restaurantId) {
     WaitingResponse response = new WaitingResponse();
 
+    response.setId(waiting.getId());
     response.setRestaurantId(restaurantId);
     response.setRestaurantName(waiting.getRestaurantNameSnapshot());
-    response.setCreatedAt(LocalDateTime.now());
+    response.setCreatedAt(waiting.getCreatedAt());
     response.setWaitingNumber(waiting.getWaitingNumber());
     response.setPeopleCount(waiting.getPeopleCount());
-    response.setUserId(waiting.getUserId());
+    response.setUserId(waiting.getUser().getId());
     response.setWaitingState(waiting.getWaitingState());
+    response.setUserName(waiting.getUser().getName());
+    response.setUserPhone(waiting.getUser().getPhoneNumber());
 
     return response;
   }

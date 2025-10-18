@@ -102,6 +102,7 @@ export default function WaitingTab({selectedRestaurant}) {
   //웨이팅 정보
   const transformedWatingData = (waitingData) => {
     return waitingData.map(item => {
+      console.log('웨이팅한 리스트 : ' , item)
       console.log('웨이팅 항목:', item.id, 'waitingState:', item.waitingState);
       return {
         id: item.id,
@@ -109,6 +110,8 @@ export default function WaitingTab({selectedRestaurant}) {
         status: item.waitingState,
         customerInfo: {
           userId: item.userId,
+          userName: item.userName,
+          tel : item.userPhone,
           peopleCount: item.peopleCount
         },
         createdAt: item.createdAt,
@@ -275,7 +278,9 @@ export default function WaitingTab({selectedRestaurant}) {
           console.log('웨이팅 등록 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
           if (alert.type === 'REGIST') {
-            if (selectedRestaurantRef.current) {
+            // 현재 선택된 레스토랑의 웨이팅인지 확인
+            if (selectedRestaurantRef.current &&
+                alert.restaurantId === selectedRestaurantRef.current.id) {
               const status = statusMap[activeFilterRef.current];
               fetchWaitingList(currentPageRef.current, status);
             }
@@ -285,8 +290,16 @@ export default function WaitingTab({selectedRestaurant}) {
         client.subscribe('/topic/cancel', (msg) => {
           console.log('웨이팅 취소 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
+          console.log('웨이팅 취소한 정보', alert);
           if(alert.type === "CANCEL") {
-            if (selectedRestaurantRef.current) {
+            // 관리자 정보 로그 출력 (디버깅용)
+            if (alert.adminName) {
+              console.log(`관리자 ${alert.adminName}이(가) 웨이팅을 취소했습니다.`);
+            }
+
+            // 현재 선택된 레스토랑의 웨이팅인지 확인
+            if (selectedRestaurantRef.current &&
+                alert.restaurantId === selectedRestaurantRef.current.id) {
               const status = statusMap[activeFilterRef.current];
               fetchWaitingList(currentPageRef.current, status);
             }
@@ -408,8 +421,8 @@ export default function WaitingTab({selectedRestaurant}) {
                 </div>
 
                 <div className="waiting-customerInfo">
-                  <div>{waiting.customerInfo.userId} / 총 {waiting.customerInfo.peopleCount}명</div>
-                  <div>{waiting.customerInfo.phone}</div>
+                  <div>{waiting.customerInfo.userName} / 총 {waiting.customerInfo.peopleCount}명</div>
+                  <div>{waiting.customerInfo.tel}</div>
                 </div>
 
                 <div className="waiting-actionButtons">

@@ -7,11 +7,12 @@ import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 북마크 서비스
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookmarkService {
 
   private final BookmarkRepository bookmarkRepository;
-  private final ModelMapper modelMapper;
 
   /**
    * 사용자별 북마크 목록 조회
@@ -35,7 +35,21 @@ public class BookmarkService {
    */
   public Page<BookmarkResponse> getUserBookmarks(Long userId, Pageable pageable) {
     Page<Bookmark> bookmarkPage = bookmarkRepository.findByUserIdWithRestaurant(userId, pageable);
-    return bookmarkPage
-        .map(bookmark -> modelMapper.map(bookmark, BookmarkResponse.class));
+    return bookmarkPage.map(BookmarkResponse::from);
+  }
+
+  /**
+   * 북마크 삭제
+   *
+   * @param bookmarkId 북마크 ID
+   * @author 서예닮
+   * @since 2025-10-17
+   */
+  @Transactional
+  public void deleteBookmark(Long bookmarkId) {
+    Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "북마크를 찾을 수 없습니다."));
+
+    bookmarkRepository.delete(bookmark);
   }
 }

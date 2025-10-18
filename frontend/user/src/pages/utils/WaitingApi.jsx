@@ -27,7 +27,17 @@ export const getUserWaitingList = (page = 0, size = 10) => {
 //웨이팅 대기 취소
 export const waitingCancel = (id, restaurantId) => {
     const token = localStorage.getItem('accessToken');
-    return api.put(`/${id}/cancel?restaurantId=${restaurantId}`, null, {
+    return axios.put(`http://localhost:8002/api/user/waitings/${id}/cancel?restaurantId=${restaurantId}`, null, {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    });
+}
+
+//웨이팅 상태 조회
+export const getWaitingStatusMy = () => {
+    const token = localStorage.getItem('accessToken');
+    return api.get(`/history?page=0&size=1`, {
         headers: {
             'Authorization': token ? `Bearer ${token}` : ''
         }

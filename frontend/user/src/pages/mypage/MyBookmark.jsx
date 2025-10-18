@@ -1,78 +1,169 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import styles from './MyWaiting.module.css'
+import { getBookmarks, deleteBookmark } from '../utils/UserApi'
 
-export default function MyReservation() {
+export default function MyBookMark() {
+    const [bookmarks, setBookmarks] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(0)
+    const [totalPages, setTotalPages] = useState(0)
+    const [totalElements, setTotalElements] = useState(0)
+    const pageSize = 10
+
+    useEffect(() => {
+        fetchBookmarks(currentPage)
+    }, [currentPage])
+
+    const fetchBookmarks = async (page) => {
+        setLoading(true)
+        try {
+            const response = await getBookmarks(page, pageSize)
+            const data = response.data
+
+            if (data.success) {
+                console.log('북마크 조회 성공:', {
+                    현재페이지: page,
+                    조회개수: data.data.content.length,
+                    전체페이지: data.data.totalPages,
+                    전체개수: data.data.totalElements
+                })
+                setBookmarks(data.data.content)
+                setTotalPages(data.data.totalPages)
+                setTotalElements(data.data.totalElements)
+            } else {
+                console.error('북마크 조회 실패:', data.message)
+                setBookmarks([])
+            }
+        } catch (error) {
+            console.error('북마크 조회 에러:', error)
+            console.error('에러 상세:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            })
+            setBookmarks([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page)
+        window.scrollTo(0, 0)
+    }
+
+    const handleDeleteBookmark = async (bookmarkId) => {
+        if (!window.confirm('이 북마크를 삭제하시겠습니까?')) {
+            return
+        }
+
+        try {
+            await deleteBookmark(bookmarkId)
+            // 현재 페이지 데이터 다시 불러오기
+            fetchBookmarks(currentPage)
+        } catch (error) {
+            console.error('❌ 북마크 삭제 실패:', error)
+            alert('북마크 삭제에 실패했습니다.')
+        }
+    }
+
+    const getDefaultImage = () => {
+        return 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=120&h=120&fit=crop'
+    }
+
+
     return (
         <>
             <div className={styles['main-panel']}>
                 <div className={styles['panel-header']}>
                     <h2 className={styles['panel-title']}>북마크</h2>
                 </div>
+
                 <div className={styles['bookmark-container']}>
-                    <div className={styles['card-image']}>
-                        <div className={styles['image-section']}>
-                            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=120&h=120&fit=crop" alt="소시센몬" />
+                    {loading ? (
+                        <div className={styles['loading']}>로딩중...</div>
+                    ) : bookmarks.length === 0 ? (
+                        <div className={styles['empty-state']}>
+                            <div className={styles['icon']}>💕</div>
+                            <h3>북마크한 레스토랑이 없습니다</h3>
+                            <p>마음에 드는 레스토랑을 북마크해보세요!</p>
                         </div>
-                        <div className={styles['content-section']}>
-                            <button className={styles['bookmark-btn']}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                </svg>
-                            </button>
-                            <div>
-                                <div className={styles['restaurant-title']}>소시센몬</div>
-                                <div className={styles['restaurant-desc']}>소시지 전문점 • 강남구</div>
+                    ) : (
+                        <>
+                            <div className={styles['bookmarks-grid']}>
+                                {bookmarks.map(bookmark => (
+                                    <Link
+                                        key={bookmark.bookmarkId}
+                                        to={`/restaurant/${bookmark.restaurantId}`}
+                                        className={styles['bookmark-card']}
+                                    >
+                                        <div className={styles['bookmark-image']}>
+                                            <img
+                                                src={bookmark.mainImageUrl || getDefaultImage()}
+                                                alt={bookmark.restaurantName}
+                                            />
+                                            <button
+                                                className={styles['bookmark-btn-overlay']}
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    handleDeleteBookmark(bookmark.bookmarkId)
+                                                }}
+                                            >
+                                                ❤️
+                                            </button>
+                                        </div>
+                                        <div className={styles['bookmark-content']}>
+                                            <h3 className={styles['bookmark-title']}>{bookmark.restaurantName}</h3>
+                                            <p className={styles['bookmark-category']}>{bookmark.categoryName}</p>
+                                            <p className={styles['bookmark-address']}>{bookmark.address}</p>
+                                        </div>
+                                    </Link>
+                                ))}
                             </div>
-                            <div className={styles['quick-info']}>
-                                <span className={styles['info-badge']}>영업중</span>
-                                <span className={styles['info-badge']}>예약가능</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={styles['card-image']}>
-                        <div className={styles['image-section']}>
-                            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=120&h=120&fit=crop" alt="소시센몬" />
-                        </div>
-                        <div className={styles['content-section']}>
-                            <button className={styles['bookmark-btn']}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                </svg>
-                            </button>
-                            <div>
-                                <div className={styles['restaurant-title']}>소시센몬</div>
-                                <div className={styles['restaurant-desc']}>소시지 전문점 • 강남구</div>
-                            </div>
-                            <div className={styles['quick-info']}>
-                                <span className={styles['info-badge']}>영업중</span>
-                                <span className={styles['info-badge']}>예약가능</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={styles['demo-section']}>
-                        <div className={styles['pagination-container']}>
-                            <div className={styles.pagination}>
-                                <button className={`${styles['pagination-btn']} ${styles.arrow} ${styles.disabled}`}>
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </button>
-                                <button className={`${styles['pagination-btn']} ${styles.active}`}>1</button>
-                                <button className={styles['pagination-btn']}>2</button>
-                                <button className={styles['pagination-btn']}>3</button>
-                                <button className={styles['pagination-btn']}>4</button>
-                                <button className={styles['pagination-btn']}>5</button>
-                                <span className={styles['pagination-dots']}>...</span>
-                                <button className={styles['pagination-btn']}>15</button>
-                                <button className={`${styles['pagination-btn']} ${styles.arrow}`}>
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
 
+                {/* 페이지네이션 */}
+                {!loading && totalPages > 1 && (
+                    <div className={styles['pagination']}>
+                        <button
+                            className={styles['page-btn']}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 0}
+                        >
+                            이전
+                        </button>
+
+                        <div className={styles['page-numbers']}>
+                            {[...Array(totalPages)].map((_, index) => (
+                                <button
+                                    key={index}
+                                    className={`${styles['page-number']} ${currentPage === index ? styles['active'] : ''}`}
+                                    onClick={() => handlePageChange(index)}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            className={styles['page-btn']}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages - 1}
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
+
+                {/* 총 개수 표시 */}
+                {!loading && totalElements > 0 && (
+                    <div className={styles['total-count']}>
+                        총 {totalElements}개의 북마크
+                    </div>
+                )}
             </div>
         </>
     )
