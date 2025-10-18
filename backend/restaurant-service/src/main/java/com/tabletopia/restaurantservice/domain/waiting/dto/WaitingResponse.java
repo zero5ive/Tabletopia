@@ -38,8 +38,10 @@ public class WaitingResponse {
     response.setCreatedAt(LocalDateTime.now());
     response.setWaitingNumber(waiting.getWaitingNumber());
     response.setPeopleCount(waiting.getPeopleCount());
-    response.setUserId(waiting.getUserId());
+    response.setUserId(waiting.getUser().getId());
     response.setWaitingState(waiting.getWaitingState());
+    response.setUserName(waiting.getUser().getName());
+    response.setUserPhone(waiting.getUser().getPhoneNumber());
 
     return response;
   }

@@ -2,13 +2,20 @@ package com.tabletopia.restaurantservice.domain.waiting.service;
 
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
+import com.tabletopia.restaurantservice.domain.user.dto.UserDTO;
+import com.tabletopia.restaurantservice.domain.user.entity.User;
+import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
+import com.tabletopia.restaurantservice.domain.waiting.exception.WaitingRegistException;
 import com.tabletopia.restaurantservice.domain.waiting.repository.WaitingRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2025-09-26
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WaitingServiceImpl implements WaitingService{
@@ -29,6 +37,7 @@ public class WaitingServiceImpl implements WaitingService{
   private final WaitingRepository waitingRepository;
   private final ModelMapper modelMapper;
   private final RestaurantRepository restaurantRepository;
+  private final JpaUserRepository userRepository;
 
   // 웨이팅 오픈 상태를 메모리에 저장
   private boolean waitingOpen = false;
@@ -37,34 +46,50 @@ public class WaitingServiceImpl implements WaitingService{
    * 웨이팅 등록
    */
   @Transactional
-  public Waiting registerWaiting(Long restaurantId, Long userId, Integer peopleCount) {
+  public Waiting registerWaiting(Long restaurantId, Long userId, Integer peopleCount) throws WaitingRegistException{
 
-    // 1. Restaurant 엔티티 조회
+    // 1. User 조회
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+
+    // 2. Restaurant 조회
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
         .orElseThrow(() -> new EntityNotFoundException(
             "식당을 찾을 수 없습니다. ID: " + restaurantId));
 
-    // 2. 다음 웨이팅 번호 계산
-    Integer maxWaitingNumber = waitingRepository
-        .findMaxWaitingNumberByRestaurantIdToday(restaurantId);
-    int nextWaitingNumber = (maxWaitingNumber != null) ? maxWaitingNumber + 1 : 1;
-
-    // 3. Waiting 엔티티 생성
-    Waiting waiting = new Waiting(
-        restaurant,
-        userId,
-        peopleCount,
-        restaurant.getName()  // 스냅샷
+    List<WaitingState> activeStates = Arrays.asList(
+        WaitingState.WAITING,
+        WaitingState.CALLED
     );
 
-    // 4. 웨이팅 번호 할당
+    // 3. 중복 확인 (락 획득 전에 먼저 체크 - 성능 향상)
+    if (waitingRepository.existsByRestaurantIdAndUserIdAndWaitingStateIn(
+        restaurantId, userId, activeStates)) {
+      throw new WaitingRegistException("이미 대기 중입니다.");
+    }
+
+    // 4. 다음 웨이팅 번호 계산 (락 사용 - 동시성 안전)
+    Integer maxWaitingNumber = waitingRepository
+        .findMaxWaitingNumberByRestaurantIdTodayWithLock(restaurantId);
+    int nextWaitingNumber = (maxWaitingNumber != null) ? maxWaitingNumber + 1 : 1;
+
+    // 5. Waiting 엔티티 생성
+    Waiting waiting = new Waiting(
+        restaurant,
+        user,
+        peopleCount,
+        restaurant.getName()
+    );
+
+    // 6. 웨이팅 번호 할당
     waiting.assignWaitingNumber(nextWaitingNumber);
 
-    // 5. 저장 및 반환
+    // 7. 저장 및 반환
     return waitingRepository.save(waiting);
   }
-
   @Override
+
+/**웨이팅 오픈상태 조회*/
   public boolean isWaitingOpen(Long restaurantId) {
 
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -72,6 +97,7 @@ public class WaitingServiceImpl implements WaitingService{
     return restaurant.getIsWaitingOpen();
   }
 
+  /**웨이팅 open*/
   @Transactional
   @Override
   public void openWaiting(Long restaurantId) {
@@ -82,6 +108,7 @@ public class WaitingServiceImpl implements WaitingService{
     restaurantRepository.save(restaurant);
   }
 
+  /**웨이팅 close*/
   @Transactional
   @Override
   public void closeWaiting(Long restaurantId) {
@@ -93,6 +120,7 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
 
+  /**웨이팅 리스트*/
   @Override
   public Page<WaitingResponse> getWaitingList(Long restaurantId, WaitingState status,  Pageable pageable) {
 
@@ -105,12 +133,30 @@ public class WaitingServiceImpl implements WaitingService{
     return waitingPage.map(waiting -> modelMapper.map(waiting, WaitingResponse.class));
   }
 
+  /**웨이팅 최대번호 계산 메서드*/
   @Override
   public Integer getMaxWaitingNumber(Long restaurantId) {
     // 오늘 날짜 기준으로 최대 웨이팅 번호 조회
     return waitingRepository.findMaxWaitingNumberByRestaurantIdToday(restaurantId);
 
   }
+
+  /**관리자 웨이팅 취소*/
+  // ✅ 이렇게 하세요!
+  public Waiting cancelAdminWaiting(Long id, Long restaurantId) {
+    Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("웨이팅을 찾을 수 없습니다."));
+
+    if(!waiting.getRestaurant().getId().equals(restaurantId)) {
+      throw new IllegalArgumentException("해당 식당의 웨이팅이 아닙니다.");
+    }
+
+    waiting.assignWaitingState(WaitingState.CANCELLED);
+
+    return waitingRepository.save(waiting);
+  }
+
+
 
   @Override
   public void cancelWaiting(Long id, Long restaurantId) {
