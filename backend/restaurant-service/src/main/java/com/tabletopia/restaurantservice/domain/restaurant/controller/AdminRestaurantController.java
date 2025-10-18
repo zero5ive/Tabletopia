@@ -1,10 +1,20 @@
 package com.tabletopia.restaurantservice.domain.restaurant.controller;
 
+import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
+import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.service.RestaurantService;
+import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
+import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
+import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +35,8 @@ import java.util.List;
 public class AdminRestaurantController {
 
   private final RestaurantService restaurantService;
+  private final ReservationService reservationService;
+  private final RestaurantOpeningHourService openingHourService;
 
   /** 전체 레스토랑 조회 */
   @GetMapping
@@ -55,6 +67,26 @@ public class AdminRestaurantController {
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     restaurantService.deleteRestaurant(id);
     return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * 레스토랑의 타임슬롯 조회
+   */
+  @GetMapping("/{id}/time-slots")
+  public ResponseEntity<List<LocalTime>> getTimeSlots(
+      @PathVariable("id") Long restaurantId,
+      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+  ) {
+    // 운영시간 조회
+    RestaurantEffectiveHourResponse effectiveHour = openingHourService.getEffectiveHour(restaurantId, date);
+
+    List<LocalTime> timeSlots = new ArrayList<>();
+
+    if (!effectiveHour.isClosed()) {
+      timeSlots = reservationService.generateTimeSlot(effectiveHour); // public 메서드 사용
+    }
+
+    return ResponseEntity.ok(timeSlots);
   }
 
 }

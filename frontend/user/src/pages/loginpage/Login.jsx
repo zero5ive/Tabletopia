@@ -212,27 +212,8 @@ const Login = () => {
                     </button>
                 </form>
 
-                <div className={styles.divider}>
-                    <span>또는</span>
-                </div>
-
-                <div className={styles.socialLogin}>
-                    <button className={`${styles.socialButton} ${styles.google}`} type="button" onClick={() => socialLogin('google')}>
-                        Google
-                    </button>
-                    <button className={`${styles.socialButton} ${styles.naver}`} type="button" onClick={() => socialLogin('naver')}>
-                        Naver
-                    </button>
-                    <button className={`${styles.socialButton} ${styles.kakao}`} type="button" onClick={() => socialLogin('kakao')}>
-                        Kakao
-                    </button>
-                </div>
-
                 <div className={styles.signupLink}>
                     계정이 없으신가요? <Link to='/users/signup'>회원가입</Link>
-                </div>
-                <div className={styles.signupLink}>
-                    계정이 없으신가요? <Link to='/users/userinfo'>회원정보로 연결</Link>
                 </div>
                 <div className={styles.signupLink}>
                     <a href="/">홈페이지 메인화면으로 돌아가기</a>

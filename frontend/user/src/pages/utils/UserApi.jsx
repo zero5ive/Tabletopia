@@ -31,6 +31,18 @@ export const getCurrentUser = () =>
 export const updateUser = (userData) =>
     UserApi.put(`/api/user/profile/update`, userData)
 
+// 유저 예약 생성
+export const createReservation = (reservationData) =>
+    UserApi.post('/api/user/reservations', reservationData);
+
+// 결제 처리
+export const processPayment = (paymentData) =>
+    UserApi.post('/api/user/payment', paymentData);
+
+// 결제 최종 승인
+export const confirmPayment = (confirmationData) =>
+    UserApi.post('/api/user/payment/confirm', confirmationData);
+
 //마이페이지 예약 내역 조회
 export const getReservations = (status)=>
     UserApi.get(`/api/user/reservations/my?status=${status}`)

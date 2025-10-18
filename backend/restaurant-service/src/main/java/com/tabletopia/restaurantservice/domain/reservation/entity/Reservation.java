@@ -1,22 +1,10 @@
 package com.tabletopia.restaurantservice.domain.reservation.entity;
 
+import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
-import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
-import com.tabletopia.restaurantservice.domain.reservation.dto.TableSnapshot;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 /**
  * 예약 엔티티
@@ -28,6 +16,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "reservation")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Reservation {
 
   @Id
@@ -36,6 +26,12 @@ public class Reservation {
 
   @Column(name = "user_id", nullable = false)
   private Long userId;
+
+  @Column(name = "name")
+  private String name;
+
+  @Column(name = "phone_number")
+  private String phoneNumber;
 
   @Column(name = "restaurant_id", nullable = false)
   private Long restaurantId;
@@ -46,7 +42,6 @@ public class Reservation {
   @Column(name = "people_count", nullable = false)
   private Integer peopleCount;
 
-  // ============ 스냅샷 정보 (예약 당시 상태 보존) ============
   @Column(name = "restaurant_name_snapshot", nullable = false, length = 100)
   private String restaurantNameSnapshot;
 
@@ -62,7 +57,6 @@ public class Reservation {
   @Column(name = "restaurant_table_capacity_snapshot", nullable = false)
   private Integer restaurantTableCapacitySnapshot;
 
-  // ============ 예약 상태 및 시간 ============
   @Enumerated(EnumType.STRING)
   @Column(name = "reservation_state", nullable = false)
   private ReservationStatus reservationState;
@@ -85,72 +79,7 @@ public class Reservation {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  // ============ 정적 팩토리 메서드 ============
-
-  /**
-   * 새 예약 생성
-   *
-   * @param userId 사용자 ID
-   * @param restaurantId 레스토랑 ID
-   * @param restaurantTableId 테이블 ID
-   * @param peopleCount 예약 인원
-   * @param reservationAt 예약 시간
-   * @param restaurantSnapshot 레스토랑 스냅샷
-   * @param tableSnapshot 테이블 스냅샷
-   * @return 새로운 예약 객체
-   */
-  public static Reservation createReservation(
-      Long userId,
-      Long restaurantId,
-      Long restaurantTableId,
-      Integer peopleCount,
-      LocalDateTime reservationAt,
-      RestaurantSnapshot restaurantSnapshot,
-      TableSnapshot tableSnapshot) {
-
-    return new Reservation(
-        userId,
-        restaurantId,
-        restaurantTableId,
-        peopleCount,
-        reservationAt,
-        restaurantSnapshot,
-        tableSnapshot
-    );
-  }
-
-  // ============ 생성자 ============
-
-  /**
-   * 예약 생성자
-   */
-  private Reservation(
-      Long userId,
-      Long restaurantId,
-      Long restaurantTableId,
-      Integer peopleCount,
-      LocalDateTime reservationAt,
-      RestaurantSnapshot restaurantSnapshot,
-      TableSnapshot tableSnapshot) {
-
-    this.userId = userId;
-    this.restaurantId = restaurantId;
-    this.restaurantTableId = restaurantTableId;
-    this.peopleCount = peopleCount;
-    this.reservationAt = reservationAt;
-
-    // 스냅샷 정보 저장
-    this.restaurantNameSnapshot = restaurantSnapshot.getName();
-    this.restaurantAddressSnapshot = restaurantSnapshot.getAddress();
-    this.restaurantPhoneSnapshot = restaurantSnapshot.getTel();
-    this.restaurantTableNameSnapshot = tableSnapshot.getRestaurantTableName();
-    this.restaurantTableCapacitySnapshot = tableSnapshot.getRestaurantTableCapacity();
-
-    this.reservationState = ReservationStatus.PENDING;
-  }
-
-  // ============ JPA 생명주기 메서드 ============
-
+  // ==================== JPA 생명주기 메서드 ====================
   @PrePersist
   protected void onCreate() {
     createdAt = LocalDateTime.now();
@@ -162,7 +91,7 @@ public class Reservation {
     updatedAt = LocalDateTime.now();
   }
 
-  // ============ 비즈니스 로직 ============
+  // ==================== 비즈니스 로직 ====================
 
   /**
    * 예약 확정
@@ -170,11 +99,11 @@ public class Reservation {
    * @throws IllegalStateException PENDING 상태가 아닌 경우
    */
   public void confirmReservation() {
-    if (this.reservationState != ReservationStatus.PENDING) {
+    if (reservationState != ReservationStatus.PENDING) {
       throw new IllegalStateException("PENDING 상태에서만 확정할 수 있습니다");
     }
-    this.reservationState = ReservationStatus.CONFIRMED;
-    this.processedAt = LocalDateTime.now();
+    reservationState = ReservationStatus.CONFIRMED;
+    processedAt = LocalDateTime.now();
   }
 
   /**
@@ -184,14 +113,12 @@ public class Reservation {
    * @throws IllegalStateException 이미 완료되었거나 취소된 경우
    */
   public void cancelReservation(String reason) {
-    if (this.reservationState == ReservationStatus.COMPLETED ||
-        this.reservationState == ReservationStatus.CANCELLED) {
+    if (reservationState == ReservationStatus.COMPLETED || reservationState == ReservationStatus.CANCELLED) {
       throw new IllegalStateException("완료되거나 취소된 예약은 취소할 수 없습니다");
     }
-
-    this.reservationState = ReservationStatus.CANCELLED;
-    this.rejectedReason = reason;
-    this.processedAt = LocalDateTime.now();
+    reservationState = ReservationStatus.CANCELLED;
+    rejectedReason = reason;
+    processedAt = LocalDateTime.now();
   }
 
   /**
@@ -200,11 +127,11 @@ public class Reservation {
    * @throws IllegalStateException CONFIRMED 상태가 아닌 경우
    */
   public void completeReservation() {
-    if (this.reservationState != ReservationStatus.CONFIRMED) {
+    if (reservationState != ReservationStatus.CONFIRMED) {
       throw new IllegalStateException("확정된 예약만 완료할 수 있습니다");
     }
-    this.reservationState = ReservationStatus.COMPLETED;
-    this.completedAt = LocalDateTime.now();
+    reservationState = ReservationStatus.COMPLETED;
+    completedAt = LocalDateTime.now();
   }
 
   /**
@@ -213,11 +140,11 @@ public class Reservation {
    * @throws IllegalStateException CONFIRMED 상태가 아닌 경우
    */
   public void markAsNoShow() {
-    if (this.reservationState != ReservationStatus.CONFIRMED) {
+    if (reservationState != ReservationStatus.CONFIRMED) {
       throw new IllegalStateException("확정된 예약만 노쇼 처리할 수 있습니다");
     }
-    this.reservationState = ReservationStatus.NO_SHOW;
-    this.processedAt = LocalDateTime.now();
+    reservationState = ReservationStatus.NO_SHOW;
+    processedAt = LocalDateTime.now();
   }
 
   /**
@@ -227,7 +154,36 @@ public class Reservation {
    */
   public boolean isWithinReservationTime() {
     LocalDateTime now = LocalDateTime.now();
-    return now.isAfter(this.reservationAt.minusMinutes(10)) &&
-        now.isBefore(this.reservationAt.plusHours(2));
+    return now.isAfter(reservationAt.minusMinutes(10)) && now.isBefore(reservationAt.plusHours(2));
+  }
+
+  // ==================== DTO → 엔티티 변환 편의 메서드 ====================
+
+  /**
+   * ReservationRequest를 기반으로 Reservation 엔티티 생성
+   *
+   * @param userId 사용자 ID
+   * @param request 프론트엔드에서 받은 예약 요청 DTO
+   * @param tableCapacity 테이블 수용 인원
+   * @return Reservation 엔티티
+   */
+  public static Reservation fromRequest(Long userId,
+      ReservationRequest request,
+      Integer tableCapacity) {
+    return Reservation.builder()
+        .userId(userId)
+        .name(request.getCustomerInfo().getName())
+        .phoneNumber(request.getCustomerInfo().getPhone())
+        .restaurantId(request.getRestaurantId())
+        .restaurantTableId(request.getRestaurantTableId())
+        .peopleCount(request.getPeopleCount())
+        .reservationAt(request.getReservationDateTime())
+        .restaurantNameSnapshot(request.getRestaurantName())
+        .restaurantAddressSnapshot(request.getRestaurantAddress())
+        .restaurantPhoneSnapshot(request.getRestaurantPhone())
+        .restaurantTableNameSnapshot(request.getRestaurantTableNameSnapshot())
+        .restaurantTableCapacitySnapshot(tableCapacity)
+        .reservationState(ReservationStatus.PENDING)
+        .build();
   }
 }
