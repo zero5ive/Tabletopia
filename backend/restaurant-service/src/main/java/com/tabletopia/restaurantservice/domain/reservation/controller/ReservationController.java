@@ -77,7 +77,7 @@ public class ReservationController {
 //  }
 
   /**
-   * 예약 내역 조회 메서드
+   * 사용자별 예약 내역 조회 메서드
    *
    * @author 서예닮
    * @since 2025-10-16

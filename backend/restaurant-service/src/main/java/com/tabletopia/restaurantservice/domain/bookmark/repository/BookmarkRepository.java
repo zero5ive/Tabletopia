@@ -18,12 +18,10 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
   /**
    * 사용자별 북마크 목록 조회 (페이징)
    */
-  @Query(value = "SELECT b FROM Bookmark b " +
+  @Query(value = "SELECT DISTINCT b FROM Bookmark b " +
          "JOIN FETCH b.restaurant r " +
          "JOIN FETCH r.restaurantCategory " +
-         "LEFT JOIN FETCH r.restaurantImage " +
-         "WHERE b.user.id = :userId " +
-         "ORDER BY b.createdAt DESC",
+         "WHERE b.user.id = :userId",
          countQuery = "SELECT COUNT(b) FROM Bookmark b WHERE b.user.id = :userId")
   Page<Bookmark> findByUserIdWithRestaurant(@Param("userId") Long userId, Pageable pageable);
 }

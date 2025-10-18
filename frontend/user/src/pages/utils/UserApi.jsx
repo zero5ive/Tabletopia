@@ -31,4 +31,16 @@ export const getCurrentUser = () =>
 export const updateUser = (userData) =>
     UserApi.put(`/api/user/update`, userData)
 
+//마이페이지 예약 내역 조회
+export const getReservations = (status)=>
+    UserApi.get(`/api/realtime/my-reservations?status=${status}`)
+
+//마이페이지 북마크 목록 조회
+export const getBookmarks = (page = 0, size = 10) =>
+    UserApi.get(`/api/bookmark/my-bookmarks?page=${page}&size=${size}`)
+
+//북마크 삭제
+export const deleteBookmark = (bookmarkId) =>
+    UserApi.delete(`/api/bookmark/${bookmarkId}`)
+
 export default UserApi
