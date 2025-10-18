@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.bookmark.controller;
 
+import com.tabletopia.restaurantservice.domain.bookmark.dto.BookmarkRequest;
 import com.tabletopia.restaurantservice.domain.bookmark.dto.BookmarkResponse;
 import com.tabletopia.restaurantservice.domain.bookmark.service.BookmarkService;
 import com.tabletopia.restaurantservice.dto.ApiResponse;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,4 +51,18 @@ public class BookmarkController {
         ApiResponse.success("북마크 내역 조회 성공", bookmarkList)
     );
   }
+
+  /**
+   * 사용자, 레스토랑 별 북마크 등록
+   */
+  @PostMapping("/bookmarks")
+    public ResponseEntity<BookmarkResponse> saveBookmark(@RequestBody BookmarkRequest request) {
+
+    BookmarkResponse response = bookmarkService.saveBookmark(
+        request.getUserId(),
+        request.getRestaurantId()
+    );
+    return ResponseEntity.ok(response);
+  }
+
 }

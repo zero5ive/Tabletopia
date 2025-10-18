@@ -39,4 +39,10 @@ public class Bookmark {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
+
+
+  public Bookmark(User user, Restaurant restaurant) {
+    this.user = user;
+    this.restaurant = restaurant;
+  }
 }
