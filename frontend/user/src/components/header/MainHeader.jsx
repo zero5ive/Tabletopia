@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import NotificationPopup from '../NotificationPopup'
 import { useWebSocket } from '../../contexts/WebSocketContext'
+import UserApi from '../../pages/utils/UserApi';
 
 export function MainHeader() {
     const navigate = useNavigate();
@@ -84,6 +85,7 @@ export function MainHeader() {
                             onClick={handleMyPage}
                             aria-label="My Page"
                         >
+                            {/* 여기에 유저 이름을 추가하는 등의 변수를 받아오겠습니다. */}
                             <i className="fas fa-user"></i>
                         </button>
                         <button
