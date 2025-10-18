@@ -26,13 +26,13 @@ public interface WaitingService {
   public Integer getMaxWaitingNumber(Long restaurantId);
 
   //웨이팅 취소
-  public void cancelWaiting(Long id, Long restaurantId);
+  public Waiting cancelWaiting(Long id, Long restaurantId);
 
   //웨이팅 호출
   public Waiting callWaiting(Long id, Long restaurantId);
 
   //웨이팅 착석
-  public Waiting seatedWaiting(Long id, Long restaurantId);
+  public Waiting seatedWaiting(Long id, Long restaurantId, Long tableId);
 
   //내 앞에 대기 중인 팀 수 조회
   public Integer getTeamsAheadCount(Long restaurantId, Integer myWaitingNumber);

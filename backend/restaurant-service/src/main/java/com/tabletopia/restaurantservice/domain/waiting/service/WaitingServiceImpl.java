@@ -2,6 +2,10 @@ package com.tabletopia.restaurantservice.domain.waiting.service;
 
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
+import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
+import com.tabletopia.restaurantservice.domain.restaurantTable.entity.TableRealtimeState;
+import com.tabletopia.restaurantservice.domain.restaurantTable.repository.RestaurantTableRepository;
+import com.tabletopia.restaurantservice.domain.restaurantTable.repository.TableRealtimeStateRepository;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
@@ -29,6 +33,8 @@ public class WaitingServiceImpl implements WaitingService{
   private final WaitingRepository waitingRepository;
   private final ModelMapper modelMapper;
   private final RestaurantRepository restaurantRepository;
+  private final RestaurantTableRepository restaurantTableRepository;
+  private final TableRealtimeStateRepository tableRealtimeStateRepository;
 
   // 웨이팅 오픈 상태를 메모리에 저장
   private boolean waitingOpen = false;
@@ -113,12 +119,12 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
   @Override
-  public void cancelWaiting(Long id, Long restaurantId) {
+  public Waiting cancelWaiting(Long id, Long restaurantId) {
     Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
         .orElseThrow(()-> new RuntimeException("웨이팅을 찾을 수 없습니다."));
 
     waiting.assignWaitingState(WaitingState.CANCELLED);
-    waitingRepository.save(waiting);
+    return waitingRepository.save(waiting);
   }
 
   @Override
@@ -134,9 +140,37 @@ public class WaitingServiceImpl implements WaitingService{
   }
 
   @Override
-  public Waiting seatedWaiting(Long id, Long restaurantId) {
+  public Waiting seatedWaiting(Long id, Long restaurantId, Long tableId) {
     Waiting waiting = waitingRepository.findByIdAndRestaurantId(id, restaurantId)
         .orElseThrow(()-> new RuntimeException("웨이팅을 찾을 수 없습니다."));
+
+    // 테이블 정보 조회 및 저장
+    if (tableId != null) {
+      RestaurantTable table = restaurantTableRepository.findById(tableId)
+          .orElseThrow(() -> new RuntimeException("테이블을 찾을 수 없습니다."));
+
+      // 테이블이 해당 레스토랑 소속인지 확인
+      if (!table.getRestaurantId().equals(restaurantId)) {
+        throw new RuntimeException("해당 레스토랑의 테이블이 아닙니다.");
+      }
+
+      waiting.setAssignedTableName(table.getName());
+      waiting.setAssignedTableCapacity(table.getMaxCapacity());
+
+      // 테이블 실시간 상태 업데이트
+      TableRealtimeState tableState = tableRealtimeStateRepository
+          .findByRestaurantTableId(tableId)
+          .orElse(new TableRealtimeState(tableId));
+
+      // 테이블 상태를 OCCUPIED로 변경하고 웨이팅 정보 저장
+      tableState.occupy(
+          TableRealtimeState.SourceType.WAITING,
+          waiting.getId(),
+          waiting.getPeopleCount()
+      );
+
+      tableRealtimeStateRepository.save(tableState);
+    }
 
     waiting.assignWaitingState(WaitingState.SEATED);
 

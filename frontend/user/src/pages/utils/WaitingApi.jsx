@@ -33,3 +33,13 @@ export const waitingCancel = (id, restaurantId) => {
         }
     });
 }
+
+//웨이팅 상태 조회
+export const getWaitingStatusMy = () => {
+    const token = localStorage.getItem('accessToken');
+    return api.get(`/history?page=0&size=1`, {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    });
+}

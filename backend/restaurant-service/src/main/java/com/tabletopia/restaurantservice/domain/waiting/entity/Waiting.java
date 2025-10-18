@@ -93,4 +93,10 @@ public class Waiting {
   //calledAt 설정 메서드
   public void setCalledAt(LocalDateTime calledAt) {this.calledAt = calledAt;}
 
+  //assignedTableName 설정 메서드
+  public void setAssignedTableName(String assignedTableName) {this.assignedTableName = assignedTableName;}
+
+  //assignedTableCapacity 설정 메서드
+  public void setAssignedTableCapacity(Integer assignedTableCapacity) {this.assignedTableCapacity = assignedTableCapacity;}
+
 }
