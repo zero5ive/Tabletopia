@@ -232,7 +232,7 @@ export default function Waiting({ reservationType }) {
     <>
 
       <div className={`${styles["waiting-content"]} ${reservationType === 'waiting' ? styles['active'] : ''}`}>
-        <div className={styles["waiting-info"]}>
+        <div className={`${styles["waiting-info"]} ${!isWaitingOpen ? styles['closed'] : ''}`}>
           <div className={styles["waiting-status"]}>
             {isWaitingOpen ? (
               <>
@@ -250,15 +250,19 @@ export default function Waiting({ reservationType }) {
             <div className={styles["guest-counter"]}>
               <span>성인</span>
               <div className="counter-controls">
-                <button className="counter-btn" onClick={decrement}>-</button>
+                <button className="counter-btn" onClick={decrement} disabled={!isWaitingOpen}>-</button>
                 <span className="guest-count">{people}</span>
-                <button className="counter-btn" onClick={increment}>+</button>
+                <button className="counter-btn" onClick={increment} disabled={!isWaitingOpen}>+</button>
               </div>
             </div>
           </div>
         </div>
 
-        <button className={styles["reservation-btn"]} onClick={waitingRegist} >
+        <button
+          className={styles["reservation-btn"]}
+          onClick={waitingRegist}
+          disabled={!isWaitingOpen}
+        >
           {isWaitingOpen ? '웨이팅 등록' : '웨이팅 등록 불가'}
         </button>
       </div>

@@ -70,6 +70,7 @@ public class BookmarkService {
   /**
    * 사용자, 레스토랑별 북마크 등록
    */
+  @Transactional
   public BookmarkResponse saveBookmark(Long userId, Long restaurantId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("유저 정보를 찾을 수 없습니다."));
