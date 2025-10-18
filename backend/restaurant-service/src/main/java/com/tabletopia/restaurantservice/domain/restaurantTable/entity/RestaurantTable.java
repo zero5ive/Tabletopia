@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.restaurantTable.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -28,15 +29,19 @@ public class RestaurantTable {
   @Column(nullable = false, length = 50)
   private String name;
 
+  @JsonProperty("minCapacity")
   @Column(name = "min_capacity")
   private Integer minCapacity;
 
+  @JsonProperty("maxCapacity")
   @Column(name = "max_capacity", nullable = false)
   private Integer maxCapacity;
 
+  @JsonProperty("xPosition")
   @Column(name = "x_position", nullable = false)
   private Integer xPosition;
 
+  @JsonProperty("yPosition")
   @Column(name = "y_position", nullable = false)
   private Integer yPosition;
 

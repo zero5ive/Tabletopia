@@ -67,7 +67,7 @@ public class UserRestaurantController {
    */
   @GetMapping("/{id}/location")
   public ResponseEntity<RestuarantLocationResponse> getRestaurantLocation(@PathVariable Long id) {
-    return ResponseEntity.ok(restaurantService.getRestuarantLocation(id));
+    return ResponseEntity.ok(restaurantService.getRestaurantLocation(id));
   }
 
 }
