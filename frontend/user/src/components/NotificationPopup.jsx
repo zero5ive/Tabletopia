@@ -1,9 +1,24 @@
 import { useWebSocket } from '../contexts/WebSocketContext'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getCurrentUser } from '../pages/utils/UserApi'
 import styles from './NotificationPopup.module.css'
 
 export default function NotificationPopup({ show, onClose }) {
     const { notifications, markAllAsRead } = useWebSocket()
+    const [userId, setUserId] = useState(null)
+
+    // 현재 로그인한 사용자 정보 가져오기
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await getCurrentUser()
+                setUserId(response.data.id)
+            } catch (error) {
+                console.error('[NotificationPopup] 사용자 정보 조회 실패:', error)
+            }
+        }
+        fetchCurrentUser()
+    }, [])
 
     // 알림 팝업을 열면 모든 알림을 읽음 처리
     useEffect(() => {
@@ -27,6 +42,11 @@ export default function NotificationPopup({ show, onClose }) {
         }
     }
 
+    // 본인 알림만 필터링 (안전장치)
+    const filteredNotifications = userId
+        ? notifications.filter(notif => !notif.userId || notif.userId === userId)
+        : notifications
+
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -43,14 +63,14 @@ export default function NotificationPopup({ show, onClose }) {
                 </div>
 
                 <div className={styles.body}>
-                    {notifications.length === 0 ? (
+                    {filteredNotifications.length === 0 ? (
                         <div className={styles.emptyState}>
                             <div className={styles.emptyIcon}>📭</div>
                             <div className={styles.emptyText}>새로운 알림이 없습니다.</div>
                         </div>
                     ) : (
                         <div className={styles.notificationList}>
-                            {notifications.map(notification => (
+                            {filteredNotifications.map(notification => (
                                 <div
                                     key={notification.id}
                                     className={`${styles.notificationItem} ${
