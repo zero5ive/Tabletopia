@@ -5,16 +5,15 @@ import styles from './Payment.module.css';
 
 const Payment = () => {
   const navigate = useNavigate();
-  const [reservationData, setReservationData] = useState(null);
+  const [reservationRequest, setReservationRequest] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     const data = localStorage.getItem('finalReservationData');
     if (data) {
       // In a real app, you might want to verify this data with the backend
       // to ensure it hasn't been tampered with.
-      setReservationData(JSON.parse(data));
+      setReservationRequest(JSON.parse(data));
     } else {
       alert('결제할 예약 정보가 없습니다. 메인 페이지로 돌아갑니다.');
       navigate('/');
@@ -33,16 +32,19 @@ const Payment = () => {
     try {
 
       // payment 컨트롤러에 요청보낼 paymentInfo 생성
-      const paymentInfo = {
+      const paymentRequestDTO = {
         // orderNo:'',
-        productDesc: reservationData.restaurantName,
-        amount: reservationData.price,
-
+        productDesc: reservationRequest.restaurantName,
+        amount: reservationRequest.price,
         //우리나라 법률 상 나중에 double로 파싱, 90프로 계산 후 반올림등 사용해서 int로 reparsing해서 넣어주기
-        amountTaxFree: reservationData.price
+        amountTaxFree: reservationRequest.price
       };
+      const paymentRequest ={
+        ...paymentRequestDTO,
+        ...reservationRequest
+      }
 
-      const response = await processPayment(paymentInfo);
+      const response = await processPayment(paymentRequest);
       // const response = await processPayment();
       console.log("응답객체",response);
       

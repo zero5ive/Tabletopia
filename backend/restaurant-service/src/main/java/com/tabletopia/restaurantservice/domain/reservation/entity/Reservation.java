@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.entity;
 
+import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import jakarta.persistence.*;
@@ -78,6 +79,10 @@ public class Reservation {
 
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
+
+  @OneToOne
+  @JoinColumn(name = "payment_id", nullable = false)  // FK 컬럼 지정
+  private Payment payment;
 
   // ==================== JPA 생명주기 메서드 ====================
   @PrePersist

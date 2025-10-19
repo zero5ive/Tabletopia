@@ -1,6 +1,6 @@
 package com.tabletopia.restaurantservice.domain.payment.repository;
 
-import com.tabletopia.restaurantservice.domain.payment.entity.PaymentDetail;
+import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author 이세형
  * @since 2025-10-18
  * */
-public interface JpaPaymentDetailRepository extends JpaRepository<PaymentDetail, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
 }

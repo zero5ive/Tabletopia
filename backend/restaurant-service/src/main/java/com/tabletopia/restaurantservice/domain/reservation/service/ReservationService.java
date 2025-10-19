@@ -1,8 +1,7 @@
 package com.tabletopia.restaurantservice.domain.reservation.service;
 
-import com.tabletopia.restaurantservice.domain.payment.entity.PaymentDetail;
-import com.tabletopia.restaurantservice.domain.payment.entity.PaymentStatus;
-import com.tabletopia.restaurantservice.domain.payment.repository.JpaPaymentDetailRepository;
+import com.tabletopia.restaurantservice.domain.payment.repository.PaymentRepository;
+import com.tabletopia.restaurantservice.domain.payment.service.PaymentService;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest.CustomerInfo;
 import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
@@ -17,20 +16,18 @@ import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
-import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectionService;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +51,6 @@ public class ReservationService {
   private final TableSelectionService tableSelectionService;
   private final UserService userService;
   private final RestaurantOpeningHourService openingHourService;
-  private final JpaPaymentDetailRepository paymentDetailRepository;
 
   private final SimpMessagingTemplate messagingTemplate;
 
@@ -89,9 +85,6 @@ public class ReservationService {
     // 4. DB에 예약 등록
     Reservation savedReservation = createReservation(request);
     log.debug("예약 등록 완료: ID={}", savedReservation.getId());
-
-    // 5. 결제 정보 등록
-    createPaymentDetail(savedReservation, request);
 
     // 6. Redis 상태 업데이트 (예약 완료)
     TableSelectionInfo reservedInfo = new TableSelectionInfo(
@@ -213,7 +206,7 @@ public class ReservationService {
    * @author 김예진
    * @since 2025-09-24
    */
-  private Reservation createReservation(ReservationRequest request) {
+  public Reservation createReservation(ReservationRequest request) {
     log.debug("예약 생성 요청: {}", request);
     // 요청에서 예약자 정보 꺼내기
     CustomerInfo reservationCustomerInfo = request.getCustomerInfo();
@@ -235,39 +228,6 @@ public class ReservationService {
     // 예약 저장
     return reservationRepository.save(reservation);
   }
-
-  /**
-   * 결제 정보 생성 및 저장
-   *
-   * @param savedReservation 저장된 예약 엔티티
-   * @param request 예약 요청 정보
-   * @author 이세형
-   * @since 2025-10-18
-   */
-  private void createPaymentDetail(Reservation savedReservation, ReservationRequest request) {
-    PaymentDetail paymentDetail = new PaymentDetail();
-    paymentDetail.setReservation(savedReservation);
-    paymentDetail.setAmount(new BigDecimal(request.getPrice()));
-    paymentDetail.setPayMethod("CARD"); // 임시로 CARD로 하드코딩
-    paymentDetail.setStatus(PaymentStatus.READY);
-    paymentDetail.setOrderNo(generateOrderNo(savedReservation.getId()));
-
-    paymentDetailRepository.save(paymentDetail);
-    log.debug("결제 정보 등록 완료: 예약 ID={}, 주문번호={}", savedReservation.getId(), paymentDetail.getOrderNo());
-  }
-
-  /**
-   * 주문번호 생성
-   *
-   * @param reservationId 예약 ID
-   * @return 생성된 주문번호
-   * @author 이세형
-   * @since 2025-10-18
-   */
-  private String generateOrderNo(Long reservationId) {
-    return "TT-" + reservationId + "-" + UUID.randomUUID().toString().substring(0, 8);
-  }
-
 
   /**
    * 테이블이 이미 예약되어있는지 조회
