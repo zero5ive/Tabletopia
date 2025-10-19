@@ -32,6 +32,7 @@ public class Admin {
     private String name;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'ADMIN'")
   private Role role; // ADMIN, SUPERADMIN
 
     @CreationTimestamp
