@@ -78,7 +78,7 @@ const RegistTableTab = ({ selectedRestaurant }) => {
 /**
  * 레스토랑 좌석 배치 에디터 메인 컴포넌트 (팝업용)
  *
- * @author Claude
+ * @author 김예진
  * @since 2025-10-17
  */
 export const RestaurantSeatEditor = () => {

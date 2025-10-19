@@ -56,7 +56,7 @@ public class RestaurantReviewService {
 
   /**
    * 레스토랑의 리뷰 조회 (페이징)
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-20
    * @param restaurantId
    * @param pageable

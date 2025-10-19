@@ -234,7 +234,7 @@ public class ReservationService {
    * @param payment            결제 정보
    * @param authenticatedEmail 인증된 이메일
    * @return 생성된 예약 ID
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-19
    */
   @Transactional
@@ -602,7 +602,7 @@ public class ReservationService {
    *
    * @param reservationId 예약 ID
    * @param userId 사용자 ID
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-20
    */
   @Transactional

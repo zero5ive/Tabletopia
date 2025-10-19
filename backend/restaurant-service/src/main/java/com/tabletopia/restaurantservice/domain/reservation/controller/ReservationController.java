@@ -161,7 +161,7 @@ public class ReservationController {
    *
    * @param reservationId
    * @return
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-20
    */
   @PatchMapping("/api/user/reservations/{reservationId}/cancel")

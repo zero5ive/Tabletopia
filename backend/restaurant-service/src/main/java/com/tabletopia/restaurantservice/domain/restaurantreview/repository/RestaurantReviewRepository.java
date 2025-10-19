@@ -52,7 +52,7 @@ public interface RestaurantReviewRepository extends JpaRepository<RestaurantRevi
 
   /**
    * 레스토랑의 리뷰 목록 조회 (페이징, User fetch join으로 N+1 문제 해결)
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-20
    * @param restaurantId
    * @param pageable
