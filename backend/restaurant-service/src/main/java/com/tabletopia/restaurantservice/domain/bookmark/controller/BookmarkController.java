@@ -41,7 +41,6 @@ public class BookmarkController {
   /**
    * 사용자별 북마크 목록 조회
    *
-   * @param userId 사용자 ID
    * @return 북마크 목록 조회
    */
   @GetMapping("/bookmarks")

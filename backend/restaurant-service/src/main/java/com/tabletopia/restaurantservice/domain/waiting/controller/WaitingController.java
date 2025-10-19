@@ -28,12 +28,11 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 웨이팅 컨트롤러
@@ -43,7 +42,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class WaitingController {
 
@@ -59,7 +58,6 @@ public class WaitingController {
    * @author 성유진
    */
   @GetMapping("/api/user/waiting/status")
-  @ResponseBody
   public Map<String, Object> getWaitingStatus(@RequestParam Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
 
@@ -85,7 +83,6 @@ public class WaitingController {
   }
 
   @GetMapping("/api/user/waitings/status")
-  @ResponseBody
   public Map<String, Boolean> getUserWaitingStatus(@RequestParam Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
     log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
@@ -193,6 +190,7 @@ public class WaitingController {
       WaitingEvent waitingEvent = new WaitingEvent();
       waitingEvent.setType("REGIST");
       waitingEvent.setRestaurantId(waitingRequest.getRestaurantId());
+      waitingEvent.setRestaurantName(waiting.getRestaurantNameSnapshot()); // 레스토랑 이름 추가
       waitingEvent.setSender(user.getId());
       waitingEvent.setSenderName(user.getName());
       waitingEvent.setTel(user.getPhoneNumber());
@@ -223,7 +221,6 @@ public class WaitingController {
    * @author 성유진
    */
   @GetMapping("/api/admin/restaurants/{restaurantId}/waiting")
-  @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getAdminList(@PathVariable Long restaurantId,
       @RequestParam String status,
       @RequestParam(defaultValue = "0") int page,
@@ -240,7 +237,6 @@ public class WaitingController {
   }
 
   @GetMapping("/api/user/waitings/{restaurantId}")
-  @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getUserList(@PathVariable Long restaurantId,
       @RequestParam String status,
       @RequestParam(defaultValue = "0") int page,
@@ -262,7 +258,6 @@ public class WaitingController {
    * @author 성유진
    */
   @PutMapping("/api/user/waitings/{id}/cancel")
-  @ResponseBody
   public ResponseEntity<String>cancelUserWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
     Waiting waiting = waitingService.cancelWaiting(id, restaurantId);
@@ -281,7 +276,6 @@ public class WaitingController {
    * @author 성유진
    */
   @PutMapping("/api/admin/waiting/{id}/cancel")
-  @ResponseBody
   public ResponseEntity<WaitingResponse>cancelWaitingAdmin(@PathVariable Long id, @RequestParam Long restaurantId) {
 
     Waiting waiting = waitingService.cancelAdminWaiting(id, restaurantId);
@@ -308,7 +302,6 @@ public class WaitingController {
    * @author 성유진
    */
   @PutMapping("/api/user/waitings/{id}/delay")
-  @ResponseBody
   public ResponseEntity<?> delayWaiting(
       @PathVariable Long id,
       @RequestParam Integer targetNumber,
@@ -358,7 +351,6 @@ public class WaitingController {
    * @author 성유진
    */
   @GetMapping("/api/user/waitings/{id}/delay")
-  @ResponseBody
   public ResponseEntity<List<WaitingResponse>> getDelayWaitings( @PathVariable Long id,
   @RequestParam Long restaurantId,
   Principal principal) {
@@ -389,7 +381,6 @@ public class WaitingController {
      * @since 2025-10-13
      */
   @PutMapping("/api/admin/waiting/{id}/called")
-  @ResponseBody
   public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
     Waiting  waiting  =waitingService.callWaiting(id, restaurantId);
 
@@ -405,7 +396,6 @@ public class WaitingController {
    * @since 2025-10-13
    */
   @PutMapping("/api/admin/waiting/{id}/seated")
-  @ResponseBody
   public  ResponseEntity<String> seatedWaiting(@PathVariable Long id, @RequestParam Long restaurantId){
     Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId);
 
@@ -421,7 +411,6 @@ public class WaitingController {
    * @since 2025-10-14
    */
   @GetMapping("/api/user/waiting/teams-ahead")
-  @ResponseBody
   public ResponseEntity<Map<String, Integer>> getTeamsAhead(
       @RequestParam Long restaurantId,
       @RequestParam Integer waitingNumber) {
@@ -436,7 +425,6 @@ public class WaitingController {
    * @since 2025-10-15
    */
   @GetMapping("/api/user/waiting/history")
-  @ResponseBody
   public ResponseEntity<Page<WaitingResponse>> getUserWaitingList(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size,

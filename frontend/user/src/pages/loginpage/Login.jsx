@@ -103,8 +103,10 @@ const Login = () => {
             
             if (data.success && data.accessToken) {
                 localStorage.setItem('accessToken', data.accessToken);
-                await new Promise(r => setTimeout(r, 100)); // 0.1초 대기
-                navigate('/');
+                console.log('[Login] 로그인 성공, accessToken 저장 완료');
+
+                // 페이지 새로고침하여 WebSocketContext를 완전히 재초기화
+                window.location.href = '/';
             } else {
                 setGlobalError(data.message || '로그인 정보가 올바르지 않습니다.');
             }
