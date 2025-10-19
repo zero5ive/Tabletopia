@@ -173,7 +173,7 @@ public class Reservation {
     return Reservation.builder()
         .userId(userId)
         .name(request.getCustomerInfo().getName())
-        .phoneNumber(request.getCustomerInfo().getPhone())
+        .phoneNumber(request.getCustomerInfo().getPhoneNumber())
         .restaurantId(request.getRestaurantId())
         .restaurantTableId(request.getRestaurantTableId())
         .peopleCount(request.getPeopleCount())

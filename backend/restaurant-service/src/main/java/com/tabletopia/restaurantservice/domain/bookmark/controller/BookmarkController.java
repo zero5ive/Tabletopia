@@ -88,4 +88,22 @@ public class BookmarkController {
     return ResponseEntity.noContent().build();
   }
 
+
+  /**
+   * 레스토랑별 북마크 조회
+   *
+   * @author 성유진
+   *
+   */
+  @GetMapping("/bookmarks/{restaurantId}")
+  public ResponseEntity<ApiResponse<List<BookmarkResponse>>> getRestaurantBookmarks(
+      @PathVariable Long restaurantId) {
+
+    List<BookmarkResponse> bookmarks = bookmarkService.getRestaurantBookmarks(restaurantId);
+
+    return ResponseEntity.ok(
+        ApiResponse.success("레스토랑 북마크 조회 성공", bookmarks)
+    );
+  }
+
 }

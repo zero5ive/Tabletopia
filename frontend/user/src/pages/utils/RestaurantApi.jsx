@@ -67,3 +67,13 @@ export const addBookmark = (userId, restaurantId) => {
         }
     });
 }
+
+
+/* 레스토랑별 북마크 조회 */
+export const getRestaurantBookmarks = (restaurantId) => {
+    return axios.get(`${URL}/bookmarks/${restaurantId}`, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    });
+}
