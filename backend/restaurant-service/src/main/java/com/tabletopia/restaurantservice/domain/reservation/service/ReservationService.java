@@ -17,6 +17,7 @@ import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
+import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectionService;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
@@ -29,6 +30,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,7 @@ public class ReservationService {
   private final TableSelectionService tableSelectionService;
   private final UserService userService;
   private final RestaurantOpeningHourService openingHourService;
+  private final JpaPaymentDetailRepository paymentDetailRepository;
 
   private final SimpMessagingTemplate messagingTemplate;
 

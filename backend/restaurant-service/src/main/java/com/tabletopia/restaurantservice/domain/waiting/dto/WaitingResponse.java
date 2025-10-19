@@ -30,6 +30,9 @@ public class WaitingResponse {
 
   private Integer teamsAhead; // 내 앞에 대기 중인 팀 수
 
+  private Integer delayCount; //미루기 횟수
+  private Boolean canDelay; //미루기 가능 여부
+
   public static WaitingResponse from(Waiting waiting, Long restaurantId) {
     WaitingResponse response = new WaitingResponse();
 
@@ -43,6 +46,8 @@ public class WaitingResponse {
     response.setWaitingState(waiting.getWaitingState());
     response.setUserName(waiting.getUser().getName());
     response.setUserPhone(waiting.getUser().getPhoneNumber());
+    response.setDelayCount(waiting.getDelayCount());
+    response.setCanDelay(waiting.canDelay());
 
     return response;
   }

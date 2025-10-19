@@ -1,7 +1,7 @@
 package com.tabletopia.restaurantservice.domain.restaurant.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.tabletopia.restaurantservice.domain.restaurantAccount.entity.RestaurantAccount;
+import com.tabletopia.restaurantservice.domain.admin.entity.Admin;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.entity.RestaurantCategory;
 import com.tabletopia.restaurantservice.domain.restaurantFacility.entity.RestaurantFacility;
 import com.tabletopia.restaurantservice.domain.restaurantImage.entity.RestaurantImage;
@@ -14,7 +14,6 @@ import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -136,7 +135,7 @@ public class Restaurant {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "admin_id", nullable = false)
   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-  private RestaurantAccount restaurantAccount;
+  private Admin admin;
 
 }
 

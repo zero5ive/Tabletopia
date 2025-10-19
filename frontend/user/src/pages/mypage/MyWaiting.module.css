@@ -812,6 +812,327 @@
     }
 }
 
+/* 미루기 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid #e8eaed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafbfc;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #5f6368;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #e8eaed;
+    color: #1a1a1a;
+}
+
+.modal-body {
+    padding: 24px 28px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-info {
+    background: #e8f5e8;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-info-icon {
+    font-size: 24px;
+}
+
+.modal-info-text {
+    color: #155724;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-warning-icon {
+    font-size: 24px;
+}
+
+.modal-warning-text {
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid #e8eaed;
+    background: #fafbfc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delay-count-info {
+    font-size: 14px;
+    color: #5f6368;
+}
+
+.delay-count-info strong {
+    color: #ff4444;
+    font-size: 16px;
+    margin: 0 4px;
+}
+
+.waiting-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.waiting-item {
+    background: white;
+    border: 2px solid #e8eaed;
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.waiting-item:hover {
+    border-color: #ff4444;
+    background: #fff5f5;
+    transform: translateX(4px);
+}
+
+.waiting-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.waiting-item-number {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.waiting-item-details {
+    font-size: 14px;
+    color: #5f6368;
+}
+
+.waiting-item-arrow {
+    font-size: 20px;
+    color: #ff4444;
+    transition: transform 0.2s ease;
+}
+
+.waiting-item:hover .waiting-item-arrow {
+    transform: translateX(4px);
+}
+
+.empty-waiting-list {
+    text-align: center;
+    padding: 40px 20px;
+    color: #5f6368;
+}
+
+.empty-waiting-list-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-waiting-list-text {
+    font-size: 16px;
+}
+
+/* 리뷰 모달 스타일 */
+.restaurant-info-modal {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.restaurant-info-modal h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.restaurant-info-modal p {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 0;
+}
+
+.rating-section {
+    margin-bottom: 24px;
+}
+
+.rating-section label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.star-filled {
+    color: #ffc107;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star-empty {
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star-filled:hover,
+.star-empty:hover {
+    transform: scale(1.1);
+}
+
+.comment-section {
+    margin-bottom: 24px;
+}
+
+.comment-section label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.review-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #ff4444;
+    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+}
+
+.review-textarea::placeholder {
+    color: #adb5bd;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #5f6368;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #e8eaed;
+    color: #1a1a1a;
+}
+
 @media (max-width: 768px) {
     .reservations-grid {
         grid-template-columns: 1fr;
@@ -855,6 +1176,19 @@
         min-width: 36px;
         height: 36px;
         font-size: 13px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-header {
+        padding: 20px;
+    }
+
+    .modal-body {
+        padding: 20px;
     }
 }
 

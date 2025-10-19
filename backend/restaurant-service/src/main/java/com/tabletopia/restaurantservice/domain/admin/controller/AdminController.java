@@ -4,12 +4,21 @@ import com.tabletopia.restaurantservice.domain.admin.dto.AdminDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminLoginDTO;
 import com.tabletopia.restaurantservice.domain.admin.dto.AdminRegisterDTO;
 import com.tabletopia.restaurantservice.domain.admin.entity.Admin;
+import com.tabletopia.restaurantservice.domain.admin.entity.Role;
+import com.tabletopia.restaurantservice.domain.admin.repository.JpaAdminRepository;
 import com.tabletopia.restaurantservice.domain.admin.service.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +39,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final AuthenticationManager authenticationManager;
+    private final JpaAdminRepository adminRepository;
 
 
     @GetMapping("/auth/me")
@@ -65,8 +75,14 @@ public class AdminController {
             HttpSession session = request.getSession(true);
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
+
+            Admin admin = adminService.getAdminEntityByEmail(adminLoginDTO.getEmail());
             log.debug("Admin login successful for user: {}", adminLoginDTO.getEmail());
-            return ResponseEntity.ok(Map.of("success", true, "message", "Admin login successful"));
+            return ResponseEntity.ok(Map.of(
+              "success", true,
+              "message", "Admin login successful",
+              "role", admin.getRole()
+            ));
         } catch (Exception e) {
             log.warn("에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생에러발생");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "오류입니다.실패하였습니다."));
@@ -94,5 +110,18 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("success", true, "message", "Admin logout successful"));
         }
     }
+  @GetMapping("/list")
+  @PreAuthorize("hasRole('SUPERADMIN')")
+  public ResponseEntity<Page<Admin>> getAllAdmins(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
+  ) {
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Admin> admins = adminRepository.findByRoleNotOrderByNameAsc(Role.SUPERADMIN, pageable);
+
+    log.debug("관리자 목록 조회: page={}, size={}, totalElements={}", page, size, admins.getTotalElements());
+    return ResponseEntity.ok(admins);
+  }
+
 
 }

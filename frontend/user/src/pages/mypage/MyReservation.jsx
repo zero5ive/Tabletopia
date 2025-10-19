@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './MyWaiting.module.css'
-import { getReservations } from '../utils/UserApi';
+import { getReservations, createReview } from '../utils/UserApi';
 
 export default function MyReservation() {
     const [activeTab, setActiveTab] = useState('PENDING')
     const [reservations, setReservations] = useState([])
     const [loading, setLoading] = useState(false)
+    const [showReviewModal, setShowReviewModal] = useState(false)
+    const [selectedReservation, setSelectedReservation] = useState(null)
+    const [reviewData, setReviewData] = useState({
+        rating: 5,
+        comment: ''
+    })
 
     const tabs = [
         { key: 'PENDING', label: '대기중' },
@@ -66,6 +72,59 @@ export default function MyReservation() {
         const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
 
         return `${year}.${month}.${day} (${dayOfWeek}) ${hours}:${minutes}`
+    }
+
+    const handleReviewClick = (reservation) => {
+        console.log('선택된 예약 정보:', reservation)
+        console.log('restaurantId:', reservation.restaurantId)
+        setSelectedReservation(reservation)
+        setReviewData({
+            rating: 5,
+            comment: ''
+        })
+        setShowReviewModal(true)
+    }
+
+    const handleReviewSubmit = async () => {
+        if (!reviewData.comment.trim()) {
+            alert('리뷰 내용을 입력해주세요.')
+            return
+        }
+
+        try {
+            const requestData = {
+                restaurantId: selectedReservation.restaurantId,
+                rating: reviewData.rating,
+                comment: reviewData.comment,
+                sourceId: selectedReservation.id,
+                sourceType: 'RESERVATION'
+            }
+
+            console.log('리뷰 작성 요청 데이터:', requestData)
+            const response = await createReview(requestData)
+            console.log('리뷰 작성 응답:', response)
+            alert('리뷰가 작성되었습니다.')
+            setShowReviewModal(false)
+            setSelectedReservation(null)
+            fetchReservations(activeTab)
+        } catch (error) {
+            console.error('리뷰 작성 에러:', error)
+            console.error('에러 상세:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            })
+            alert(`${error.response?.data?.message || error.message}`)
+        }
+    }
+
+    const handleCloseModal = () => {
+        setShowReviewModal(false)
+        setSelectedReservation(null)
+        setReviewData({
+            rating: 5,
+            comment: ''
+        })
     }
 
     return (
@@ -157,7 +216,10 @@ export default function MyReservation() {
                                                 </button>
                                             )}
                                             {reservation.reservationState === 'COMPLETED' && (
-                                                <button className={`${styles.btn} ${styles['btn-primary']}`}>
+                                                <button
+                                                    className={`${styles.btn} ${styles['btn-primary']}`}
+                                                    onClick={() => handleReviewClick(reservation)}
+                                                >
                                                     ✍️ 리뷰 작성
                                                 </button>
                                             )}
@@ -169,6 +231,59 @@ export default function MyReservation() {
                     )}
                 </div>
             </div>
+
+            {/* 리뷰 작성 모달 */}
+            {showReviewModal && selectedReservation && (
+                <div className={styles['modal-overlay']} onClick={handleCloseModal}>
+                    <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles['modal-header']}>
+                            <h3>리뷰 작성</h3>
+                            <button className={styles['close-btn']} onClick={handleCloseModal}>×</button>
+                        </div>
+                        <div className={styles['modal-body']}>
+                            <div className={styles['restaurant-info-modal']}>
+                                <h4>{selectedReservation.restaurantNameSnapshot}</h4>
+                                <p>{formatDateTime(selectedReservation.reservationAt)}</p>
+                            </div>
+
+                            <div className={styles['rating-section']}>
+                                <label>평점</label>
+                                <div className={styles['star-rating']}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <span
+                                            key={star}
+                                            className={star <= reviewData.rating ? styles['star-filled'] : styles['star-empty']}
+                                            onClick={() => setReviewData({ ...reviewData, rating: star })}
+                                            style={{ cursor: 'pointer', fontSize: '30px' }}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className={styles['comment-section']}>
+                                <label>리뷰 내용</label>
+                                <textarea
+                                    className={styles['review-textarea']}
+                                    placeholder="식당에 대한 솔직한 리뷰를 남겨주세요."
+                                    value={reviewData.comment}
+                                    onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                                    rows="5"
+                                />
+                            </div>
+                        </div>
+                        <div className={styles['modal-footer']}>
+                            <button className={`${styles.btn} ${styles['btn-secondary']}`} onClick={handleCloseModal}>
+                                취소
+                            </button>
+                            <button className={`${styles.btn} ${styles['btn-primary']}`} onClick={handleReviewSubmit}>
+                                작성 완료
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     )
 }

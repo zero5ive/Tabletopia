@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
  * 매장 이미지 관련 비즈니스 로직을 처리하는 서비스 클래스
  *
  * 매장별 이미지 조회, 업로드, 대표 이미지 지정, 삭제 기능을 제공한다.
- * 업로드 시 FileStorageService를 이용해 로컬 디렉토리에 파일을 저장한다.
+ * 업로드 시 FileStorageService를 이용해 로컬 디렉토리에 파일을 저장하며,
+ * 삭제 시 실제 파일도 함께 제거한다.
  *
  * @author 김지민
  * @since 2025-10-15
@@ -64,18 +65,12 @@ public class RestaurantImageService {
       // 전체 경로 중 마지막 파일명만 추출
       String fileNameOnly = Paths.get(savedFilePath).getFileName().toString();
 
-      // 확실히 uploads/, restaurants/ 같은 상위 폴더 제거
-      if (fileNameOnly.contains("/")) {
-        fileNameOnly = fileNameOnly.substring(fileNameOnly.lastIndexOf("/") + 1);
-      }
-
       RestaurantImage img = RestaurantImage.builder()
           .restaurant(restaurant)
           .imageUrl(fileNameOnly)
           .build();
 
       imageRepository.save(img);
-
     }
   }
 
@@ -99,11 +94,21 @@ public class RestaurantImageService {
   }
 
   /**
-   * 특정 이미지를 삭제
+   * 특정 이미지를 삭제 (DB + 실제 파일 삭제)
    *
    * @param imageId 삭제할 이미지 ID
    */
   public void deleteImage(Long imageId) {
-    imageRepository.deleteById(imageId);
+    RestaurantImage img = imageRepository.findById(imageId)
+        .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
+
+    // 실제 파일 삭제
+    if (img.getImageUrl() != null && !img.getImageUrl().isBlank()) {
+      String fileUrl = "/uploads/restaurants/" + img.getImageUrl();
+      fileStorageService.delete(fileUrl);
+    }
+
+    // DB 레코드 삭제
+    imageRepository.delete(img);
   }
 }
