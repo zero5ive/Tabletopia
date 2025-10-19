@@ -149,32 +149,6 @@ SHOW TABLES;
 -- 네이밍 규칙 적용 버전
 -- ==========================================
 
--- 결제 테이블
-CREATE TABLE `payment` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `payment_type` ENUM('COMMISSION', 'AD_FEE', 'SUBSCRIPTION') NOT NULL,
-    `amount` BIGINT NOT NULL,
-    `payment_method` ENUM('CARD', 'BANK_TRANSFER', 'VIRTUAL_ACCOUNT') NOT NULL,
-    `payment_status` ENUM('PENDING', 'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL,
-    `paid_at` TIMESTAMP NULL,
-    `payment_gateway_id` VARCHAR(100) NULL COMMENT '결제 게이트웨이 거래 ID',
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (`id`),
-    INDEX `idx_payment_status` (`payment_status`),
-    INDEX `idx_payment_type` (`payment_type`)
-);
-
--- SNS 제공자 테이블
-CREATE TABLE `sns_provider` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(100) NOT NULL UNIQUE,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`)
-);
-
 -- 사용자 테이블
 CREATE TABLE `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -182,15 +156,15 @@ CREATE TABLE `user` (
     `password` VARCHAR(100),
     `name` VARCHAR(20) NOT NULL,
     `phone_number` VARCHAR(13) NULL,
-    `sns_provider_id` BIGINT NULL,
+--     `sns_provider_id` BIGINT NULL,
     `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '활성화 여부',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     PRIMARY KEY (`id`),
     INDEX `idx_user_email` (`email`),
-    INDEX `idx_user_is_deleted` (`is_deleted`),
-    FOREIGN KEY (`sns_provider_id`) REFERENCES `sns_provider`(`id`)
+    INDEX `idx_user_is_deleted` (`is_deleted`)
+--     FOREIGN KEY (`sns_provider_id`) REFERENCES `sns_provider`(`id`)
 );
 
 -- 레스토랑 계정 테이블
@@ -204,18 +178,6 @@ CREATE TABLE `admin` (
     PRIMARY KEY (`id`)
 );
 
--- 레스토랑 계정 테이블
-CREATE TABLE `superadmin` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(100) NOT NULL UNIQUE,
-    `password` VARCHAR(100) NOT NULL,
-    `name` VARCHAR(10) NOT NULL,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE,
-    PRIMARY KEY (`id`)
-);
-
 -- 레스토랑 카테고리 테이블
 CREATE TABLE `restaurant_category` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -226,6 +188,52 @@ CREATE TABLE `restaurant_category` (
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     PRIMARY KEY (`id`)
+);
+
+-- 시설 정보
+CREATE TABLE `facility` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(50) NOT NULL UNIQUE,
+    PRIMARY KEY (`id`)
+);
+
+-- 키워드
+CREATE TABLE `keyword` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `keyword` VARCHAR(50) NOT NULL UNIQUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
+-- 광고 플랜
+CREATE TABLE `ad_plan` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(50) NOT NULL UNIQUE,
+    `monthly_price` INT NOT NULL CHECK (`monthly_price` >= 0),
+    `is_main_exposure` BOOLEAN NOT NULL DEFAULT FALSE,
+    `is_mypage_exposure` BOOLEAN NOT NULL DEFAULT FALSE,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
+-- 수수료 정책
+CREATE TABLE `commission_policy` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(25) NOT NULL,
+    `min_reservation_count` INT NOT NULL,
+    `max_reservation_count` INT NOT NULL,
+    `commission_amount` BIGINT NOT NULL,
+    `effective_start_at` TIMESTAMP NOT NULL,
+    `effective_end_at` TIMESTAMP NOT NULL,
+    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (`id`),
+    INDEX `idx_commission_policy_effective` (`effective_start_at`, `effective_end_at`)
 );
 
 -- 레스토랑 테이블
@@ -252,6 +260,33 @@ CREATE TABLE `restaurant` (
     FOREIGN KEY (`restaurant_category_id`) REFERENCES `restaurant_category`(`id`),
     FOREIGN KEY (`admin_id`) REFERENCES `admin`(`id`)
 );
+
+-- 추천 요청
+CREATE TABLE `recommendation_request` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `recommendation_type` ENUM('RESTAURANT', 'TODAY_RESERVATION', 'KEYWORD') NOT NULL COMMENT '추천 종류',
+    `request_data` JSON NULL COMMENT '추천 요청 데이터',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (`id`),
+    INDEX `idx_recommendation_user` (`user_id`),
+    INDEX `idx_recommendation_type` (`recommendation_type`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+);
+
+-- -- 레스토랑 계정 테이블
+-- CREATE TABLE `superadmin` (
+--     `id` BIGINT NOT NULL AUTO_INCREMENT,
+--     `email` VARCHAR(100) NOT NULL UNIQUE,
+--     `password` VARCHAR(100) NOT NULL,
+--     `name` VARCHAR(10) NOT NULL,
+--     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE,
+--     PRIMARY KEY (`id`)
+-- );
 
 -- 레스토랑 테이블 정보
 CREATE TABLE `restaurant_table` (
@@ -341,13 +376,6 @@ CREATE TABLE `restaurant_image` (
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE
 );
 
--- 시설 정보
-CREATE TABLE `facility` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(50) NOT NULL UNIQUE,
-    PRIMARY KEY (`id`)
-);
-
 -- 레스토랑 시설 (중간 테이블)
 CREATE TABLE `restaurant_facility` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -362,15 +390,6 @@ CREATE TABLE `restaurant_facility` (
     FOREIGN KEY (`facility_id`) REFERENCES `facility`(`id`)
 );
 
--- 키워드
-CREATE TABLE `keyword` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `keyword` VARCHAR(50) NOT NULL UNIQUE,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`)
-);
-
 -- 레스토랑 키워드 (중간 테이블)
 CREATE TABLE `restaurant_keyword` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -383,39 +402,6 @@ CREATE TABLE `restaurant_keyword` (
     UNIQUE KEY `uk_restaurant_keyword` (`restaurant_id`, `keyword_id`),
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`keyword_id`) REFERENCES `keyword`(`id`)
-);
-
--- 예약
-CREATE TABLE `reservation` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `restaurant_id` BIGINT NOT NULL,
-    `restaurant_table_id` BIGINT NOT NULL,
-    `people_count` INT NOT NULL CHECK (`people_count` > 0),
-    
-    -- 스냅샷 정보 (예약 당시 상태 보존)
-    `restaurant_name_snapshot` VARCHAR(100) NOT NULL,
-    `restaurant_address_snapshot` VARCHAR(255) NOT NULL,
-    `restaurant_phone_snapshot` VARCHAR(20) NOT NULL,
-    `restaurant_table_name_snapshot` VARCHAR(50) NOT NULL,
-    `restaurant_table_capacity_snapshot` INT NOT NULL,
-    
-    -- 예약 상태 및 시간
-    `reservation_state` ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW') NOT NULL,
-    `reservation_at` TIMESTAMP NOT NULL,
-    `processed_at` TIMESTAMP NULL,
-    `completed_at` TIMESTAMP NULL,
-    `rejected_reason` VARCHAR(500) NULL,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (`id`),
-    INDEX `idx_reservation_user` (`user_id`),
-    INDEX `idx_reservation_restaurant` (`restaurant_id`),
-    INDEX `idx_reservation_datetime` (`reservation_at`),
-    INDEX `idx_reservation_state` (`reservation_state`),
-    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`),
-    FOREIGN KEY (`restaurant_table_id`) REFERENCES `restaurant_table`(`id`)
 );
 
 -- 웨이팅
@@ -446,23 +432,58 @@ CREATE TABLE `waiting` (
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
 );
 
--- 알림
-CREATE TABLE `notification` (
+-- 리뷰
+CREATE TABLE `restaurant_review` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `waiting_id` BIGINT NOT NULL,
     `user_id` BIGINT NOT NULL,
-    `message` TEXT NULL,
-    `notification_type` ENUM('REGISTERED', 'APPROACHING', 'CALLED') NOT NULL,
-    `sent_at` TIMESTAMP NULL,
+    `restaurant_id` BIGINT NOT NULL,
+    `rating` INT NOT NULL CHECK(`rating` BETWEEN 1 AND 5) COMMENT '별점 1~5',
+    `comment` TEXT NOT NULL,
+    `source_type` ENUM('RESERVATION', 'WAITING') NOT NULL COMMENT '방문 경로',
+    `source_id` BIGINT NOT NULL COMMENT '예약 또는 웨이팅 ID',
+    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     PRIMARY KEY (`id`),
-    INDEX `idx_notification_user` (`user_id`),
-    INDEX `idx_notification_waiting` (`waiting_id`),
-    INDEX `idx_notification_type` (`notification_type`),
-    FOREIGN KEY (`waiting_id`) REFERENCES `waiting`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+    UNIQUE KEY `uk_user_restaurant_review` (`user_id`, `restaurant_id`),
+    INDEX `idx_restaurant_review_restaurant` (`restaurant_id`),
+    INDEX `idx_restaurant_review_rating` (`rating`),
+    INDEX `idx_restaurant_review_is_deleted` (`is_deleted`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE
+);
+
+-- 북마크
+CREATE TABLE `bookmark` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `restaurant_id` BIGINT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_restaurant_bookmark` (`user_id`, `restaurant_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE
+);
+
+-- 추천 결과
+CREATE TABLE `recommendation_result` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `recommendation_request_id` BIGINT NOT NULL,
+    `restaurant_id` BIGINT NOT NULL,
+    `rank_order` INT NOT NULL,
+    `score` DECIMAL(5,2) NULL COMMENT '추천 점수',
+    `reason` VARCHAR(255) NULL COMMENT '추천 이유',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (`id`),
+    INDEX `idx_recommendation_result_request` (`recommendation_request_id`),
+    INDEX `idx_recommendation_result_rank` (`recommendation_request_id`, `rank_order`),
+    FOREIGN KEY (`recommendation_request_id`) REFERENCES `recommendation_request`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`)
 );
 
 -- 실시간 테이블 상태 관리
@@ -512,26 +533,23 @@ CREATE TABLE `table_usage_history` (
         ON DELETE SET NULL  -- 삭제 시 NULL로 설정
 );
 
--- 리뷰
-CREATE TABLE `restaurant_review` (
+-- 알림
+CREATE TABLE `notification` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `waiting_id` BIGINT NOT NULL,
     `user_id` BIGINT NOT NULL,
-    `restaurant_id` BIGINT NOT NULL,
-    `rating` INT NOT NULL CHECK(`rating` BETWEEN 1 AND 5) COMMENT '별점 1~5',
-    `comment` TEXT NOT NULL,
-    `source_type` ENUM('RESERVATION', 'WAITING') NOT NULL COMMENT '방문 경로',
-    `source_id` BIGINT NOT NULL COMMENT '예약 또는 웨이팅 ID',
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
+    `message` TEXT NULL,
+    `notification_type` ENUM('REGISTERED', 'APPROACHING', 'CALLED') NOT NULL,
+    `sent_at` TIMESTAMP NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_restaurant_review` (`user_id`, `restaurant_id`),
-    INDEX `idx_restaurant_review_restaurant` (`restaurant_id`),
-    INDEX `idx_restaurant_review_rating` (`rating`),
-    INDEX `idx_restaurant_review_is_deleted` (`is_deleted`),
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
-    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE
+    INDEX `idx_notification_user` (`user_id`),
+    INDEX `idx_notification_waiting` (`waiting_id`),
+    INDEX `idx_notification_type` (`notification_type`),
+    FOREIGN KEY (`waiting_id`) REFERENCES `waiting`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
 );
 
 -- 리뷰 이미지
@@ -549,81 +567,56 @@ CREATE TABLE `review_image` (
     FOREIGN KEY (`restaurant_review_id`) REFERENCES `restaurant_review`(`id`) ON DELETE CASCADE
 );
 
--- 북마크
-CREATE TABLE `bookmark` (
+-- 예약
+CREATE TABLE `reservation` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
     `restaurant_id` BIGINT NOT NULL,
+    `restaurant_table_id` BIGINT NOT NULL,
+    `people_count` INT NOT NULL CHECK (`people_count` > 0),
+
+    -- 스냅샷 정보 (예약 당시 상태 보존)
+    `restaurant_name_snapshot` VARCHAR(100) NOT NULL,
+    `restaurant_address_snapshot` VARCHAR(255) NOT NULL,
+    `restaurant_phone_snapshot` VARCHAR(20) NOT NULL,
+    `restaurant_table_name_snapshot` VARCHAR(50) NOT NULL,
+    `restaurant_table_capacity_snapshot` INT NOT NULL,
+
+    -- 예약 상태 및 시간
+    `reservation_state` ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW') NOT NULL,
+    `reservation_at` TIMESTAMP NOT NULL,
+    `processed_at` TIMESTAMP NULL,
+    `completed_at` TIMESTAMP NULL,
+    `rejected_reason` VARCHAR(500) NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_restaurant_bookmark` (`user_id`, `restaurant_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`) ON DELETE CASCADE
+    INDEX `idx_reservation_user` (`user_id`),
+    INDEX `idx_reservation_restaurant` (`restaurant_id`),
+    INDEX `idx_reservation_datetime` (`reservation_at`),
+    INDEX `idx_reservation_state` (`reservation_state`),
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`),
+    FOREIGN KEY (`restaurant_table_id`) REFERENCES `restaurant_table`(`id`)
 );
 
--- 추천 요청
-CREATE TABLE `recommendation_request` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `recommendation_type` ENUM('RESTAURANT', 'TODAY_RESERVATION', 'KEYWORD') NOT NULL COMMENT '추천 종류',
-    `request_data` JSON NULL COMMENT '추천 요청 데이터',
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (`id`),
-    INDEX `idx_recommendation_user` (`user_id`),
-    INDEX `idx_recommendation_type` (`recommendation_type`),
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
-);
+-- 결제내역(간소화)
+CREATE TABLE `payment` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `order_no` VARCHAR(100) NOT NULL,        -- 주문번호 (PG/내부 공통 식별자)
+    `reservation_id` BIGINT NOT NULL,        -- 예약과 연결
+    `pay_method` VARCHAR(50) NOT NULL,       -- 결제수단 (CARD, KAKAO_PAY 등)
+    `amount` DECIMAL(10,2) NOT NULL,         -- 결제금액
+    `status` ENUM('READY', 'SUCCESS', 'FAIL', 'CANCEL') DEFAULT 'READY', -- 결제 상태
+    `pg_tid` VARCHAR(100) DEFAULT NULL,      -- PG 거래 고유번호 (optional)
+    `approved_at` DATETIME DEFAULT NULL,     -- 결제 승인일시
+    `canceled_at` DATETIME DEFAULT NULL,     -- 결제 취소일시
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
--- 추천 결과
-CREATE TABLE `recommendation_result` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `recommendation_request_id` BIGINT NOT NULL,
-    `restaurant_id` BIGINT NOT NULL,
-    `rank_order` INT NOT NULL,
-    `score` DECIMAL(5,2) NULL COMMENT '추천 점수',
-    `reason` VARCHAR(255) NULL COMMENT '추천 이유',
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (`id`),
-    INDEX `idx_recommendation_result_request` (`recommendation_request_id`),
-    INDEX `idx_recommendation_result_rank` (`recommendation_request_id`, `rank_order`),
-    FOREIGN KEY (`recommendation_request_id`) REFERENCES `recommendation_request`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`)
-);
-
--- 광고 플랜
-CREATE TABLE `ad_plan` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(50) NOT NULL UNIQUE,
-    `monthly_price` INT NOT NULL CHECK (`monthly_price` >= 0),
-    `is_main_exposure` BOOLEAN NOT NULL DEFAULT FALSE,
-    `is_mypage_exposure` BOOLEAN NOT NULL DEFAULT FALSE,
-    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`)
-);
-
--- 수수료 정책
-CREATE TABLE `commission_policy` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(25) NOT NULL,
-    `min_reservation_count` INT NOT NULL,
-    `max_reservation_count` INT NOT NULL,
-    `commission_amount` BIGINT NOT NULL,
-    `effective_start_at` TIMESTAMP NOT NULL,
-    `effective_end_at` TIMESTAMP NOT NULL,
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (`id`),
-    INDEX `idx_commission_policy_effective` (`effective_start_at`, `effective_end_at`)
+    INDEX `idx_payment_order_no` (`order_no`),
+    INDEX `idx_payment_status` (`status`),
+    FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`)
 );
 
 -- 수수료 기록
@@ -632,9 +625,9 @@ CREATE TABLE `commission_record` (
     `restaurant_id` BIGINT NOT NULL,
     `commission_policy_id` BIGINT NOT NULL,
     `applied_date` DATE NOT NULL,
-   `reservation_count` INT NULL DEFAULT 0,
+    `reservation_count` INT NULL DEFAULT 0,
     `total_amount` BIGINT NOT NULL DEFAULT 0,
-    `payment_id` BIGINT NULL,
+--     `payment_id` BIGINT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -643,6 +636,8 @@ CREATE TABLE `commission_record` (
     INDEX `idx_commission_record_restaurant` (`restaurant_id`),
     INDEX `idx_commission_record_date` (`applied_date`),
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant`(`id`),
-    FOREIGN KEY (`commission_policy_id`) REFERENCES `commission_policy`(`id`),
-    FOREIGN KEY (`payment_id`) REFERENCES `payment`(`id`)
+    FOREIGN KEY (`commission_policy_id`) REFERENCES `commission_policy`(`id`)
+--     FOREIGN KEY (`payment_id`) REFERENCES `payment`(`id`)
 );
+ALTER TABLE reservation ADD COLUMN name VARCHAR(100);
+ALTER TABLE reservation ADD COLUMN phone_number VARCHAR(20);
