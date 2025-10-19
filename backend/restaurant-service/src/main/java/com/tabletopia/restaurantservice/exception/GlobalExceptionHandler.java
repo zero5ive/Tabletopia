@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 전역 예외 처리
@@ -77,6 +78,20 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(message, "VALIDATION_FAILED"));
+  }
+
+  /**
+   * ResponseStatusException 처리
+   *
+   * @author 서예닮
+   * @since 2025-10-19
+   */
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException e) {
+    log.warn("ResponseStatusException: {}", e.getReason());
+    return ResponseEntity
+        .status(e.getStatusCode())
+        .body(ErrorResponse.of(e.getReason(), e.getStatusCode().toString()));
   }
 
   /**

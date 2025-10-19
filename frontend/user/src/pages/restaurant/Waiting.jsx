@@ -11,12 +11,13 @@ import { useSearchParams } from 'react-router-dom';
 import { getWaitingStatus } from '../utils/WaitingApi';
 // import UserApi from '../utils/UserApi';
 import { updateUser, getCurrentUser } from '../utils/UserApi';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 
 export default function Waiting({ reservationType }) {
 
+  const { addNotification } = useWebSocket(); // WebSocketContext 사용
   const [people, setPeople] = useState(1); // 초기 인원 수
   const [stompClient, setStompClient] = useState(null);
-  // const [myUserId] = useState(1); // 현재 사용자 ID (나중에 로그인 정보에서 가져오기)
   const [isWaitingOpen, setIsWaitingOpen] = useState(false); //웨이팅 오픈
   const [team2, setTeam2] = useState(0);
   const [team4, setTeam4] = useState(0);
@@ -119,9 +120,10 @@ export default function Waiting({ reservationType }) {
         console.log('STOMP Debug:', str);
       },
       onConnect: () => {
-        console.log('웹소켓 연결 성공');
+        console.log('[Waiting.jsx] 웹소켓 연결 성공 - restaurantId:', restaurantId);
 
         // 웨이팅 오픈 구독
+        console.log('[Waiting.jsx] /topic/restaurant/' + restaurantId + '/open 구독 시작');
         client.subscribe(`/topic/restaurant/${restaurantId}/open`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === "OPEN") {
@@ -131,6 +133,7 @@ export default function Waiting({ reservationType }) {
         });
 
         //웨이팅 닫기 구독
+        console.log('[Waiting.jsx] /topic/restaurant/' + restaurantId + '/close 구독 시작');
         client.subscribe(`/topic/restaurant/${restaurantId}/close`, (msg) => {
           const alert = JSON.parse(msg.body);
           if (alert.type === "CLOSE") {
@@ -139,22 +142,47 @@ export default function Waiting({ reservationType }) {
           }
         });
 
-        //웨이팅 취소 구독
-        client.subscribe('/topic/cancel', (msg) => {
-          const alert = JSON.parse(msg.body);
-          if (alert.type === "CANCEL") {
-            fetchWaitingStatus();
-          }
+        //웨이팅 취소 구독 (레스토랑별 취소 이벤트)
+        console.log('[Waiting.jsx] /topic/restaurant/' + restaurantId + '/cancel 구독 시작');
+        client.subscribe(`/topic/restaurant/${restaurantId}/cancel`, async (msg) => {
+          console.log('[Waiting.jsx] 취소 이벤트 받음:', msg.body);
+          const response = JSON.parse(msg.body);
+          console.log('[Waiting.jsx] 취소 이벤트 파싱:', response);
+          // 취소 발생 시 대기 팀 수 갱신
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (취소) - 전');
+          await fetchWaitingStatus();
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (취소) - 후');
+        });
+
+        //웨이팅 호출 구독 (레스토랑별 호출 이벤트)
+        console.log('[Waiting.jsx] /topic/restaurant/' + restaurantId + '/call 구독 시작');
+        client.subscribe(`/topic/restaurant/${restaurantId}/call`, async (msg) => {
+          console.log('[Waiting.jsx] 호출 이벤트 받음:', msg.body);
+          // 호출 시에도 대기 팀 수 갱신
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (호출) - 전');
+          await fetchWaitingStatus();
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (호출) - 후');
+        });
+
+        //웨이팅 착석 구독 (레스토랑별 착석 이벤트)
+        console.log('[Waiting.jsx] /topic/restaurant/' + restaurantId + '/seated 구독 시작');
+        client.subscribe(`/topic/restaurant/${restaurantId}/seated`, async (msg) => {
+          console.log('[Waiting.jsx] 착석 이벤트 받음:', msg.body);
+          // 착석 시에도 대기 팀 수 갱신
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (착석) - 전');
+          await fetchWaitingStatus();
+          console.log('[Waiting.jsx] fetchWaitingStatus 호출 (착석) - 후');
         });
 
 
         //웨이팅 등록 구독
+        console.log('[Waiting.jsx] /topic/regist 구독 시작');
         const subscription = client.subscribe('/topic/regist', (msg) => {
 
-          console.log('서버로부터 메시지 받음:', msg.body);
+          console.log('[Waiting.jsx] 서버로부터 메시지 받음:', msg.body);
 
           const alert = JSON.parse(msg.body);
-          console.log('웨이팅 하는 id ', customerInfo.id)
+          console.log('[Waiting.jsx] 웨이팅 하는 id:', customerInfo.id, 'sender:', alert.sender, 'type:', alert.type)
 
           if (alert.type === 'ERROR') {
             // 에러 메시지는 모든 사용자에게 전달되므로 무조건 표시
@@ -167,9 +195,25 @@ export default function Waiting({ reservationType }) {
             if (alert.type === 'REGIST') {
               window.alert('웨이팅이 등록되었습니다.')
               fetchWaitingStatus();
+
+              // 알림 추가 (WebSocketContext로)
+              console.log('[Waiting.jsx] 알림 추가 시도:', alert)
+              addNotification({
+                id: Date.now(),
+                title: '웨이팅 등록',
+                name: alert.restaurantName || '',
+                message: alert.content || '웨이팅이 등록되었습니다.',
+                time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: Date.now(),
+                read: false,
+                userId: customerInfo.id
+              })
+              console.log('[Waiting.jsx] 알림 추가 완료')
             } else {
               window.alert('웨이팅 등록 실패.');
             }
+          } else {
+            console.log('[Waiting.jsx] 다른 사용자의 메시지 무시 - sender:', alert.sender, 'myId:', customerInfo.id)
           }
         });
         console.log('구독 완료:', subscription.id);

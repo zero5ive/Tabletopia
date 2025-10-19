@@ -2,13 +2,15 @@ import styles from './MyWaiting.module.css'
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from 'react';
 import { getUserWaitingList, waitingCancel } from '../utils/WaitingApi';
-import { getCurrentUser } from '../utils/UserApi';
+import { getCurrentUser, createReview } from '../utils/UserApi';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { delayWaiting } from '../utils/WaitingApi';
 import { getDelayOptions } from '../utils/WaitingApi';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 
 export default function MyReservation() {
+    const { waitingStateChange } = useWebSocket(); // WebSocketContext 사용
     const [allWaitingList, setAllWaitingList] = useState([]); // 전체 데이터
     const [filteredList, setFilteredList] = useState([]); // 필터링된 데이터
     const [displayList, setDisplayList] = useState([]); // 현재 페이지에 표시할 데이터
@@ -21,6 +23,12 @@ export default function MyReservation() {
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
     const [selectedWaiting, setSelectedWaiting] = useState(null); // 선택된 웨이팅
     const [delayOptions, setDelayOptions] = useState([]); // 미루기 옵션 목록
+    const [showReviewModal, setShowReviewModal] = useState(false) // 리뷰 모달 상태
+    const [selectedWaitingForReview, setSelectedWaitingForReview] = useState(null) // 리뷰 작성할 웨이팅
+    const [reviewData, setReviewData] = useState({
+        rating: 5,
+        comment: ''
+    })
 
     // 미루기 버튼 클릭 핸들러
     const handleDelayClick = async (waiting) => {
@@ -153,6 +161,15 @@ export default function MyReservation() {
         }
     };
 
+    // 웨이팅 상태 변경 감지 (호출/착석/취소)
+    useEffect(() => {
+        if (waitingStateChange) {
+            console.log('[MyWaiting] 웨이팅 상태 변경 감지:', waitingStateChange);
+            // 목록 새로고침 (silent 모드로 로딩 표시 없이)
+            fetchAllWaitingList(true);
+        }
+    }, [waitingStateChange]);
+
     // 탭이 바뀌면 필터링 및 1페이지로 리셋
     useEffect(() => {
         // 1. 탭에 따라 필터링
@@ -282,6 +299,62 @@ export default function MyReservation() {
         }
     };
 
+    // 리뷰 작성 클릭 핸들러
+    const handleReviewClick = (waiting) => {
+        console.log('선택된 웨이팅 정보:', waiting)
+        console.log('restaurantId:', waiting.restaurantId)
+        setSelectedWaitingForReview(waiting)
+        setReviewData({
+            rating: 5,
+            comment: ''
+        })
+        setShowReviewModal(true)
+    }
+
+    // 리뷰 제출 핸들러
+    const handleReviewSubmit = async () => {
+        if (!reviewData.comment.trim()) {
+            alert('리뷰 내용을 입력해주세요.')
+            return
+        }
+
+        try {
+            const requestData = {
+                restaurantId: selectedWaitingForReview.restaurantId,
+                rating: reviewData.rating,
+                comment: reviewData.comment,
+                sourceId: selectedWaitingForReview.id,
+                sourceType: 'WAITING'
+            }
+
+            console.log('리뷰 작성 요청 데이터:', requestData)
+            const response = await createReview(requestData)
+            console.log('리뷰 작성 응답:', response)
+            alert('리뷰가 작성되었습니다.')
+            setShowReviewModal(false)
+            setSelectedWaitingForReview(null)
+            fetchAllWaitingList(true)
+        } catch (error) {
+            console.error('리뷰 작성 에러:', error)
+            console.error('에러 상세:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            })
+            alert(`${error.response?.data?.message || error.message}`)
+        }
+    }
+
+    // 리뷰 모달 닫기
+    const handleCloseReviewModal = () => {
+        setShowReviewModal(false)
+        setSelectedWaitingForReview(null)
+        setReviewData({
+            rating: 5,
+            comment: ''
+        })
+    }
+
 
     return (
         <>
@@ -359,8 +432,11 @@ export default function MyReservation() {
 
                                         {waiting.waitingState === 'SEATED' && (
                                             <div className={styles['card-actions']}>
-                                                <button className={`${styles.btn} ${styles['btn-primary']}`}>
-                                                    <Link to="/review/write">✍️ 리뷰 작성</Link>
+                                                <button
+                                                    className={`${styles.btn} ${styles['btn-primary']}`}
+                                                    onClick={() => handleReviewClick(waiting)}
+                                                >
+                                                    ✍️ 리뷰 작성
                                                 </button>
                                             </div>
                                         )}
@@ -479,6 +555,58 @@ export default function MyReservation() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* 리뷰 작성 모달 */}
+            {showReviewModal && selectedWaitingForReview && (
+                <div className={styles['modal-overlay']} onClick={handleCloseReviewModal}>
+                    <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles['modal-header']}>
+                            <h3>리뷰 작성</h3>
+                            <button className={styles['close-btn']} onClick={handleCloseReviewModal}>×</button>
+                        </div>
+                        <div className={styles['modal-body']}>
+                            <div className={styles['restaurant-info-modal']}>
+                                <h4>{selectedWaitingForReview.restaurantName}</h4>
+                            </div>
+
+                            <div className={styles['rating-section']}>
+                                <label>평점</label>
+                                <div className={styles['star-rating']}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <span
+                                            key={star}
+                                            className={star <= reviewData.rating ? styles['star-filled'] : styles['star-empty']}
+                                            onClick={() => setReviewData({ ...reviewData, rating: star })}
+                                            style={{ cursor: 'pointer', fontSize: '30px' }}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className={styles['comment-section']}>
+                                <label>리뷰 내용</label>
+                                <textarea
+                                    className={styles['review-textarea']}
+                                    placeholder="식당에 대한 솔직한 리뷰를 남겨주세요."
+                                    value={reviewData.comment}
+                                    onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                                    rows="5"
+                                />
+                            </div>
+                        </div>
+                        <div className={styles['modal-footer']}>
+                            <button className={`${styles.btn} ${styles['btn-secondary']}`} onClick={handleCloseReviewModal}>
+                                취소
+                            </button>
+                            <button className={`${styles.btn} ${styles['btn-primary']}`} onClick={handleReviewSubmit}>
+                                작성 완료
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

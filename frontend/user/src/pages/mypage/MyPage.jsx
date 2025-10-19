@@ -70,65 +70,6 @@ export default function MyPage() {
                     </div>
                 </section>
 
-                <section className={styles['content-section']}>
-                    <div className={styles['section-header']}>
-                        <h3 className={styles['section-title']}>오늘 많이 저장하는 레스토랑</h3>
-                    </div>
-                    <div className={styles['card-grid']}>
-                        <div className={styles['restaurant-card']}>
-                            <div className={styles['card-image']} style={{ background: 'linear-gradient(135deg, #8B4513 0%, #D2B48C 100%)' }} />
-                            <div className={styles['card-content']}>
-                                <h4 className={styles['card-title']}>BISTROT de...</h4>
-                                <p className={styles['card-description']}>프랑스요리 • 청담</p>
-                                <div className={styles.rating}>
-                                    <span className={styles.stars}>★</span>
-                                    <span className={styles['rating-score']}>4.7</span>
-                                    <span className={styles['rating-count']}>(2488)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={styles['restaurant-card']}>
-                            <div className={styles['card-image']} style={{ background: 'linear-gradient(135deg, #87CEEB 0%, #4682B4 100%)' }} />
-                            <div className={styles['card-content']}>
-                                <h4 className={styles['card-title']}>LAB 24 by K...</h4>
-                                <p className={styles['card-description']}>프랑스요리 • 부산 송정</p>
-                                <div className={styles.rating}>
-                                    <span className={styles.stars}>★</span>
-                                    <span className={styles['rating-score']}>4.7</span>
-                                    <span className={styles['rating-count']}>(3183)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={styles['restaurant-card']}>
-                            <div className={styles['card-image']} style={{ background: 'linear-gradient(135deg, #87CEEB 0%, #4682B4 100%)' }} />
-                            <div className={styles['card-content']}>
-                                <h4 className={styles['card-title']}>MAISON HAM</h4>
-                                <p className={styles['card-description']}>이탈리아요리 • 한남</p>
-                                <div className={styles.rating}>
-                                    <span className={styles.stars}>★</span>
-                                    <span className={styles['rating-score']}>4.4</span>
-                                    <span className={styles['rating-count']}>(2222)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={styles['restaurant-card']}>
-                            <div className={styles['card-image']} style={{ background: 'linear-gradient(135deg, #87CEEB 0%, #4682B4 100%)' }} />
-                            <div className={styles['card-content']}>
-                                <h4 className={styles['card-title']}>SUSHI YOSHII</h4>
-                                <p className={styles['card-description']}>일식 • 압구정</p>
-                                <div className={styles.rating}>
-                                    <span className={styles.stars}>★</span>
-                                    <span className={styles['rating-score']}>4.8</span>
-                                    <span className={styles['rating-count']}>(892)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </section>
             </main>
         </>
     )

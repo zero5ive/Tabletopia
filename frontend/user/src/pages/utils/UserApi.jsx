@@ -55,4 +55,16 @@ export const getBookmarks = (page = 0, size = 10) =>
 export const deleteBookmark = (bookmarkId) =>
     UserApi.delete(`/api/user/bookmarks/${bookmarkId}`)
 
+//마이페이지 리뷰 내역 조회
+export const getMyReviews = () =>
+    UserApi.get('/api/user/reviews/my')
+
+//리뷰 삭제
+export const deleteReview = (reviewId) =>
+    UserApi.delete(`/api/user/reviews/${reviewId}`)
+
+//리뷰 작성
+export const createReview = (reviewData) =>
+    UserApi.post('/api/user/reviews', reviewData)
+
 export default UserApi
