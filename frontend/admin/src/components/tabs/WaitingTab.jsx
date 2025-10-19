@@ -257,6 +257,7 @@ export default function WaitingTab({selectedRestaurant}) {
       webSocketFactory: () => socket,
       onConnect: () => {
         console.log('웹소켓 연결 성공');
+        console.log('구독할 레스토랑 ID:', selectedRestaurant.id);
 
         client.subscribe(`/topic/restaurant/${selectedRestaurant.id}/open`, (msg) => {
           const alert = JSON.parse(msg.body);
@@ -274,37 +275,34 @@ export default function WaitingTab({selectedRestaurant}) {
           }
         });
 
-        client.subscribe('/topic/regist', (msg) => {
+        const registSubscription = client.subscribe('/topic/regist', (msg) => {
           console.log('웨이팅 등록 메시지 받음:', msg.body);
           const alert = JSON.parse(msg.body);
-          if (alert.type === 'REGIST') {
-            // 현재 선택된 레스토랑의 웨이팅인지 확인
-            if (selectedRestaurantRef.current &&
-                alert.restaurantId === selectedRestaurantRef.current.id) {
-              const status = statusMap[activeFilterRef.current];
-              fetchWaitingList(currentPageRef.current, status);
-            }
+          console.log('등록 메시지 상세:', alert);
+          console.log('현재 선택된 레스토랑:', selectedRestaurantRef.current?.id);
+          // 현재 선택된 레스토랑의 웨이팅인지 확인
+          if (selectedRestaurantRef.current &&
+              alert.restaurantId === selectedRestaurantRef.current.id) {
+            console.log('✅ 등록 메시지 처리 - 리스트 새로고침');
+            const status = statusMap[activeFilterRef.current];
+            fetchWaitingList(currentPageRef.current, status);
+          } else {
+            console.log('❌ 다른 레스토랑의 등록 메시지 - 무시');
           }
         });
+        console.log('✅ /topic/regist 구독 완료:', registSubscription);
 
-        client.subscribe('/topic/cancel', (msg) => {
+        const cancelSubscription = client.subscribe(`/topic/restaurant/${selectedRestaurant.id}/cancel`, (msg) => {
           console.log('웨이팅 취소 메시지 받음:', msg.body);
-          const alert = JSON.parse(msg.body);
-          console.log('웨이팅 취소한 정보', alert);
-          if(alert.type === "CANCEL") {
-            // 관리자 정보 로그 출력 (디버깅용)
-            if (alert.adminName) {
-              console.log(`관리자 ${alert.adminName}이(가) 웨이팅을 취소했습니다.`);
-            }
-
-            // 현재 선택된 레스토랑의 웨이팅인지 확인
-            if (selectedRestaurantRef.current &&
-                alert.restaurantId === selectedRestaurantRef.current.id) {
-              const status = statusMap[activeFilterRef.current];
-              fetchWaitingList(currentPageRef.current, status);
-            }
-          }
+          const response = JSON.parse(msg.body);
+          console.log('웨이팅 취소한 정보', response);
+          console.log('✅ 취소 메시지 처리 - 리스트 새로고침');
+          // 레스토랑별 구독이므로 type, restaurantId 확인 불필요
+          // WaitingResponse 형식으로 전달됨
+          const status = statusMap[activeFilterRef.current];
+          fetchWaitingList(currentPageRef.current, status);
         });
+        console.log('✅ /topic/restaurant/' + selectedRestaurant.id + '/cancel 구독 완료:', cancelSubscription);
       },
 
       onStompError: (frame) => {
