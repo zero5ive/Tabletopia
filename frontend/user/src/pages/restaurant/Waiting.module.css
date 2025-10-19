@@ -15,10 +15,22 @@
     margin-bottom: 16px;
     text-align: center;
 }
+
+/* 웨이팅 닫혀있을 때 */
+.waiting-info.closed {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
 .waiting-status {
     font-weight: 600;
     color: #ff6b35;
     margin-bottom: 8px;
+}
+
+/* 웨이팅 닫혀있을 때 상태 텍스트 */
+.waiting-info.closed .waiting-status {
+    color: #6c757d;
 }
 
 /* 인원 선택 */
@@ -64,6 +76,19 @@
     background: #f8f9fa;
     border-color: #ff6b35;
 }
+
+/* 웨이팅 닫혀있을 때 인원 선택 버튼 */
+.counter-btn:disabled {
+    background: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+.counter-btn:disabled:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
 .guest-count {
     font-weight: 600;
     min-width: 20px;
@@ -87,4 +112,16 @@
 .reservation-btn:hover {
     background: #e55a2b;
     transform: translateY(-2px);
+}
+
+/* 웨이팅 닫혀있을 때 버튼 */
+.reservation-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.reservation-btn:disabled:hover {
+    background: #adb5bd;
+    transform: none;
 }

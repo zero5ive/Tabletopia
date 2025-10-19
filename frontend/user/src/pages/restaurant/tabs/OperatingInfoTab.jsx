@@ -116,6 +116,49 @@ export default function OperatingInfoTab() {
         return ranges.join(', ');
     };
 
+    // 현재 영업 상태 확인 함수
+    const getOperatingStatus = (openTime, closeTime) => {
+        if (!openTime || !closeTime) return null;
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+
+        const [openHour, openMinute] = openTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+        const openTotalMinutes = openHour * 60 + openMinute;
+        const closeTotalMinutes = closeHour * 60 + closeMinute;
+
+        if (currentTotalMinutes < openTotalMinutes) {
+            return 'before'; // 영업 전
+        } else if (currentTotalMinutes >= closeTotalMinutes) {
+            return 'closed'; // 영업 종료
+        } else {
+            return 'open'; // 영업 중
+        }
+    };
+
+    // 오늘 요일 가져오기
+    const getTodayDayName = () => {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return days[new Date().getDay()];
+    };
+
+    // 오늘의 영업시간 찾기
+    const getTodayHours = () => {
+        const today = getTodayDayName();
+        for (const group of Object.values(groupedHours)) {
+            if (group.days.includes(today)) {
+                return group;
+            }
+        }
+        return null;
+    };
+
+    const todayHours = getTodayHours();
+    const todayStatus = todayHours ? getOperatingStatus(todayHours.openTime, todayHours.closeTime) : null;
+
     return (
         <div className={`${styles["tab-panel"]} ${styles["active"]}`}>
             <div className={styles["section-title"]}>운영정보</div>
@@ -126,11 +169,34 @@ export default function OperatingInfoTab() {
                     <span className={styles["info-label"]}>영업시간</span>
                     <div className={styles["info-value"]}>
                         {Object.values(groupedHours).length > 0 ? (
-                            Object.values(groupedHours).map((group, index) => (
-                                <div key={index}>
-                                    {formatDayRange(group.days)} : {formatTime(group.openTime)} ~ {formatTime(group.closeTime)}
+                            <>
+                                {/* 오늘 영업시간 및 상태 */}
+                                {todayHours && (
+                                    <div style={{ marginBottom: '8px' }}>
+                                        <span style={{ fontWeight: '600' }}>
+                                            오늘 : {formatTime(todayHours.openTime)} ~ {formatTime(todayHours.closeTime)}
+                                        </span>
+                                        {todayStatus === 'open' && (
+                                            <span style={{ marginLeft: '12px', color: '#28a745', fontWeight: '600' }}>영업 중</span>
+                                        )}
+                                        {todayStatus === 'before' && (
+                                            <span style={{ marginLeft: '12px', color: '#ffc107', fontWeight: '600' }}>영업 전</span>
+                                        )}
+                                        {todayStatus === 'closed' && (
+                                            <span style={{ marginLeft: '12px', color: '#6c757d', fontWeight: '600' }}>영업 종료</span>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 전체 영업시간 */}
+                                <div style={{ fontSize: '14px', color: '#6c757d', marginTop: '8px' }}>
+                                    {Object.values(groupedHours).map((group, index) => (
+                                        <div key={index}>
+                                            {formatDayRange(group.days)} : {formatTime(group.openTime)} ~ {formatTime(group.closeTime)}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))
+                            </>
                         ) : (
                             <span>운영시간 정보 없음</span>
                         )}

@@ -258,6 +258,32 @@
      color: #ff4444;
  }
 
+ .bookmark-btn-overlay {
+     position: absolute;
+     top: 12px;
+     right: 12px;
+     background: rgba(255, 255, 255, 0.95);
+     border: none;
+     border-radius: 50%;
+     width: 44px;
+     height: 44px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     transition: all 0.2s ease;
+     backdrop-filter: blur(8px);
+     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+     z-index: 10;
+     font-size: 24px;
+ }
+
+ .bookmark-btn-overlay:hover {
+     background: rgba(255, 255, 255, 1);
+     box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+     transform: scale(1.1);
+ }
+
  .quick-info {
      position: absolute;
      bottom: 12px;

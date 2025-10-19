@@ -2,7 +2,13 @@ import Header from "../../components/header/Header";
 import styles from './RestaurantList.module.css';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { searchRestaurants } from "../utils/RestaurantApi";
+import { searchRestaurants, addBookmark } from "../utils/RestaurantApi";
+import { getBookmarks, deleteBookmark } from "../utils/UserApi";
+import { getCurrentUser } from "../utils/UserApi";
+import { toast } from 'react-toastify'; 
+
+
+
 
 export default function RestaurantList() {
     const [restaurants, setRestaurants] = useState([]);
@@ -10,9 +16,11 @@ export default function RestaurantList() {
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');  // 검색어 상태
-
+    const [currentUserId, setCurrentUserId] = useState(null); // 현재 로그인한 사용자 ID
+    const [bookmarkedRestaurants, setBookmarkedRestaurants] = useState(new Set());
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+
 
     // url에서 파라미터 추출
     const categoryId = searchParams.get('categoryId');
@@ -69,6 +77,80 @@ export default function RestaurantList() {
             console.error('레스토랑 조회 실패:', error);
         }
     };
+
+
+    // 로그인 여부 확인 (토큰만 체크)
+    useEffect(() => {
+        const checkLoginStatus = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                // 토큰이 있으면 사용자 정보 및 북마크 목록 조회
+                try {
+                    const userResponse = await getCurrentUser();
+                    const userId = userResponse.data.id;
+                    setCurrentUserId(userId);
+
+                    // 북마크 목록 조회
+                    const bookmarkResponse = await getBookmarks(0, 1000);
+                    if (bookmarkResponse.data.success) {
+                        const bookmarkedIds = new Set(
+                            bookmarkResponse.data.data.content.map(bookmark => bookmark.restaurantId)
+                        );
+                        setBookmarkedRestaurants(bookmarkedIds);
+                        console.log('북마크 목록 조회 성공:', bookmarkedIds);
+                    }
+                } catch (error) {
+                    // 토큰이 만료되었거나 유효하지 않은 경우 - 에러 무시
+                    if (error.response?.status === 403 || error.response?.status === 401) {
+                        console.log('토큰 만료 또는 유효하지 않음 - 로그아웃 상태로 처리');
+                        localStorage.removeItem('accessToken'); // 만료된 토큰 제거
+                    }
+                }
+            }
+        };
+        checkLoginStatus();
+    }, []);
+
+    // 북마크 토글 핸들러
+    const handleBookmarkToggle = async (e, restaurantId) => {
+        e.preventDefault(); // Link 클릭 이벤트 방지
+        e.stopPropagation();
+
+        if (!currentUserId) {
+            alert('로그인이 필요한 서비스입니다.');
+            return;
+        }
+
+        try {
+            if (bookmarkedRestaurants.has(restaurantId)) {
+                // 북마크 삭제 - bookmarkId 찾기
+                const response = await getBookmarks(0, 1000);
+                const bookmark = response.data.data.content.find(
+                    b => b.restaurantId === restaurantId
+                );
+                if (bookmark) {
+                    await deleteBookmark(bookmark.bookmarkId);
+                    setBookmarkedRestaurants(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(restaurantId);
+                        return newSet;
+                    });
+                    toast.success('북마크가 삭제되었습니다!');
+                }
+            } else {
+                // 북마크 추가
+                await addBookmark(currentUserId, restaurantId);
+                setBookmarkedRestaurants(prev => new Set([...prev, restaurantId]));
+                toast.success('북마크에 추가되었습니다!');
+            }
+        } catch (error) {
+            console.error('북마크 처리 실패:', error);
+            alert('북마크 처리에 실패했습니다.');
+        }
+    }
+
+
+
 
     /**
      * 검색 버튼 클릭 핸들러
@@ -271,15 +353,12 @@ export default function RestaurantList() {
                                                 ? `http://localhost:8002/uploads/restaurants/${restaurant.mainImageUrl}`
                                                 : '/placeholder-restaurant.png'}
                                                 alt={restaurant.name} />
-                                            {/* <button className={styles["bookmark-btn"]}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                                </svg>
-                                            </button> */}
-                                            {/* <div className={styles["quick-info"]}>
-                                                <span className={styles["info-badge"]}>영업중</span>
-                                                <span className={styles["info-badge"]}>예약가능</span>
-                                            </div> */}
+                                            <button
+                                                className={styles["bookmark-btn-overlay"]}
+                                                onClick={(e) => handleBookmarkToggle(e, restaurant.id)}
+                                            >
+                                                {bookmarkedRestaurants.has(restaurant.id) ? '❤️' : '🤍'}
+                                            </button>
                                         </div>
 
                                         <div className={styles["card-content"]}>
@@ -380,6 +459,7 @@ export default function RestaurantList() {
 
                 </div>
             </main>
+
         </>
     );
 }
