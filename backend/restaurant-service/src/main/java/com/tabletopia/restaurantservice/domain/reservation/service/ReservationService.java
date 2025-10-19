@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.service;
 
+import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
 import com.tabletopia.restaurantservice.domain.payment.repository.PaymentRepository;
 import com.tabletopia.restaurantservice.domain.payment.service.PaymentService;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
@@ -227,6 +228,77 @@ public class ReservationService {
 
     // 예약 저장
     return reservationRepository.save(reservation);
+  }
+
+  /**
+   * 결제 완료 후 예약 등록 (Payment 포함)
+   *
+   * @param request             예약 요청 정보
+   * @param payment            결제 정보
+   * @param authenticatedEmail 인증된 이메일
+   * @return 생성된 예약 ID
+   * @author Claude Code
+   * @since 2025-10-19
+   */
+  @Transactional
+  public Long createReservationWithPayment(ReservationRequest request, Payment payment, String authenticatedEmail) {
+    log.debug("예약 생성 요청 (Payment 포함): {}, payment_id={}", request, payment.getId());
+
+    // 1. 선점 키 생성
+    String selectionKey = createSelectionKey(
+            request.getRestaurantId(),
+            request.getRestaurantTableId(),
+            request.getDate(),
+            request.getTime()
+    );
+
+    // 2. Redis에서 선점 정보 조회
+    TableSelectionInfo selection = tableSelectionService.getTableSelection(selectionKey);
+
+    // 3. 검증 로직
+    validateReservation(selection, authenticatedEmail);
+
+    // 4. 사용자 ID 조회
+    Long userId = userService.findByEmail(authenticatedEmail).getId();
+
+    // 5. Reservation 엔티티 생성
+    TableSnapshot tableSnapshot = new TableSnapshot(request.getRestaurantTableNameSnapshot(), request.getPeopleCount());
+    Reservation reservation = Reservation.fromRequest(
+            userId,
+            request,
+            tableSnapshot.getRestaurantTableCapacity()
+    );
+
+    // 6. Payment 설정
+    reservation.setPayment(payment);
+
+    // 7. DB에 예약 등록
+    Reservation savedReservation = reservationRepository.save(reservation);
+    log.debug("예약 등록 완료: ID={}, payment_id={}", savedReservation.getId(), payment.getId());
+
+    // 8. Redis 상태 업데이트 (예약 완료)
+    TableSelectionInfo reservedInfo = new TableSelectionInfo(
+            request.getRestaurantTableId(),
+            selection.getSessionId(),
+            authenticatedEmail,
+            LocalDateTime.now(),
+            LocalDateTime.now().plusHours(24),
+            TableSelectStatus.RESERVED
+    );
+    tableSelectionService.saveTableSelection(selectionKey, reservedInfo);
+
+    // 9. 캐시 무효화
+    String timeSlot = formatTimeSlot(request.getDate(), request.getTime());
+    tableSelectionService.deleteCachedReservationStatus(
+            request.getRestaurantId(),
+            request.getRestaurantTableId(),
+            timeSlot
+    );
+
+    // 10. 웹소켓 브로드캐스트
+    sendReservationCompletedBroadcast(request);
+
+    return savedReservation.getId();
   }
 
   /**

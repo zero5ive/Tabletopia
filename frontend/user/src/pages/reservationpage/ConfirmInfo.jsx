@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'; // ✅ useRef import
 import { useNavigate } from 'react-router-dom';
-import { updateUser, getCurrentUser, createReservation } from '../utils/UserApi';
+import { updateUser, getCurrentUser, createReservation, processPayment } from '../utils/UserApi';
 import styles from './ConfirmInfo.module.css';
 
 const ReservationConfirm = () => {
@@ -20,6 +20,37 @@ const ReservationConfirm = () => {
     thirdParty: false,
     cancellationPolicy: false
   });
+
+  // 결제 처리 상태
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [reservationResult, setReservationResult] = useState(null);
+
+  useEffect(() => {
+    // 결제 완료 메시지 리스너
+    const handlePaymentMessage = (event) => {
+      // 보안: origin 확인
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data.type === 'PAYMENT_SUCCESS') {
+        console.log('결제 완료 메시지 수신:', event.data);
+        setPaymentCompleted(true);
+        setReservationResult(event.data.data);
+
+        // 예약 선점 정보 제거
+        sessionStorage.removeItem('activeTableSelection');
+        hasCleanedUpRef.current = true;
+      }
+    };
+
+    window.addEventListener('message', handlePaymentMessage);
+
+    return () => {
+      window.removeEventListener('message', handlePaymentMessage);
+    };
+  }, []);
 
   useEffect(() => {
     // 앞선 예약 정보 불러오기
@@ -151,9 +182,9 @@ const ReservationConfirm = () => {
   };
 
   /**
-   * 결제 진행
+   * 결제 진행 (유효성 검사 후 바로 토스 팝업 열기)
    * @author 김예진
-   * @since 2025-09-23
+   * @since 2025-10-19
    */
   const handlePayment = async () => {
     // 필수 정보 입력 확인
@@ -197,47 +228,67 @@ const ReservationConfirm = () => {
       agreements: agreements
     };
 
+    // localStorage에 저장 (결제 처리에 사용)
+    localStorage.setItem('finalReservationData', JSON.stringify(finalData));
+
+    // 결제 처리 시작
+    setIsPaymentLoading(true);
+
     try {
-      // 예약정보 등록
-      const response = await createReservation(finalData);
+      // payment 컨트롤러에 요청보낼 paymentInfo 생성
+      const paymentRequestDTO = {
+        productDesc: finalData.restaurantName,
+        amount: finalData.price,
+        amountTaxFree: finalData.price
+      };
 
-      console.log('예약 등록 응답:', response.data);
+      const paymentRequest = {
+        paymentRequestDTO: paymentRequestDTO,
+        reservationRequest: finalData
+      };
 
-      // 응답 검증
-      if (response.data && response.data.success) {
-        console.log('예약 등록 성공:', response.data.reservationId);
+      const response = await processPayment(paymentRequest);
+      console.log("결제 응답:", response);
 
-        // ✅ 정상 이동 플래그 설정
-        isNavigatingRef.current = true;
+      // 응답 데이터에 checkoutPage가 있는지 확인
+      if (response && response.data.checkoutPage) {
+        const checkoutUrl = response.data.checkoutPage;
 
-        // 예약 선점 정보 제거
-        sessionStorage.removeItem('activeTableSelection');
-        hasCleanedUpRef.current = true;
+        // 팝업 창 설정 (중앙에 위치, 적절한 크기)
+        const popupWidth = 500;
+        const popupHeight = 700;
+        const left = (window.screen.width - popupWidth) / 2;
+        const top = (window.screen.height - popupHeight) / 2;
 
-        // 결제페이지는 Toss 내부지원페이지 이용, 만들어야 될 것은 결제중을 알리는 모달
-        navigate('/reservations/payment');
+        const popupFeatures = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`;
+
+        // 토스 결제 페이지를 새 팝업 창으로 열기
+        const paymentPopup = window.open(checkoutUrl, 'TossPayment', popupFeatures);
+
+        if (!paymentPopup) {
+          throw new Error('팝업 차단이 감지되었습니다. 팝업 차단을 해제해주세요.');
+        }
+
+        // 팝업 창 모니터링 (결제 완료/취소 감지)
+        const popupInterval = setInterval(() => {
+          if (paymentPopup.closed) {
+            clearInterval(popupInterval);
+            console.log('결제 팝업이 닫혔습니다.');
+
+            // 결제 완료 여부 확인 (향후 구현)
+            // TODO: 결제 결과 확인 로직 추가
+          }
+        }, 500);
+
+        console.log('결제 팝업 창 열림:', checkoutUrl);
       } else {
-        // 성공 응답이지만 success: false인 경우
-        const errorMessage = response.data?.message || '예약 등록에 실패했습니다.';
-        console.error('예약 등록 실패:', errorMessage);
-        alert(errorMessage);
+        throw new Error('결제 페이지 진입에 실패했습니다.');
       }
-    } catch (error) {
-      console.error('예약 등록 실패:', error);
-
-      // 서버 응답이 있는 경우
-      if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else if (error.response) {
-        // 서버에서 응답은 왔지만 에러인 경우
-        alert(`예약 등록 중 오류가 발생했습니다. (상태 코드: ${error.response.status})`);
-      } else if (error.request) {
-        // 요청은 보냈지만 응답을 받지 못한 경우
-        alert('서버와 통신할 수 없습니다. 네트워크 연결을 확인해주세요.');
-      } else {
-        // 요청 설정 중 오류가 발생한 경우
-        alert('예약 등록 중 오류가 발생했습니다.');
-      }
+    } catch (err) {
+      console.error('결제 처리 오류:', err);
+      alert(err.message || '결제 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsPaymentLoading(false);
     }
   };
 
@@ -246,6 +297,83 @@ const ReservationConfirm = () => {
   }
 
   const price = reservationData.price || 0;
+
+  // 결제 완료 화면
+  if (paymentCompleted) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.successContainer}>
+          <div className={styles.successIcon}>✓</div>
+          <h1 className={styles.successTitle}>예약이 완료되었습니다!</h1>
+          <p className={styles.successMessage}>
+            TableTopia 예약 서비스를 이용해 주셔서 감사합니다.
+          </p>
+
+          <div className={styles.reservationSummary}>
+            <h2 className={styles.summaryTitle}>예약 정보</h2>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>레스토랑</span>
+              <span className={styles.summaryValue}>{reservationData.restaurantName}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>주소</span>
+              <span className={styles.summaryValue}>{reservationData.restaurantAddress}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>예약 일시</span>
+              <span className={styles.summaryValue}>
+                {reservationData.date} {reservationData.time}
+              </span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>인원</span>
+              <span className={styles.summaryValue}>{reservationData.peopleCount}명</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>테이블</span>
+              <span className={styles.summaryValue}>{reservationData.restaurantTableNameSnapshot}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>예약자</span>
+              <span className={styles.summaryValue}>{customerInfo.name}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>연락처</span>
+              <span className={styles.summaryValue}>{customerInfo.phoneNumber}</span>
+            </div>
+            {reservationResult && (
+              <>
+                <div className={styles.summaryDivider}></div>
+                {/* <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>예약 번호</span>
+                  <span className={styles.summaryValue}>#{reservationResult.reservationId}</span>
+                </div> */}
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>결제 금액</span>
+                  <span className={styles.summaryValueHighlight}>{price.toLocaleString()}원</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* <div className={styles.successActions}> */}
+            {/* <button
+              className={`${styles.actionBtn} ${styles.primaryBtn}`}
+              onClick={() => navigate('/mypage/reservation')}
+            >
+              예약 내역 보기
+            </button>
+            <button
+              className={`${styles.actionBtn} ${styles.secondaryBtn}`}
+              onClick={() => navigate('/')}
+            >
+              메인으로 돌아가기
+            </button>
+          </div> */}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -421,8 +549,9 @@ const ReservationConfirm = () => {
               <button
                 className={`${styles.actionBtn} ${styles.paymentBtn}`}
                 onClick={handlePayment}
+                disabled={isPaymentLoading}
               >
-                결제하기
+                {isPaymentLoading ? '결제 진행 중...' : '결제하기'}
               </button>
             </div>
           </div>

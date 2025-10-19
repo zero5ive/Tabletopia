@@ -21,7 +21,7 @@ const Payment = () => {
   }, [navigate]);
 
   const handlePayment = async () => {
-    if (!reservationData) {
+    if (!reservationRequest) {
       alert('예약 정보가 없습니다.');
       return;
     }
@@ -67,22 +67,22 @@ const Payment = () => {
     //성공적으로 리디렉션되면 이 페이지는 알아서 닫히도록 되어있기 떄문에 flag 설정 필요 없음.
   };
 
-  if (!reservationData) {
+  if (!reservationRequest) {
     return <div className={styles.container}>예약 정보를 불러오는 중...</div>;
   }
 
   return (
     <div className={styles.container}>
       <h1>결제 확인</h1>
-      
+
       <div className={styles.summary}>
         <h2>예약 정보</h2>
-        <p><strong>가게:</strong> {reservationData.restaurantName}</p>
-        <p><strong>일시:</strong> {reservationData.date} {reservationData.time}</p>
-        <p><strong>인원:</strong> {reservationData.peopleCount}명</p>
+        <p><strong>가게:</strong> {reservationRequest.restaurantName}</p>
+        <p><strong>일시:</strong> {reservationRequest.date} {reservationRequest.time}</p>
+        <p><strong>인원:</strong> {reservationRequest.peopleCount}명</p>
         <div className={styles.price}>
           <strong>총 결제 금액:</strong>
-          <span>{reservationData.price.toLocaleString()}원</span>
+          <span>{reservationRequest.price.toLocaleString()}원</span>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ const Payment = () => {
         disabled={isLoading}
         className={styles.button}
       >
-        {isLoading ? '결제 진행 중...' : `${reservationData.price.toLocaleString()}원 결제하기`}
+        {isLoading ? '결제 진행 중...' : `${reservationRequest.price.toLocaleString()}원 결제하기`}
       </button>
     </div>
   );

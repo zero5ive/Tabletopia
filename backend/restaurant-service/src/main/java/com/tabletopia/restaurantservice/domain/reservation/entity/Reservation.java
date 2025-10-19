@@ -84,6 +84,16 @@ public class Reservation {
   @JoinColumn(name = "payment_id", nullable = false)  // FK 컬럼 지정
   private Payment payment;
 
+  // ==================== Setter 메서드 ====================
+
+  /**
+   * Payment 설정
+   * @param payment 결제 정보
+   */
+  public void setPayment(Payment payment) {
+    this.payment = payment;
+  }
+
   // ==================== JPA 생명주기 메서드 ====================
   @PrePersist
   protected void onCreate() {
@@ -178,7 +188,7 @@ public class Reservation {
     return Reservation.builder()
         .userId(userId)
         .name(request.getCustomerInfo().getName())
-        .phoneNumber(request.getCustomerInfo().getPhone())
+        .phoneNumber(request.getCustomerInfo().getPhoneNumber())
         .restaurantId(request.getRestaurantId())
         .restaurantTableId(request.getRestaurantTableId())
         .peopleCount(request.getPeopleCount())

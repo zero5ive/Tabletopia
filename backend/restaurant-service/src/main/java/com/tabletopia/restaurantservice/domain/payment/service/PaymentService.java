@@ -1,5 +1,7 @@
 package com.tabletopia.restaurantservice.domain.payment.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tabletopia.restaurantservice.domain.payment.dto.PaymentRequestDTO;
 import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
 import com.tabletopia.restaurantservice.domain.payment.repository.PaymentRepository;
@@ -87,6 +89,33 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
+
+    /**
+     * 토스 응답에서 checkoutPage URL 추출
+     *
+     * @param responseBody 토스 API 응답 본문
+     * @return checkoutPage URL
+     * @author Claude Code
+     * @since 2025-10-19
+     */
+    public String extractCheckoutPage(String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+
+            // checkoutPage 필드 추출
+            if (jsonNode.has("checkoutPage")) {
+                return jsonNode.get("checkoutPage").asText();
+            }
+
+            log.warn("checkoutPage가 응답에 없습니다. 전체 응답: {}", responseBody);
+            throw new RuntimeException("결제 페이지 URL을 찾을 수 없습니다.");
+
+        } catch (Exception e) {
+            log.error("checkoutPage 추출 중 오류 발생", e);
+            throw new RuntimeException("결제 페이지 URL 추출 실패: " + e.getMessage());
+        }
+    }
 
     /**
      * 주문번호 생성

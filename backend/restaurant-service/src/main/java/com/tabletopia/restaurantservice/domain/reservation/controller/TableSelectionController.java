@@ -15,6 +15,7 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.UserConnectedResp
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectionService;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
+import com.tabletopia.restaurantservice.domain.reservation.service.ReservationFacadeService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
@@ -57,6 +58,7 @@ public class TableSelectionController {
 
   private final ReservationService reservationService;
   private final TableSelectionService tableSelectionService;
+  private final ReservationFacadeService reservationFacadeService;
   private final RestaurantTableService restaurantTableService;
   private final UserService userService;
 
@@ -318,8 +320,7 @@ public class TableSelectionController {
       @RequestBody ReservationRequest request,
       Principal principal) {
     log.debug("예약 등록 요청: {}", request);
-//    tableSelectionService.sendReservationInfo(request);
-    return tableSelectionService.registerReservation(request,principal);
+    return reservationFacadeService.registerReservation(request, principal);
   }
 
   /**
