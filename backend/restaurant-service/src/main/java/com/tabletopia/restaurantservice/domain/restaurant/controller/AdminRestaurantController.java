@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.restaurant.controller;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.service.RestaurantService;
+import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ public class AdminRestaurantController {
   private final ReservationService reservationService;
   private final RestaurantOpeningHourService openingHourService;
   private final ObjectMapper objectMapper;
+
 
   /** SUPERADMIN 전용 - 전체 매장 조회 */
   @GetMapping
@@ -103,6 +105,7 @@ public class AdminRestaurantController {
       @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
   ) {
     // 운영시간 조회
+
     RestaurantEffectiveHourResponse effectiveHour = openingHourService.getEffectiveHour(restaurantId, date);
     List<LocalTime> timeSlots = new ArrayList<>();
 

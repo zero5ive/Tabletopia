@@ -1020,6 +1020,119 @@
     font-size: 16px;
 }
 
+/* 리뷰 모달 스타일 */
+.restaurant-info-modal {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.restaurant-info-modal h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.restaurant-info-modal p {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 0;
+}
+
+.rating-section {
+    margin-bottom: 24px;
+}
+
+.rating-section label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.star-filled {
+    color: #ffc107;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star-empty {
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star-filled:hover,
+.star-empty:hover {
+    transform: scale(1.1);
+}
+
+.comment-section {
+    margin-bottom: 24px;
+}
+
+.comment-section label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.review-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #ff4444;
+    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+}
+
+.review-textarea::placeholder {
+    color: #adb5bd;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #5f6368;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #e8eaed;
+    color: #1a1a1a;
+}
+
 @media (max-width: 768px) {
     .reservations-grid {
         grid-template-columns: 1fr;
