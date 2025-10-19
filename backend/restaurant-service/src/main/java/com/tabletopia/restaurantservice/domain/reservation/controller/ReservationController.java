@@ -63,6 +63,19 @@ public class ReservationController {
     return ResponseEntity.ok(ApiResponse.success("예약 조회 성공", reservations));
   }
 
+
+  /**
+   * 특정 레스토랑의 예약 조회 (사용자용)
+   * @param restaurantId
+   * @return
+   */
+  @GetMapping("/api/user/restaurants/{restaurantId}/reservations")
+  public ResponseEntity<ApiResponse<List<Reservation>>> userGetReservationsByRestaurantId(@PathVariable Long restaurantId){
+    List<Reservation> reservations = reservationService.findReservationsByRestaurantId(restaurantId);
+
+    return ResponseEntity.ok(ApiResponse.success("예약 조회 성공", reservations));
+  }
+
 //  /**
 //   * 예약이 불가한 테이블들 조회
 //   */

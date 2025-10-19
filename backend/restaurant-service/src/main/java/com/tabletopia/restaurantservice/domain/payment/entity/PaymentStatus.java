@@ -8,8 +8,8 @@ package com.tabletopia.restaurantservice.domain.payment.entity;
  * @since 2025-10-18
  * */
 public enum PaymentStatus {
-    READY,
+//    READY,
     SUCCESS,
-    FAIL,
+//    FAIL,
     CANCEL
 }

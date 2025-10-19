@@ -1,0 +1,252 @@
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Top Section */
+.top-section {
+    margin-bottom: 60px;
+}
+
+/* Section Header */
+.section-header {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 8px;
+}
+
+.section-subtitle {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Restaurant Grid */
+.restaurant-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+/* Restaurant Card */
+.restaurant-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #f1f3f4;
+    position: relative;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Rank Badge */
+.rank-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ff4444, #e63939);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    font-weight: 700;
+}
+
+.rank-number {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.rank-label {
+    font-size: 12px;
+}
+
+/* Card Image */
+.card-image {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background: #f5f5f5;
+    position: relative;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+/* Card Content */
+.card-content {
+    padding: 20px;
+}
+
+.restaurant-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Restaurant Info */
+.restaurant-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stars {
+    font-size: 14px;
+}
+
+.score {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-left: 4px;
+}
+
+.reviews {
+    font-size: 13px;
+    color: #5f6368;
+}
+
+.location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #5f6368;
+}
+
+/* Restaurant Tags */
+.restaurant-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.cuisine {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.feature {
+    background: #f1f3f4;
+    color: #5f6368;
+}
+
+.features {
+    display: flex;
+    gap: 8px;
+}
+
+/* Availability Section */
+.availability-section {
+    margin-bottom: 12px;
+}
+
+.availability-title {
+    font-size: 13px;
+    color: #5f6368;
+}
+
+/* Stats Badge */
+.stats-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #ffdddd;
+}
+
+.badge-icon {
+    font-size: 16px;
+}
+
+.badge-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ff4444;
+}
+
+/* No Underline */
+.no-underline {
+    text-decoration: none;
+    color: inherit;
+}
+
+.no-underline:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .restaurant-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .top-section {
+        margin-bottom: 40px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .restaurant-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .card-image {
+        height: 200px;
+    }
+}

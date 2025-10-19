@@ -19,11 +19,12 @@ public class WaitingNotificationService {
    */
   public void notifyWaitingStatusChange(Waiting waiting, Long restaurantId, String topicType) {
     WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
+    Long userId = waiting.getUser().getId();
 
     // 1. 사용자 개인 알림: /topic/user/{userId}/{topicType}
-    String personalTopic = "/topic/user/" + waiting.getUser().getId() + "/" + topicType;
+    String personalTopic = "/topic/user/" + userId + "/" + topicType;
     log.info("사용자 개인 알림 전송 - topic: {}, userId: {}, waitingId: {}",
-        personalTopic, waiting.getUser().getId(), waiting.getId());
+        personalTopic, userId, waiting.getId());
     simpMessagingTemplate.convertAndSend(personalTopic, response);
 
     // 2. 레스토랑(관리자) 알림: /topic/restaurant/{restaurantId}/{topicType}

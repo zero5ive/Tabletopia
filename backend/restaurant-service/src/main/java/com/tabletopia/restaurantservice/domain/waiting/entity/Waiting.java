@@ -43,7 +43,7 @@ public class Waiting {
 
   private Integer waitingNumber;
 
-  private Integer delayCount;
+  private Integer delayCount = 0;
 
   @Enumerated(EnumType.STRING)
   private WaitingState waitingState;
@@ -62,6 +62,27 @@ public class Waiting {
 
   @UpdateTimestamp
   private LocalDateTime updatedAt;
+
+  private static final int  MAX_DELAY_COUNT = 3; //미루기 최대 횟수
+
+  //미루기 가능 여부 체크
+  public boolean canDelay(){
+    return this.delayCount < MAX_DELAY_COUNT;
+  }
+
+
+  //미루기 횟수 카운트
+  public void increaseDelayCount(){
+    if(!canDelay()){
+       throw new IllegalStateException("미루기 횟수를 초과했습니다.");
+    }
+    this.delayCount++;
+  }
+
+  //웨이팅 번호 변경
+  public void updateWaitingNumber(Integer waitingNumber){
+    this.waitingNumber = waitingNumber;
+  }
 
   // ======================================
   // 생성자 (필수 값 초기화)

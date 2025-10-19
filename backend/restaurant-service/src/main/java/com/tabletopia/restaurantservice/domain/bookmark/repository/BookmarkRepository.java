@@ -24,4 +24,16 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
          "WHERE b.user.id = :userId",
          countQuery = "SELECT COUNT(b) FROM Bookmark b WHERE b.user.id = :userId")
   Page<Bookmark> findByUserIdWithRestaurant(@Param("userId") Long userId, Pageable pageable);
+
+
+  /**
+   * 레스토랑별 북마크 조회
+   *
+   * @author 성유진
+   */
+  @Query("SELECT b FROM Bookmark b " +
+      "JOIN FETCH b.user " +
+      "WHERE b.restaurant.id = :restaurantId " +
+      "ORDER BY b.createdAt DESC")
+  List<Bookmark> findByRestaurantIdWithUser(@Param("restaurantId") Long restaurantId);
 }

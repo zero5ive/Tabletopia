@@ -41,7 +41,6 @@ public class BookmarkController {
   /**
    * 사용자별 북마크 목록 조회
    *
-   * @param userId 사용자 ID
    * @return 북마크 목록 조회
    */
   @GetMapping("/bookmarks")
@@ -86,6 +85,24 @@ public class BookmarkController {
   public ResponseEntity<Void> deleteBookmark(@PathVariable Long bookmarkId) {
     bookmarkService.deleteBookmark(bookmarkId);
     return ResponseEntity.noContent().build();
+  }
+
+
+  /**
+   * 레스토랑별 북마크 조회
+   *
+   * @author 성유진
+   *
+   */
+  @GetMapping("/bookmarks/{restaurantId}")
+  public ResponseEntity<ApiResponse<List<BookmarkResponse>>> getRestaurantBookmarks(
+      @PathVariable Long restaurantId) {
+
+    List<BookmarkResponse> bookmarks = bookmarkService.getRestaurantBookmarks(restaurantId);
+
+    return ResponseEntity.ok(
+        ApiResponse.success("레스토랑 북마크 조회 성공", bookmarks)
+    );
   }
 
 }

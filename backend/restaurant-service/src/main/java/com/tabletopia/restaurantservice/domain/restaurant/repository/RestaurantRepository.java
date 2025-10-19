@@ -17,6 +17,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 //@Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, RestaurantRepositoryCustom {
 
+  List<Restaurant> findByAdmin_Id(Long adminId);
   Page<Restaurant> findByRestaurantCategory(RestaurantCategory category, Pageable pageable);
   List<Restaurant> findByAddressContaining(String keyword);
   List<Restaurant> findByAddressContainingOrNameContainingOrDescriptionContaining(

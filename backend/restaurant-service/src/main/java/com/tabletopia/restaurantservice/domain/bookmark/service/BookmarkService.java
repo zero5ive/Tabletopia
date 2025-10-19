@@ -12,6 +12,7 @@ import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -69,6 +70,8 @@ public class BookmarkService {
 
   /**
    * 사용자, 레스토랑별 북마크 등록
+   *
+   *@author 성유진
    */
   @Transactional
   public BookmarkResponse saveBookmark(Long userId, Long restaurantId) {
@@ -82,5 +85,19 @@ public class BookmarkService {
     Bookmark savedBookmark = bookmarkRepository.save(bookmark);
 
     return BookmarkResponse.from(savedBookmark);
+  }
+
+
+  /**
+   * 레스토랑별 북마크 조회
+   *
+   * @author 성유진
+   *
+   */
+  public List<BookmarkResponse> getRestaurantBookmarks(Long restaurantId) {
+    List<Bookmark> bookmarks = bookmarkRepository.findByRestaurantIdWithUser(restaurantId);
+    return bookmarks.stream()
+        .map(BookmarkResponse::from)
+        .collect(Collectors.toList());
   }
 }

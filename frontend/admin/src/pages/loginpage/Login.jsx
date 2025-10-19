@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import styles from './Login.module.css';
 import { Link } from 'react-router-dom';
@@ -99,12 +99,17 @@ const Login = () => {
                 email: fullEmail,
                 password: formData.password
             });
-            
+
             const data = response.data;
             console.log("Login response data:", data);
-            
-            if (data.success===true) {
+
+            if (data.success === true) {
                 console.log("로그인 성공");
+                if (data.role) {
+                    const role = data.role.replace("ROLE_", "")
+                    localStorage.setItem("adminRole", role)
+                    console.log("✅ 저장된 adminRole:", role)
+                }
                 navigate('/main'); // 로그인 후 메인 페이지로 이동
             } else {
                 // 백엔드에서 { success: false, message: '...' } 형태의 응답을 주는 경우

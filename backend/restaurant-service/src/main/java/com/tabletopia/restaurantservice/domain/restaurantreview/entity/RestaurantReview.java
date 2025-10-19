@@ -63,4 +63,34 @@ public class RestaurantReview {
     WAITING
   }
 
+  /**
+   * 리뷰 생성자
+   * @author 서예닮
+   * @since 2025-10-19
+   */
+  public RestaurantReview(User user, Restaurant restaurant, Integer rating, String comment,
+                          Long sourceId, SourceType sourceType) {
+    this.user = user;
+    this.restaurant = restaurant;
+    this.rating = rating;
+    this.comment = comment;
+    this.sourceId = sourceId;
+    this.sourceType = sourceType;
+    this.isDeleted = false;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
+   * 리뷰 삭제 처리 (soft delete)
+   * @author 서예닮
+   * @since 2025-10-19
+   */
+  public void setDeleted(boolean deleted) {
+    this.isDeleted = deleted;
+    if (deleted) {
+      this.updatedAt = LocalDateTime.now();
+    }
+  }
+
 }

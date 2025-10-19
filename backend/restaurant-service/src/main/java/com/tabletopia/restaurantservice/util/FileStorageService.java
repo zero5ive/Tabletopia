@@ -33,4 +33,16 @@ public class FileStorageService {
       throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
     }
   }
+
+  public void delete(String fileUrl) {
+    try {
+      if (fileUrl == null || fileUrl.isBlank()) return;
+
+      String relativePath = fileUrl.replaceFirst("^/uploads/", "");
+      Path filePath = Paths.get(uploadDir, relativePath);
+      Files.deleteIfExists(filePath);
+    } catch (IOException e) {
+      throw new RuntimeException("파일 삭제 실패: " + e.getMessage(), e);
+    }
+  }
 }

@@ -21,6 +21,7 @@ public class WaitingEvent {
 
   private Long waitingId;
   private Long restaurantId;
+  private String restaurantName; // 레스토랑 이름
   private String adminName;
   private LocalDateTime timestamp;
 

@@ -330,11 +330,6 @@ export default function RestaurantList() {
                         </div>
                     </div>
 
-                    <div className={styles["results-header"]}>
-                        <div className={styles["results-info"]}>
-                            총 <span className={styles["count"]}>{totalElements}</span>개의 레스토랑을 찾았습니다
-                        </div>
-                    </div>
 
                     {/* 검색 결과 없을 때 */}
                     {restaurants.length === 0 ? (

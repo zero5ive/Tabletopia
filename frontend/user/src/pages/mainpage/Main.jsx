@@ -8,6 +8,7 @@ import Advertisement from './advertisement/Advertisement';
 import NewRestaurant from './newrestaurant/NewRestaurant';
 import ChatBot from '../../components/chatbot/ChatBot';
 
+
 export default function Main(){
     return(
         <>
@@ -21,7 +22,7 @@ export default function Main(){
 
                 {/* Restaurants */}
                 {/* <Advertisement/> */}
-                {/* <NewRestaurant/> */}
+                <NewRestaurant />
             </main>
 
             {/* 챗봇 */}

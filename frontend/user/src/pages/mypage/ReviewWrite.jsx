@@ -16,24 +16,7 @@ export default function ReviewWrite() {
     const handleTextChange = (e) => {
         setReviewText(e.target.value);
     };
-
-    // 태그 토글
-    const toggleTag = (tagText) => {
-        setSelectedTags(prev =>
-            prev.includes(tagText)
-                ? prev.filter(tag => tag !== tagText)
-                : [...prev, tagText]
-        );
-    };
-
-    // 사진 업로드
-    const handlePhotoUpload = (e) => {
-        const files = Array.from(e.target.files);
-        // 최대 5장 제한
-        if (photos.length + files.length <= 5) {
-            setPhotos(prev => [...prev, ...files]);
-        }
-    };
+  
 
     return (
         <>
@@ -126,49 +109,6 @@ export default function ReviewWrite() {
                                             }}
                                         />
                                         <div className={styles['char-count']}>{reviewText.length} / 500</div>
-                                    </div>
-                                </div>
-
-                                {/* 사진 업로드 섹션 */}
-                                <div className={styles['form-section']}>
-                                    <h3 className={styles['section-title']}>사진 추가하기</h3>
-                                    <p className={styles['section-description']}>음식이나 매장 사진을 올려주세요 (최대 5장)</p>
-
-                                    <div className={styles['photo-section']}>
-                                        <div className={styles['photo-grid']}>
-                                            <label className={styles['photo-upload-btn']}>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    onChange={handlePhotoUpload}
-                                                    style={{ display: 'none' }}
-                                                />
-                                                <div style={{ fontSize: "24px" }}>📷</div>
-                                                <div>사진 추가 ({photos.length}/5)</div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 태그 섹션 */}
-                                <div className={styles['form-section']}>
-                                    <h3 className={styles['section-title']}>어떤 특징이 있나요?</h3>
-                                    <p className={styles['section-description']}>해당되는 태그를 선택해주세요</p>
-
-                                    <div className={styles['tags-section']}>
-                                        <div className={styles['tag-grid']}>
-                                            {['맛있어요', '친절해요', '분위기 좋아요', '가성비 좋아요', '양이 많아요', '깔끔해요', '데이트하기 좋아요', '가족식사 좋아요', '재방문 의사 있어요', '주차 편해요'].map(tag => (
-                                                <div
-                                                    key={tag}
-                                                    className={`${styles['tag-item']} ${selectedTags.includes(tag) ? styles['selected'] : ''}`}
-                                                    onClick={() => toggleTag(tag)}
-                                                    style={{ cursor: 'pointer' }}
-                                                >
-                                                    {tag}
-                                                </div>
-                                            ))}
-                                        </div>
                                     </div>
                                 </div>
 

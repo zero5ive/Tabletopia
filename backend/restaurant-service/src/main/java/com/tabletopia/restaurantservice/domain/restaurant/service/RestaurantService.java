@@ -4,6 +4,9 @@ import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantResponse
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestaurantSearchResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.RestuarantLocationResponse;
 import com.tabletopia.restaurantservice.domain.restaurant.dto.SearchCondition;
+import com.tabletopia.restaurantservice.domain.admin.entity.Admin;
+import com.tabletopia.restaurantservice.domain.admin.repository.JpaAdminRepository;
+import com.tabletopia.restaurantservice.domain.restaurant.dto.*;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.repository.RestaurantRepository;
 import com.tabletopia.restaurantservice.domain.restaurantCategory.dto.RestaurantCategoryResponse;
@@ -16,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +29,11 @@ import java.util.List;
 
 /**
  * RestaurantService
-
- * 레스토랑 관련 비즈니스 로직을 처리하는 서비스 계층이다.
- * Repository를 호출하여 데이터베이스 조작을 수행하며,
- * 트랜잭션 관리 및 도메인 로직을 담당한다.
-
- * 주요 기능:
- * - 전체 레스토랑 조회
- * - 단일 레스토랑 조회
- * - 신규 레스토랑 등록
- * - 레스토랑 정보 수정
- * - 레스토랑 삭제 (Soft Delete)
-
+ *
+ * 레스토랑 관련 비즈니스 로직을 처리하는 서비스 계층
+ * SUPERADMIN은 모든 매장을 관리할 수 있고,
+ * ADMIN은 자신의 매장만 관리 가능하다.
+ *
  * @author 김지민
  * @since 2025-10-09
  */
@@ -46,41 +45,53 @@ public class RestaurantService {
 
   private final RestaurantRepository restaurantRepository;
   private final RestaurantCategoryRepository restaurantCategoryRepository;
+  private final JpaAdminRepository adminRepository;
 
-  /**
-   * 전체 레스토랑 목록 조회
-   * @return 레스토랑 전체 목록
-   */
+  /** ✅ SUPERADMIN이면 전체, ADMIN이면 본인 매장만 조회 */
+  public List<Restaurant> getRestaurantsForCurrentAdmin() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
+
+    Admin admin = adminRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("관리자를 찾을 수 없습니다."));
+
+    if ("SUPERADMIN".equalsIgnoreCase(admin.getRole().name())) {
+      log.info("SUPERADMIN 전체 매장 조회 요청");
+      return restaurantRepository.findAll();
+    }
+
+    log.info("ADMIN 본인 매장만 조회 요청");
+    return restaurantRepository.findByAdmin_Id(admin.getId());
+  }
+
+  /** 전체 레스토랑 목록 조회 */
   public List<Restaurant> getAllRestaurants() {
     return restaurantRepository.findAll();
   }
 
-  /**
-   * 특정 레스토랑 단건 조회
-   * @param id 레스토랑 ID
-   * @return 해당 레스토랑 정보
-   */
+  /** 특정 레스토랑 단건 조회 */
   public Restaurant getRestaurant(Long id) {
     return restaurantRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("레스토랑을 찾을 수 없습니다. ID=" + id));
   }
 
-  /**
-   * 신규 레스토랑 등록
-   * @param restaurant 신규 등록할 레스토랑 엔티티
-   * @return 저장된 레스토랑 정보
-   */
+  /** ✅ SUPERADMIN이 특정 관리자(adminId)에게 매장을 할당해서 등록 */
+  @Transactional
+  public Restaurant createRestaurant(Restaurant restaurant, Long adminId) {
+    Admin admin = adminRepository.findById(adminId)
+        .orElseThrow(() -> new UsernameNotFoundException("관리자를 찾을 수 없습니다. ID=" + adminId));
+
+    restaurant.setAdmin(admin);
+    return restaurantRepository.save(restaurant);
+  }
+
+  /** 기존 등록 (백호환용) */
   @Transactional
   public Restaurant createRestaurant(Restaurant restaurant) {
     return restaurantRepository.save(restaurant);
   }
 
-  /**
-   * 레스토랑 정보 수정
-   * @param id 수정할 레스토랑 ID
-   * @param updatedData 변경할 정보가 담긴 엔티티
-   * @return 수정된 레스토랑 엔티티
-   */
+  /** 레스토랑 수정 */
   @Transactional
   public Restaurant updateRestaurant(Long id, Restaurant updatedData) {
     Restaurant existing = getRestaurant(id);
@@ -93,60 +104,39 @@ public class RestaurantService {
     existing.setPhoneNumber(updatedData.getPhoneNumber());
     existing.setDescription(updatedData.getDescription());
     existing.setRestaurantCategory(updatedData.getRestaurantCategory());
-//    existing.setRestaurantAccount(updatedData.getRestaurantAccount());
 
-    return existing; // @Transactional 덕분에 자동 flush
+    return existing;
   }
 
-  /**
-   * 레스토랑 삭제 (Soft Delete)
-   * @param id 삭제할 레스토랑 ID
-   */
+  /** 레스토랑 삭제 */
   @Transactional
   public void deleteRestaurant(Long id) {
     restaurantRepository.deleteById(id);
   }
 
-  //지역 별 레스토랑 조회
-  public List<Restaurant> getRestaurantsByRegionCode() {
-    return restaurantRepository.findAll();
-  }
-
-  // 카테고리별 레스토랑 페이징
+  /** 카테고리별 레스토랑 페이징 */
   public RestaurantCategoryResponse getRestaurantsByCategory(Long categoryId, Pageable pageable) {
-    // 1. 카테고리 정보 가져오기
     RestaurantCategory category = restaurantCategoryRepository.findById(categoryId)
         .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
 
-    // 2. 해당 카테고리의 레스토랑 페이징 조회
     Page<Restaurant> restaurantPage = restaurantRepository.findByRestaurantCategory(category, pageable);
 
-    // 3. Page<Restaurant>를 Page<RestaurantResponse>로 변환
     Page<RestaurantResponse> restaurantResponses = restaurantPage.map(restaurant -> {
-      // 영업시간
       List<String> openingHours = restaurant.getOpeningHours().stream()
           .filter(oh -> !oh.getIsHoliday())
-          .map(oh -> {
-            String day = getDayName(oh.getDayOfWeek());
-            return day + ": " + oh.getOpenTime() + "-" + oh.getCloseTime();
-          })
+          .map(oh -> getDayName(oh.getDayOfWeek()) + ": " + oh.getOpenTime() + "-" + oh.getCloseTime())
           .toList();
 
-      // 편의시설
       List<String> facilities = restaurant.getRestaurantFacilities().stream()
           .map(f -> f.getFacility().getName())
           .toList();
 
-      // 별점 평균 계산
       List<RestaurantReview> activeReviews = restaurant.getReviews().stream()
-          .filter(reviews -> !reviews.getIsDeleted())
+          .filter(r -> !r.getIsDeleted())
           .toList();
 
-      Double avgRating = activeReviews.isEmpty() ? 0.0 :
-          activeReviews.stream()
-              .mapToInt(RestaurantReview::getRating)
-              .average()
-              .orElse(0.0);
+      double avgRating = activeReviews.isEmpty() ? 0.0 :
+          activeReviews.stream().mapToInt(RestaurantReview::getRating).average().orElse(0.0);
 
       return new RestaurantResponse(
           restaurant.getId(),
@@ -160,7 +150,6 @@ public class RestaurantService {
       );
     });
 
-    // 4. 최종 Response 생성
     return new RestaurantCategoryResponse(
         category.getId(),
         category.getName(),
@@ -169,19 +158,11 @@ public class RestaurantService {
     );
   }
 
-  /**
-   * 레스토랑 동적 검색
-   *
-   * @param searchCondition 검색 조건
-   * @return 검색 결과 페이지
-   * @author 김예진
-   * @since 2025-10-15
-   */
-  public Page<Restaurant> searchRestaurants(SearchCondition searchCondition){
+  /** 동적 검색 */
+  public Page<Restaurant> searchRestaurants(SearchCondition searchCondition) {
     log.debug("레스토랑 검색: name={}, regionCode={}, categoryId={}",
         searchCondition.getName(), searchCondition.getRegionCode(), searchCondition.getCategoryId());
 
-    // 보여줄 페이징 값
     PageRequest pageRequest = PageRequest.of(
         searchCondition.getPage() != null ? searchCondition.getPage() : 0,
         searchCondition.getSize() != null ? searchCondition.getSize() : 10
@@ -203,23 +184,31 @@ public class RestaurantService {
     };
   }
 
-  /**
-   * 레스토랑 상세페이지 조회
-   */
-  public RestaurantSearchResponse getRestaurantDetail(Long restaurantId){
+  /** 상세 조회 */
+  public RestaurantSearchResponse getRestaurantDetail(Long restaurantId) {
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
         .orElseThrow(() -> new IllegalArgumentException("해당 레스토랑이 존재하지 않습니다. ID: " + restaurantId));
 
     return RestaurantSearchResponse.from(restaurant);
   }
 
+
   /**
    *레스토랑 위치 조회
    */
   public RestuarantLocationResponse getRestaurantLocation(Long restaurantId){
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
-        .orElseThrow(()-> new RuntimeException("해당 레스토랑이 존재하지 않습니다." + restaurantId));
+        .orElseThrow(() -> new RuntimeException("해당 레스토랑이 존재하지 않습니다. ID: " + restaurantId));
 
     return RestuarantLocationResponse.from(restaurant);
+  }
+
+  /** 로그인한 관리자 기준 본인 매장만 */
+  public List<Restaurant> getRestaurantsByCurrentAdmin() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
+    Admin admin = adminRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("관리자를 찾을 수 없습니다."));
+    return restaurantRepository.findByAdmin_Id(admin.getId());
   }
 }

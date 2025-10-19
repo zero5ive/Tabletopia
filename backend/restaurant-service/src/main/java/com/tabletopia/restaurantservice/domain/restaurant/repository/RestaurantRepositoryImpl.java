@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.util.StringUtils;
  * @author 김예진
  * @since 2025-10-15
  */
+@Repository
 @RequiredArgsConstructor
 public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
 
