@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
-import './MainContent.css';
-import './Waiting.css';
+import "./MainContent.css";
+import "./Waiting.css";
 
-import DashboardTab from './tabs/DashboardTab';
-import RestaurantInfoTab from './tabs/RestaurantInfoTab';
-import RestaurantListTab from './tabs/RestaurantListTab';
-import MenuManagementTab from './tabs/MenuManagementTab';
-import OperatingHoursTab from './tabs/OperatingHoursTab';
-import FacilitiesTab from './tabs/FacilitiesTab';
-import ImagesTab from './tabs/ImagesTab';
-import ReviewsTab from './tabs/ReviewsTab';
+import RestaurantInfoTab from "./tabs/RestaurantInfoTab";
+import RestaurantListTab from "./tabs/RestaurantListTab";
+import MenuManagementTab from "./tabs/MenuManagementTab";
+import OperatingHoursTab from "./tabs/OperatingHoursTab";
+import FacilitiesTab from "./tabs/FacilitiesTab";
+import ImagesTab from "./tabs/ImagesTab";
+import ReviewsTab from "./tabs/ReviewsTab";
 import SpecialHoursTab from "./tabs/SpecialHoursTab";
-import WaitingTab from './tabs/WaitingTab';
-import ReservationTableTab from './tabs/ReservationTableTab';
+import WaitingTab from "./tabs/WaitingTab";
+import ReservationTableTab from "./tabs/ReservationTableTab";
 
 export default function MainContent() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // 매장 등록 탭을 클릭했을 때만 초기화
   const handleTabClick = (e) => {
     const href = e.target.getAttribute("href");
     if (href === "#restaurant-info" && !isEditing) {
@@ -26,25 +24,31 @@ export default function MainContent() {
     }
   };
 
-  // 부트스트랩 탭 전환 이벤트 감지
   useEffect(() => {
     const handleShown = (event) => {
       const href = event.target.getAttribute("href");
       if (href === "#restaurant-info") {
-        if (!isEditing) {
-          setSelectedRestaurant(null);
-        }
+        if (!isEditing) setSelectedRestaurant(null);
         setIsEditing(false);
       }
     };
 
     const tabs = document.querySelectorAll('a[data-bs-toggle="tab"]');
     tabs.forEach((tab) => tab.addEventListener("shown.bs.tab", handleShown));
-
     return () => {
       tabs.forEach((tab) => tab.removeEventListener("shown.bs.tab", handleShown));
     };
   }, [isEditing]);
+
+  // 메인 페이지 진입 시 매장 목록 탭 클릭 이벤트 강제 실행
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const tab = document.querySelector('a[href="#restaurant-list"]');
+      if (tab) tab.click();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   return (
     <div className="col-md-9 col-lg-10">
@@ -73,11 +77,6 @@ export default function MainContent() {
 
         <div className="container-fluid">
           <div className="tab-content">
-            <DashboardTab />
-            <RestaurantInfoTab
-              selectedRestaurant={selectedRestaurant}
-              clearSelection={() => setSelectedRestaurant(null)}
-            />
             <RestaurantListTab
               onEdit={(restaurant) => {
                 setSelectedRestaurant(restaurant);
@@ -85,6 +84,10 @@ export default function MainContent() {
               }}
               onSelectRestaurant={setSelectedRestaurant}
               selectedRestaurant={selectedRestaurant}
+            />
+            <RestaurantInfoTab
+              selectedRestaurant={selectedRestaurant}
+              clearSelection={() => setSelectedRestaurant(null)}
             />
             <MenuManagementTab selectedRestaurant={selectedRestaurant} />
             <OperatingHoursTab selectedRestaurant={selectedRestaurant} />
