@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -109,20 +110,34 @@ public class SecurityConfig {
                                         "/api/admin/auth/login",
                                         "/api/admin/auth/register"
                                 ).permitAll()
-                                // 그 외 모든 /api/admin/** 경로는 인증 필요
-                                .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                )
-                .securityContext(securityContext -> securityContext
-                        .requireExplicitSave(false) // 자동으로 SecurityContext를 세션에 저장
-                );
+              // 하위 리소스 (메뉴, 이미지, 운영시간 등) — ADMIN, SUPERADMIN 전부 CRUD 가능
+              .requestMatchers("/api/admin/restaurants/*/menus/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/images/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/facilities/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/hours/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/special-hours/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/reviews/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/waiting/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers("/api/admin/restaurants/*/reservations/**").hasAnyRole("ADMIN", "SUPERADMIN")
 
-        return http.build();
+              // 매장 CRUD 중 조회만 ADMIN 허용, 나머지는 SUPERADMIN만 가능
+              .requestMatchers(HttpMethod.GET, "/api/admin/restaurants/**").hasAnyRole("ADMIN", "SUPERADMIN")
+              .requestMatchers(HttpMethod.POST, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
+              .requestMatchers(HttpMethod.PUT, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
+              .requestMatchers(HttpMethod.DELETE, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
+
+              // 기타 관리자 API — ADMIN 이상 접근 가능
+              .anyRequest().hasAnyRole("ADMIN", "SUPERADMIN")
+          )
+          .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+          .securityContext(ctx -> ctx.requireExplicitSave(false));
+
+
+      return http.build();
     }
 
-    /**
+
+  /**
      * JWT기반 user로그인을 처리하기 위한 필터
      * 모든 /api/user/** 경로에 JWT 기반 인증 적용
      *
@@ -134,7 +149,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/user/**")
+                .securityMatcher("/api/user/**", "/api/chat/**")
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
@@ -157,6 +172,9 @@ public class SecurityConfig {
                                 "/.well-known/**"
                         ).permitAll()
                         // 그 외 모든 /api/user/** 경로는 JWT 인증 필요
+
+                        .requestMatchers("/api/chat/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())

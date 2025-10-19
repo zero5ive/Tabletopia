@@ -10,7 +10,6 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
   const [loading, setLoading] = useState(false);
   const [newDate, setNewDate] = useState(null);
 
-  // ✅ 페이징
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -107,8 +106,9 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:8002/api/hours/special/${selectedRestaurant.id}`,
-        payload
+        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/special`,
+        payload,
+        { withCredentials: true }
       );
       alert("특별 운영시간이 성공적으로 저장되었습니다.");
     } catch (err) {
