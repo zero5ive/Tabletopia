@@ -35,6 +35,7 @@ public class Admin {
   @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'ADMIN'")
   private Role role; // ADMIN, SUPERADMIN
 
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

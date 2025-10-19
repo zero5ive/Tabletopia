@@ -32,12 +32,6 @@ public class RestaurantMenuService {
   private final RestaurantMenuRepository menuRepository;
   private final FileStorageService fileStorageService;
 
-  /**
-   * 특정 매장의 전체 메뉴 목록 조회
-   *
-   * @param restaurantId 매장 ID
-   * @return 메뉴 응답 DTO 리스트
-   */
   @Transactional(readOnly = true)
   public List<RestaurantMenuResponse> getMenusByRestaurant(Long restaurantId) {
     return menuRepository.findByRestaurantId(restaurantId)
@@ -55,16 +49,6 @@ public class RestaurantMenuService {
         .collect(Collectors.toList());
   }
 
-  /**
-   * 새 메뉴 등록
-   *
-   * 이미지가 포함되어 있으면 /uploads/menus 폴더에 저장하고,
-   * 경로가 아닌 파일명만 DB에 저장한다.
-   *
-   * @param restaurantId 매장 ID
-   * @param dto 메뉴 요청 DTO (FormData 기반)
-   * @return 등록된 메뉴 응답 DTO
-   */
   public RestaurantMenuResponse createMenu(Long restaurantId, RestaurantMenuRequest dto) {
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
         .orElseThrow(() -> new IllegalArgumentException("해당 매장을 찾을 수 없습니다. ID=" + restaurantId));
@@ -78,14 +62,9 @@ public class RestaurantMenuService {
         .isSoldout(dto.isSoldout())
         .build();
 
-    // 이미지가 포함된 경우에만 파일 저장 처리
     if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-      // 파일 저장 후 전체 경로 반환 (예: "/uploads/menus/uuid.jpg")
       String savedPath = fileStorageService.save(dto.getImage(), "menus");
-
-      // 경로가 포함된 문자열에서 파일명만 추출 (예: "uuid.jpg")
       String fileNameOnly = extractFileName(savedPath);
-
       menu.setImageFilename(fileNameOnly);
     }
 
@@ -103,17 +82,6 @@ public class RestaurantMenuService {
         .build();
   }
 
-  /**
-   * 메뉴 수정
-   *
-   * 기본 정보(name, price, description 등)를 갱신하고,
-   * 이미지가 새로 업로드된 경우 기존 이미지 대신 새 파일명을 저장한다.
-   *
-   * @param restaurantId 매장 ID
-   * @param menuId 메뉴 ID
-   * @param dto 수정 요청 DTO
-   * @return 수정된 메뉴 응답 DTO
-   */
   public RestaurantMenuResponse updateMenu(Long restaurantId, Long menuId, RestaurantMenuRequest dto) {
     RestaurantMenu menu = menuRepository.findById(menuId)
         .orElseThrow(() -> new IllegalArgumentException("해당 메뉴를 찾을 수 없습니다. ID=" + menuId));
@@ -126,6 +94,13 @@ public class RestaurantMenuService {
 
     // 이미지 교체 처리
     if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+      // 기존 이미지가 존재하면 먼저 삭제
+      if (menu.getImageFilename() != null && !menu.getImageFilename().isBlank()) {
+        String oldFileUrl = "/uploads/menus/" + menu.getImageFilename();
+        fileStorageService.delete(oldFileUrl);
+      }
+
+      // 새 파일 저장 및 파일명 갱신
       String savedPath = fileStorageService.save(dto.getImage(), "menus");
       String fileNameOnly = extractFileName(savedPath);
       menu.setImageFilename(fileNameOnly);
@@ -146,10 +121,11 @@ public class RestaurantMenuService {
   }
 
   /**
-   * 메뉴 삭제 (Soft Delete)
+   * 메뉴 삭제 (Soft Delete + 파일 삭제)
    *
    * 실제 데이터를 물리적으로 삭제하지 않고,
-   * isDeleted 플래그를 true로 변경한다.
+   * isDeleted 플래그를 true로 설정하며,
+   * 해당 메뉴 이미지 파일이 존재할 경우 함께 삭제한다.
    *
    * @param menuId 삭제할 메뉴 ID
    */
@@ -157,16 +133,17 @@ public class RestaurantMenuService {
     RestaurantMenu menu = menuRepository.findById(menuId)
         .orElseThrow(() -> new IllegalArgumentException("해당 메뉴를 찾을 수 없습니다. ID=" + menuId));
 
+    // 이미지 파일 삭제 처리
+    if (menu.getImageFilename() != null && !menu.getImageFilename().isBlank()) {
+      String fileUrl = "/uploads/menus/" + menu.getImageFilename();
+      fileStorageService.delete(fileUrl);
+    }
+
+    // Soft Delete 처리
     menu.setDeleted(true);
     menuRepository.save(menu);
   }
 
-  /**
-   * 파일 경로 문자열에서 파일명만 추출하는 유틸리티 메서드
-   *
-   * OS에 따라 슬래시(/, \\)가 다를 수 있으므로 둘 다 처리한다.
-   * 예: "/uploads/menus/uuid.jpg" → "uuid.jpg"
-   */
   private String extractFileName(String path) {
     if (path == null) return null;
     int lastSlash = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
