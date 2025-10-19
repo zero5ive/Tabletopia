@@ -1,0 +1,158 @@
+/* Main Panel */
+.main-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.panel-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+/* Review Container */
+.review-container {
+    padding: 32px;
+}
+
+/* Individual Review */
+.individual-review {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #f1f3f4;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    background: #ff6b35;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #212529;
+}
+
+.review-date {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.review-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.review-rating {
+    font-size: 16px;
+}
+
+.more-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+.more-btn:hover {
+    color: #212529;
+}
+
+/* Restaurant Info */
+.restaurant-info {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.restaurant-label {
+    font-weight: 600;
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.restaurant-name {
+    font-weight: 600;
+    color: #212529;
+}
+
+/* Review Text */
+.review-text {
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+/* Action Menu */
+.action-menu {
+    position: absolute;
+    top: 60px;
+    right: 24px;
+    background: white;
+    border: 1px solid #f1f3f4;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 10;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+    gap: 12px;
+}
+
+.action-item:hover {
+    background: #f8f9fa;
+}
+
+.action-item:not(:last-child) {
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.action-icon {
+    font-size: 16px;
+}

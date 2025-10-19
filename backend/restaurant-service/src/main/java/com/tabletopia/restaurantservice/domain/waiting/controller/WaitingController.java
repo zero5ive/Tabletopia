@@ -199,6 +199,8 @@ public class WaitingController {
       waitingEvent.setContent(
           waiting.getRestaurantNameSnapshot() +  "에 " + waiting.getPeopleCount()+ "명 등록");
 
+      log.info("✅ /topic/regist 로 메시지 전송 - restaurantId: {}, waitingId: {}",
+          waitingRequest.getRestaurantId(), waiting.getId());
       simpMessagingTemplate.convertAndSend("/topic/regist", waitingEvent);
 
       log.debug("웨이팅 등록 완료 (세션: {}, userId: {})",
@@ -263,9 +265,10 @@ public class WaitingController {
   @ResponseBody
   public ResponseEntity<String>cancelUserWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
 
-    waitingService.cancelWaiting(id, restaurantId);
-    simpMessagingTemplate.convertAndSend("/topic/cancel",
-        Map.of("type", "CANCEL","id", id, "restaurantId", restaurantId,"timestamp", LocalDateTime.now()));
+    Waiting waiting = waitingService.cancelWaiting(id, restaurantId);
+
+    // 개인화된 알림 전송
+    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "cancel");
 
     return ResponseEntity.ok("웨이팅이 취소되었습니다.");
 
@@ -288,22 +291,13 @@ public class WaitingController {
     WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
 
 
-    WaitingEvent cancelEvent = new WaitingEvent();
-    cancelEvent.setType("CANCEL");
-    cancelEvent.setWaitingId(waiting.getId());
-    cancelEvent.setSender(waiting.getUser().getId());  //  웨이팅한 사용자 ID
-    cancelEvent.setAdminName(admin.getEmail());  //  취소한 관리자 email
-    cancelEvent.setRestaurantId(restaurantId);
-    cancelEvent.setContent("웨이팅이 취소되었습니다.");
-    cancelEvent.setTimestamp(LocalDateTime.now());
-
-    // 4. ✅ Topic으로 전송 (해당 사용자가 프론트에서 받음)
-    simpMessagingTemplate.convertAndSend("/topic/cancel", cancelEvent);
+    // 개인화된 알림 전송
+    waitingNotificationService.notifyWaitingStatusChange(waiting, restaurantId, "cancel");
 
     log.info("웨이팅 취소 완료 - waitingNumber: {}, userId: {}",
         waiting.getWaitingNumber(), waiting.getUser().getId());
 
-    // 5. ✅ Response DTO 반환
+    // Response DTO 반환
     return ResponseEntity.ok(response);
   }
 
@@ -399,7 +393,7 @@ public class WaitingController {
   public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {
     Waiting  waiting  =waitingService.callWaiting(id, restaurantId);
 
-    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/call");
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"call");
 
     return ResponseEntity.ok("웨이팅이 호출되었습니다.");
   }
@@ -415,7 +409,7 @@ public class WaitingController {
   public  ResponseEntity<String> seatedWaiting(@PathVariable Long id, @RequestParam Long restaurantId){
     Waiting  waiting  =waitingService.seatedWaiting(id, restaurantId);
 
-    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"/topic/seated");
+    waitingNotificationService.notifyWaitingStatusChange(waiting,restaurantId,"seated");
 
     return ResponseEntity.ok("착석되었습니다.");
   }
@@ -449,9 +443,25 @@ public class WaitingController {
       Principal principal) {
 
     try {
+      // Principal null 체크
+      if (principal == null) {
+        log.error("웨이팅 내역 조회 실패: 인증되지 않은 사용자");
+        return ResponseEntity.status(401).build();
+      }
+
       // JWT 토큰에서 현재 사용자 정보 추출
       String currentUserEmail = principal.getName();
+      if (currentUserEmail == null) {
+        log.error("웨이팅 내역 조회 실패: 사용자 이메일이 null");
+        return ResponseEntity.status(401).build();
+      }
+
       User user = userService.findByEmail(currentUserEmail);
+      if (user == null) {
+        log.error("웨이팅 내역 조회 실패: 사용자를 찾을 수 없음 - email: {}", currentUserEmail);
+        return ResponseEntity.status(404).build();
+      }
+
       Long userId = user.getId();
 
       log.info("웨이팅 내역 조회 - userId: {}, email: {}, page: {}, size: {}",
@@ -461,9 +471,9 @@ public class WaitingController {
       Page<WaitingResponse> waitingList = waitingService.getUserWaitingList(userId, pageable);
 
       return ResponseEntity.ok(waitingList);
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       log.error("웨이팅 내역 조회 실패: {}", e.getMessage(), e);
-      throw e;
+      return ResponseEntity.status(500).build();
     }
   }
 

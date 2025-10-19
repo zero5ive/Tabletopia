@@ -27,7 +27,7 @@ public interface WaitingService {
   public Integer getMaxWaitingNumber(Long restaurantId);
 
   //웨이팅 취소
-  public void cancelWaiting(Long id, Long restaurantId);
+  public Waiting cancelWaiting(Long id, Long restaurantId);
 
   //웨이팅 호출
   public Waiting callWaiting(Long id, Long restaurantId);

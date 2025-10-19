@@ -1,13 +1,24 @@
 package com.tabletopia.restaurantservice.domain.payment.controller;
 
 import com.tabletopia.restaurantservice.domain.payment.dto.PaymentSuccessDTO;
+import com.tabletopia.restaurantservice.domain.payment.dto.PaymentDetailDTO;
 import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
+import com.tabletopia.restaurantservice.domain.payment.service.PaymentDetailService;
+import com.tabletopia.restaurantservice.domain.payment.entity.PaymentDetail;
+import com.tabletopia.restaurantservice.domain.payment.entity.PaymentStatus;
+import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,14 +31,19 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/user/payment")
 @Slf4j
+@RequiredArgsConstructor
 public class PaymentController {
 
+    private final PaymentDetailService paymentDetailService;
+
+    @Transactional
     @PostMapping
     public ResponseEntity<String> test(@RequestBody Payment payment) {
 
         log.debug("결제 컨트롤러에 진입했습니다.");
 
         try {
+
             // orderNo를 난수로 생성하는 로직
             String orderNo = java.util.UUID.randomUUID().toString();
             if (orderNo.length() > 50) {
@@ -76,6 +92,40 @@ public class PaymentController {
             log.debug("응답 코드: {}", response.getStatusCode());
             log.debug("응답 바디: {}", response.getBody());
             log.debug("응답 객체 : {}", response);
+
+//            if (response.getStatusCode() == HttpStatus.OK) {
+//                try {
+//                    // JSON 파싱
+//                    JSONParser parser = new JSONParser();
+//                    JSONObject responseBody = (JSONObject) parser.parse(response.getBody());
+//                    JSONObject card = (JSONObject) responseBody.get("card");
+//
+//
+//                    // TODO: reservation 객체를 어떻게 가져올지 결정해야 합니다.
+//                    //  PaymentDetail의 reservation은 필수 값입니다.
+//                    Reservation reservation = new Reservation();
+//
+//
+//                    PaymentDetail paymentDetail = new PaymentDetail();
+//                    paymentDetail.setOrderNo(orderNo);
+//                    paymentDetail.setAmount(new BigDecimal(payment.getAmount()));
+//                    paymentDetail.setPayMethod(card.get("company").toString()); // TODO: Toss API 응답 필드 확인 필요
+//                    paymentDetail.setPgTid(responseBody.get("paymentKey").toString()); // TODO: Toss API 응답 필드 확인 필요
+//                    paymentDetail.setStatus(PaymentStatus.SUCCESS); // TODO: Toss API 응답에 따라 상태 설정
+//                    paymentDetail.setReservation(reservation); // TODO: 실제 Reservation 객체로 설정해야 합니다.
+//
+//                    String approvedAtStr = responseBody.get("approvedAt").toString(); // TODO: Toss API 응답 필드 확인 필요
+//                    DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+//                    LocalDateTime approvedAt = LocalDateTime.parse(approvedAtStr, formatter);
+//                    paymentDetail.setApprovedAt(approvedAt);
+//
+//
+//                    paymentDetailService.register(paymentDetail);
+//                } catch (Exception e) {
+//                    log.error("결제 정보 저장 중 오류 발생", e);
+//                    // TODO: 결제 정보 저장 실패 시 처리 로직 추가 (예: 결제 취소 API 호출)
+//                }
+//            }
 
             return ResponseEntity.ok(response.getBody());
 

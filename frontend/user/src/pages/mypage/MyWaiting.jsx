@@ -104,9 +104,11 @@ export default function MyReservation() {
         };
     }, [userId]);
 
-    const fetchAllWaitingList = async () => {
+    const fetchAllWaitingList = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) {
+                setLoading(true);
+            }
             console.log('웨이팅 내역 조회 시작');
             console.log('저장된 토큰:', localStorage.getItem('accessToken'));
 
@@ -126,10 +128,28 @@ export default function MyReservation() {
             console.error('웨이팅 내역 조회 실패:', error);
             console.error('에러 상세:', error.response?.data);
             console.error('에러 상태:', error.response?.status);
-            alert(`웨이팅 내역 조회 실패: ${error.response?.data?.message || error.message}`);
+
+            // silent 모드가 아닐 때만 alert 표시
+            if (!silent) {
+                // 에러 상태별 처리
+                if (error.response?.status === 401) {
+                    alert('로그인이 필요합니다. 다시 로그인해주세요.');
+                    // 로그인 페이지로 리다이렉트 (필요시)
+                    // window.location.href = '/login';
+                } else if (error.response?.status === 404) {
+                    alert('사용자 정보를 찾을 수 없습니다.');
+                } else if (error.response?.status === 500) {
+                    alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                } else {
+                    alert(`웨이팅 내역 조회 실패: ${error.response?.data?.message || error.message}`);
+                }
+            }
+
             setAllWaitingList([]);
         } finally {
-            setLoading(false);
+            if (!silent) {
+                setLoading(false);
+            }
         }
     };
 
@@ -239,8 +259,8 @@ export default function MyReservation() {
     // WebSocket 메시지 처리
     const handleWebSocketMessage = (message) => {
         console.log('WebSocket 메시지 수신:', message);
-        // 데이터 새로고침
-        fetchAllWaitingList();
+        // 데이터 새로고침 (silent 모드 - alert 표시 안 함)
+        fetchAllWaitingList(true);
     };
 
     //대기 취소 함수
@@ -251,8 +271,11 @@ export default function MyReservation() {
         try {
             await waitingCancel(waitingId, restaurantId);
             window.alert("웨이팅이 취소되었습니다.");
-            // 데이터 새로고침
-            await fetchAllWaitingList();
+
+            // 약간의 딜레이 후 데이터 새로고침 (WebSocket 메시지 처리 대기)
+            setTimeout(() => {
+                fetchAllWaitingList(true);
+            }, 500);
         } catch (error) {
             console.error("웨이팅 취소 실패:", error);
             window.alert("웨이팅 취소에 실패했습니다.");

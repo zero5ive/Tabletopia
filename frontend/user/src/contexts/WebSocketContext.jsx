@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { getCurrentUser } from '../pages/utils/UserApi'
@@ -17,35 +17,47 @@ export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null)
     const [isConnected, setIsConnected] = useState(false)
     const [userId, setUserId] = useState(null)
+    const [notifications, setNotifications] = useState([])
 
-    // localStorage에서 알림 불러오기 및 24시간 지난 알림 제거
-    const [notifications, setNotifications] = useState(() => {
+    // userId가 변경될 때 해당 사용자의 알림만 불러오기
+    useEffect(() => {
+        if (!userId) return
+
         try {
-            const saved = localStorage.getItem('notifications')
+            const storageKey = `notifications_${userId}`
+            const saved = localStorage.getItem(storageKey)
             if (saved) {
                 const parsed = JSON.parse(saved)
                 const now = Date.now()
                 const oneDayMs = 24 * 60 * 60 * 1000
                 // 24시간 이내의 알림만 유지
-                return parsed.filter(notif => (now - notif.timestamp) < oneDayMs)
+                const filtered = parsed.filter(notif => (now - notif.timestamp) < oneDayMs)
+                setNotifications(filtered)
+            } else {
+                setNotifications([])
             }
         } catch (error) {
             console.error('알림 불러오기 실패:', error)
+            setNotifications([])
         }
-        return []
-    })
+    }, [userId])
 
-    // notifications가 변경될 때마다 localStorage에 저장
+    // notifications가 변경될 때마다 localStorage에 저장 (userId별로)
     useEffect(() => {
+        if (!userId) return
+
         try {
-            localStorage.setItem('notifications', JSON.stringify(notifications))
+            const storageKey = `notifications_${userId}`
+            localStorage.setItem(storageKey, JSON.stringify(notifications))
         } catch (error) {
             console.error('알림 저장 실패:', error)
         }
-    }, [notifications])
+    }, [notifications, userId])
 
     // 24시간마다 오래된 알림 자동 제거
     useEffect(() => {
+        if (!userId) return
+
         const cleanupInterval = setInterval(() => {
             const now = Date.now()
             const oneDayMs = 24 * 60 * 60 * 1000
@@ -55,7 +67,7 @@ export const WebSocketProvider = ({ children }) => {
         }, 60 * 60 * 1000) // 1시간마다 체크
 
         return () => clearInterval(cleanupInterval)
-    }, [])
+    }, [userId])
 
     // 현재 로그인한 사용자 정보 가져오기
     useEffect(() => {
@@ -153,6 +165,7 @@ export const WebSocketProvider = ({ children }) => {
                             message: alert.content,
                             timestamp: Date.now(),
                             read: false,
+                            userId: userId
                         })
                     }
                 })
@@ -177,33 +190,33 @@ export const WebSocketProvider = ({ children }) => {
         }
     }, [userId])
 
-    const addNotification = (notification) => {
+    const addNotification = useCallback((notification) => {
         setNotifications(prev => [notification, ...prev])
-    }
+    }, [])
 
-    const removeNotification = (notificationId) => {
+    const removeNotification = useCallback((notificationId) => {
         setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
-    }
+    }, [])
 
-    const clearAllNotifications = () => {
+    const clearAllNotifications = useCallback(() => {
         setNotifications([])
-    }
+    }, [])
 
-    const markAsRead = (notificationId) => {
+    const markAsRead = useCallback((notificationId) => {
         setNotifications(prev =>
             prev.map(notif =>
                 notif.id === notificationId ? { ...notif, read: true } : notif
             )
         )
-    }
+    }, [])
 
-    const markAllAsRead = () => {
+    const markAllAsRead = useCallback(() => {
         setNotifications(prev =>
             prev.map(notif => ({ ...notif, read: true }))
         )
-    }
+    }, [])
 
-    const value = {
+    const value = useMemo(() => ({
         stompClient,
         notifications,
         isConnected,
@@ -212,7 +225,7 @@ export const WebSocketProvider = ({ children }) => {
         clearAllNotifications,
         markAsRead,
         markAllAsRead
-    }
+    }), [stompClient, notifications, isConnected, addNotification, removeNotification, clearAllNotifications, markAsRead, markAllAsRead])
 
     return (
         <WebSocketContext.Provider value={value}>

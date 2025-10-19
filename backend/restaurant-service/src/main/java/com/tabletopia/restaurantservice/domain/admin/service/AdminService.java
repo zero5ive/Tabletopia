@@ -46,5 +46,11 @@ public class AdminService {
             return adminDTO;
         }else return null;
     }
+
+    public Admin getAdminEntityByEmail(String email) {
+      return adminRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("관리자를 찾을 수 없습니다: " + email));
+    }
+
 }
 

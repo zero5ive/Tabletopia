@@ -1,0 +1,57 @@
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.category-btn:hover {
+  background-color: #e9ecef;
+}
+
+.category-btn.selected {
+  border-color: #007bff;
+  background-color: #e7f1ff;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.category-btn .emoji {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.region-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.region-btn {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 6px 12px;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.region-btn:hover {
+  background-color: #f1f3f5;
+}
+
+.region-btn.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
