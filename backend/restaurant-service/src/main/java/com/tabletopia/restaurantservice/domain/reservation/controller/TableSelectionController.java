@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.controller;
 
+import com.tabletopia.restaurantservice.domain.payment.dto.PaymentSuccessDTO;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ConnectionMessage;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.SessionInfoResponse;
@@ -14,6 +15,7 @@ import com.tabletopia.restaurantservice.domain.reservation.dto.UserConnectedResp
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectionService;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
+import com.tabletopia.restaurantservice.domain.reservation.service.ReservationFacadeService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import com.tabletopia.restaurantservice.domain.user.dto.UserInfoDTO;
@@ -56,6 +58,7 @@ public class TableSelectionController {
 
   private final ReservationService reservationService;
   private final TableSelectionService tableSelectionService;
+  private final ReservationFacadeService reservationFacadeService;
   private final RestaurantTableService restaurantTableService;
   private final UserService userService;
 
@@ -317,55 +320,7 @@ public class TableSelectionController {
       @RequestBody ReservationRequest request,
       Principal principal) {
     log.debug("예약 등록 요청: {}", request);
-
-    try {
-      // JWT에서 추출된 인증된 사용자 이메일
-      String authenticatedEmail = null;
-
-      if (principal != null) {
-        authenticatedEmail = principal.getName(); // JWT에서 추출된 이메일
-        log.debug("Principal에서 추출한 이메일: {}", authenticatedEmail);
-      } else {
-        // Principal이 null인 경우, 요청 본문의 customerInfo에서 이메일 추출 (임시)
-        if (request.getCustomerInfo() != null && request.getCustomerInfo().getEmail() != null) {
-          authenticatedEmail = request.getCustomerInfo().getEmail();
-          log.debug("요청 본문에서 추출한 이메일: {}", authenticatedEmail);
-        }
-      }
-
-      if (authenticatedEmail == null) {
-        log.warn("인증 정보 없음: 예약 등록 실패");
-        return Map.of(
-            "success", false,
-            "message", "인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요."
-        );
-      }
-
-      // Service에서 검증 및 예약 등록 처리
-      Long reservationId = reservationService.createReservationWithValidation(request,
-          authenticatedEmail);
-
-      log.debug("예약 등록 성공: ID={}, 사용자={}", reservationId, authenticatedEmail);
-      return Map.of(
-          "success", true,
-          "reservationId", reservationId,
-          "message", "예약이 성공적으로 등록되었습니다."
-      );
-    } catch (IllegalStateException e) {
-      // 검증 실패 (비즈니스 로직 에러)
-      log.warn("예약 검증 실패: {}", e.getMessage());
-      return Map.of(
-          "success", false,
-          "message", e.getMessage()
-      );
-    } catch (Exception e) {
-      // 시스템 에러
-      log.error("예약 등록 중 예상치 못한 오류 발생", e);
-      return Map.of(
-          "success", false,
-          "message", "예약 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-      );
-    }
+    return reservationFacadeService.registerReservation(request, principal);
   }
 
   /**
