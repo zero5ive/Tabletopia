@@ -155,4 +155,24 @@ public class ReservationController {
     return ResponseEntity.ok(ApiResponse.success(null));
   }
 
+  /**
+   * 사용자가 자신의 예약 취소 (사용자용)
+   * PENDING/CONFIRMED -> CANCELLED
+   *
+   * @param reservationId
+   * @return
+   * @author Claude Code
+   * @since 2025-10-20
+   */
+  @PatchMapping("/api/user/reservations/{reservationId}/cancel")
+  public ResponseEntity<ApiResponse<Void>> cancelMyReservation(
+      @PathVariable Long reservationId) {
+
+    String currentUserEmail = SecurityUtil.getCurrentUserEmail();
+    User user = userService.findByEmail(currentUserEmail);
+
+    reservationService.cancelReservationByUser(reservationId, user.getId());
+    return ResponseEntity.ok(ApiResponse.success("예약이 취소되었습니다.", null));
+  }
+
  }

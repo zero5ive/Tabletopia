@@ -16,7 +16,7 @@ export default function Sidebar() {
       <div className="sidebar">
         <div className="p-3">
           <h4 className="text-white mb-0">매장 관리</h4>
-          <small className="text-muted">정미스시</small>
+          <small className="text-muted"></small>
         </div>
 
         <nav className="nav flex-column nav-pills">

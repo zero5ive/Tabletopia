@@ -94,7 +94,7 @@ const PaymentSuccess = () => {
       <div className={styles.summary}>
         <p style={{ textAlign: 'center' }}>{message}</p>
         <button onClick={() => window.close()} className={styles.button}>
-          창닫기
+          잠시후 자동으로 닫힙니다
         </button>
       </div>
     </div>

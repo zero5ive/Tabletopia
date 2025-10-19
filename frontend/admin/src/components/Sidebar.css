@@ -1,6 +1,9 @@
         .sidebar {
-            min-height: 100vh;
+            height: 100%;
             background: #343a40;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
         }
 
         .sidebar .nav-link {

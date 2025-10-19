@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './MyWaiting.module.css'
-import { getReservations, createReview } from '../utils/UserApi';
+import { getReservations, createReview, cancelReservation } from '../utils/UserApi';
 
 export default function MyReservation() {
     const [activeTab, setActiveTab] = useState('PENDING')
@@ -127,6 +127,27 @@ export default function MyReservation() {
         })
     }
 
+    const handleCancelReservation = async (reservationId) => {
+        if (!window.confirm('정말로 예약을 취소하시겠습니까?')) {
+            return
+        }
+
+        try {
+            const response = await cancelReservation(reservationId)
+            console.log('예약 취소 응답:', response)
+            alert('예약이 취소되었습니다.')
+            fetchReservations(activeTab) // 목록 새로고침
+        } catch (error) {
+            console.error('예약 취소 에러:', error)
+            console.error('에러 상세:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            })
+            alert(`예약 취소 실패: ${error.response?.data?.message || error.message}`)
+        }
+    }
+
     return (
         <>
             <div className={styles['main-panel']}>
@@ -205,13 +226,19 @@ export default function MyReservation() {
                                         <div className={styles['card-actions']}>
                                             {reservation.reservationState === 'PENDING' && (
                                                 <>
-                                                    <button className={`${styles.btn} ${styles['btn-secondary']}`}>
+                                                    <button
+                                                        className={`${styles.btn} ${styles['btn-secondary']}`}
+                                                        onClick={() => handleCancelReservation(reservation.id)}
+                                                    >
                                                         예약 취소
                                                     </button>
                                                 </>
                                             )}
                                             {reservation.reservationState === 'CONFIRMED' && (
-                                                <button className={`${styles.btn} ${styles['btn-secondary']}`}>
+                                                <button
+                                                    className={`${styles.btn} ${styles['btn-secondary']}`}
+                                                    onClick={() => handleCancelReservation(reservation.id)}
+                                                >
                                                     예약 취소
                                                 </button>
                                             )}

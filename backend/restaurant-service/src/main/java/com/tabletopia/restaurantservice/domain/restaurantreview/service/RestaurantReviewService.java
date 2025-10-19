@@ -11,6 +11,8 @@ import com.tabletopia.restaurantservice.domain.user.repository.JpaUserRepository
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,12 +46,26 @@ public class RestaurantReviewService {
   }
 
   /**
-   * 레스토랑의 리뷰 조회
+   * 레스토랑의 리뷰 조회 (전체)
    * @author 김예진
    * @since 2025-10-16
    */
   public List<RestaurantReview> getRestaurantReviews(Long restaurantId){
     return restaurantReviewRepository.getRestaurantReviewsByRestaurant_Id(restaurantId);
+  }
+
+  /**
+   * 레스토랑의 리뷰 조회 (페이징)
+   * @author Claude Code
+   * @since 2025-10-20
+   * @param restaurantId
+   * @param pageable
+   * @return
+   */
+  public Page<RestaurantReview> getRestaurantReviews(Long restaurantId, Pageable pageable){
+    log.info("레스토랑 리뷰 조회 (페이징) - restaurantId: {}, page: {}, size: {}",
+        restaurantId, pageable.getPageNumber(), pageable.getPageSize());
+    return restaurantReviewRepository.findByRestaurantIdAndIsDeletedFalse(restaurantId, pageable);
   }
 
   /**

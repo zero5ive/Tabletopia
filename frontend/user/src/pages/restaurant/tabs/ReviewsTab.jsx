@@ -10,24 +10,37 @@ export default function ReviewsTab({ restaurantDetail }) {
     const [review, setReview] = useState([]);
     const [searchParams] = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const pageSize = 10;
 
     //레스토랑 리뷰 함수
-    const fetchRestaurantReviews = async (restaurantId) => {
-        const response = await getRestaurantReviews(restaurantId);
-        console.log('레스토랑 리뷰', response.data);
-        setReview(response.data);
+    const fetchRestaurantReviews = async (restaurantId, page = 0) => {
+        const response = await getRestaurantReviews(restaurantId, page, pageSize);
+        console.log('레스토랑 리뷰 (페이징)', response.data);
+        setReview(response.data.content || []);
+        setTotalPages(response.data.page?.totalPages || 0);
+        setTotalElements(response.data.page?.totalElements || 0);
+        setCurrentPage(page);
     }
 
     useEffect(() => {
-        fetchRestaurantReviews(restaurantId);
+        if (restaurantId) {
+            fetchRestaurantReviews(restaurantId, 0);
+        }
     }, [restaurantId])
+
+    const handlePageChange = (page) => {
+        fetchRestaurantReviews(restaurantId, page);
+    }
 
     return (
         <div className={`${styles["tab-panel"]} ${styles["active"]}`}>
             <div className={styles["section-title"]}>리뷰</div>
             <div className={styles["review-summary"]}>
                 <div className={styles["review-score"]}>{restaurantDetail.averageRating}</div>
-                <div className={styles["review-total"]}>총 386개의 리뷰</div>
+                <div className={styles["review-total"]}>총 {totalElements}개의 리뷰</div>
                 <div className={styles["review-breakdown"]}>
                     {/* <div className={styles["breakdown-item"]}>
                         <div className={styles["breakdown-label"]}>5점</div>
@@ -67,29 +80,46 @@ export default function ReviewsTab({ restaurantDetail }) {
             ))}
 
 
-            <div className={styles['demo-section']}>
-                <div className={styles['pagination-container']}>
-                    <div className={styles.pagination}>
-                        <button className={`${styles['pagination-btn']} ${styles.arrow} ${styles.disabled}`}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <button className={`${styles['pagination-btn']} ${styles.active}`}>1</button>
-                        <button className={styles['pagination-btn']}>2</button>
-                        <button className={styles['pagination-btn']}>3</button>
-                        <button className={styles['pagination-btn']}>4</button>
-                        <button className={styles['pagination-btn']}>5</button>
-                        <span className={styles['pagination-dots']}>...</span>
-                        <button className={styles['pagination-btn']}>15</button>
-                        <button className={`${styles['pagination-btn']} ${styles.arrow}`}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+            {totalPages > 0 && (
+                <div className={styles['demo-section']}>
+                    <div className={styles['pagination-container']}>
+                        <div className={styles.pagination}>
+                            {/* 이전 페이지 버튼 */}
+                            <button
+                                className={`${styles['pagination-btn']} ${styles.arrow} ${currentPage === 0 ? styles.disabled : ''}`}
+                                onClick={() => currentPage > 0 && handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 0}
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+
+                            {/* 페이지 번호 버튼 */}
+                            {[...Array(totalPages)].map((_, index) => (
+                                <button
+                                    key={index}
+                                    className={`${styles['pagination-btn']} ${currentPage === index ? styles.active : ''}`}
+                                    onClick={() => handlePageChange(index)}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+
+                            {/* 다음 페이지 버튼 */}
+                            <button
+                                className={`${styles['pagination-btn']} ${styles.arrow} ${currentPage === totalPages - 1 ? styles.disabled : ''}`}
+                                onClick={() => currentPage < totalPages - 1 && handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages - 1}
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
