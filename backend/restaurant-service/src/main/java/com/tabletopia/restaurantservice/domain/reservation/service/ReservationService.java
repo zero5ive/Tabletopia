@@ -602,7 +602,7 @@ public class ReservationService {
    *
    * @param reservationId 예약 ID
    * @param userId 사용자 ID
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-20
    */
   @Transactional
