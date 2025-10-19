@@ -20,10 +20,6 @@ export default function Sidebar() {
         </div>
 
         <nav className="nav flex-column nav-pills">
-          {/* 공통 */}
-          <a className="nav-link active" href="#dashboard" data-bs-toggle="tab">
-            <i className="fas fa-tachometer-alt me-2"></i>대시보드
-          </a>
           {/* SUPERADMIN → 매장 등록만 */}
           {role === 'SUPERADMIN' && (
             <a className="nav-link" href="#restaurant-info" data-bs-toggle="tab">
