@@ -1,20 +1,19 @@
 package com.tabletopia.restaurantservice.domain.restaurant.controller;
 
-import com.tabletopia.restaurantservice.domain.reservation.dto.TimeSlotAvailabilityResponse;
 import com.tabletopia.restaurantservice.domain.reservation.service.ReservationService;
 import com.tabletopia.restaurantservice.domain.restaurant.entity.Restaurant;
 import com.tabletopia.restaurantservice.domain.restaurant.service.RestaurantService;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
-import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,11 +36,12 @@ public class AdminRestaurantController {
   private final RestaurantService restaurantService;
   private final ReservationService reservationService;
   private final RestaurantOpeningHourService openingHourService;
+  private final ObjectMapper objectMapper;
 
-  /** 전체 레스토랑 조회 */
+  /** SUPERADMIN 전용 - 전체 매장 조회 */
   @GetMapping
-  public ResponseEntity<List<Restaurant>> getAll() {
-      return ResponseEntity.ok(restaurantService.getAllRestaurants());
+  public ResponseEntity<List<Restaurant>> getAllRestaurantsForSuperAdmin() {
+    return ResponseEntity.ok(restaurantService.getAllRestaurants());
   }
 
   /** 단일 레스토랑 조회 */
@@ -50,10 +50,35 @@ public class AdminRestaurantController {
     return ResponseEntity.ok(restaurantService.getRestaurant(id));
   }
 
-  /** 레스토랑 등록 */
+  /**
+   *  매장 등록 (SUPERADMIN 전용)
+   * 요청 body 예시:
+   * {
+   *   "adminId": 2,
+   *   "restaurant": {
+   *     "name": "정미스시",
+   *     "address": "서울 강남구 역삼동",
+   *     "phoneNumber": "010-1234-5678",
+   *     "description": "신선한 스시 전문점",
+   *     "latitude": 37.4979,
+   *     "longitude": 127.0276,
+   *     "regionCode": "서울",
+   *     "restaurantCategory": { "id": 3 }
+   *   }
+   * }
+   */
   @PostMapping
-  public ResponseEntity<Restaurant> create(@RequestBody Restaurant restaurant) {
-    return ResponseEntity.ok(restaurantService.createRestaurant(restaurant));
+  public ResponseEntity<Restaurant> create(@RequestBody Map<String, Object> payload) {
+    try {
+      Restaurant restaurant = objectMapper.convertValue(payload.get("restaurant"), Restaurant.class);
+      Long adminId = Long.valueOf(payload.get("adminId").toString());
+
+      Restaurant saved = restaurantService.createRestaurant(restaurant, adminId);
+      return ResponseEntity.ok(saved);
+    } catch (Exception e) {
+      log.error("❌ 매장 등록 실패", e);
+      return ResponseEntity.badRequest().build();
+    }
   }
 
   /** 레스토랑 수정 */
@@ -79,7 +104,6 @@ public class AdminRestaurantController {
   ) {
     // 운영시간 조회
     RestaurantEffectiveHourResponse effectiveHour = openingHourService.getEffectiveHour(restaurantId, date);
-
     List<LocalTime> timeSlots = new ArrayList<>();
 
     if (!effectiveHour.isClosed()) {
@@ -87,6 +111,13 @@ public class AdminRestaurantController {
     }
 
     return ResponseEntity.ok(timeSlots);
+  }
+
+  /** 로그인한 관리자 본인 소유의 레스토랑 조회 */
+  @GetMapping("/my")
+  public ResponseEntity<List<Restaurant>> getMyRestaurants() {
+    List<Restaurant> restaurants = restaurantService.getRestaurantsByCurrentAdmin();
+    return ResponseEntity.ok(restaurants);
   }
 
 }

@@ -31,6 +31,9 @@ public class Admin {
     @Column(nullable = false, length = 20)
     private String name;
 
+  @Enumerated(EnumType.STRING)
+  private Role role; // ADMIN, SUPERADMIN
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -40,3 +43,4 @@ public class Admin {
     private LocalDateTime updatedAt;
 
 }
+

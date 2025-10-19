@@ -96,8 +96,9 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:8002/api/hours/opening/${selectedRestaurant.id}`,
-        payload
+        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/opening`,
+        payload,
+        { withCredentials: true }
       );
       alert("운영시간이 성공적으로 저장되었습니다.");
     } catch (err) {
@@ -116,7 +117,8 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
     try {
       const today = new Date().toISOString().split("T")[0];
       const res = await axios.get(
-        `http://localhost:8002/api/hours/opening/effective/${selectedRestaurant.id}?date=${today}`
+        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/effective`,
+        { withCredentials: true }
       );
       setPreview(res.data);
     } catch (err) {
@@ -166,8 +168,8 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
                 <div className="alert alert-info text-center">
                   <strong>{preview.date}</strong> 기준<br />
                   {preview.isClosed
-                    ? `휴무 (${preview.message})`
-                    : `${preview.openTime} ~ ${preview.closeTime} (${preview.message})`}
+                    ? "휴무"
+                    : `${preview.openTime} ~ ${preview.closeTime}`}
                 </div>
               )}
 

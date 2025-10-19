@@ -54,7 +54,6 @@ export default function MainContent() {
             <div className="d-flex justify-content-between align-items-center">
               <div>
                 <h2 className="mb-0">매장 관리</h2>
-                <p className="text-muted mb-0">정미스시 매장 정보를 관리하세요</p>
               </div>
 
               {selectedRestaurant ? (

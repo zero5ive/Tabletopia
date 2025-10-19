@@ -1,93 +1,98 @@
-import { useEffect, useState } from "react";
-import { getAllRestaurants, deleteRestaurant } from "../../api/restaurantApi";
-import { Tab } from "bootstrap";
+import { useEffect, useState } from "react"
+import { getMyRestaurants, getAllRestaurants, deleteRestaurant } from "../../api/RestaurantApi"
+import { Tab } from "bootstrap"
 
 export default function RestaurantListTab({ onEdit, onSelectRestaurant, selectedRestaurant }) {
-  const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [restaurants, setRestaurants] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedId, setSelectedId] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const role = localStorage.getItem("adminRole")
 
   useEffect(() => {
     const handler = (e) => {
-      const href = e.target.getAttribute("href");
+      const href = e.target.getAttribute("href")
       if (href === "#restaurant-list") {
-        setSelectedId(null);
+        setSelectedId(null)
       }
-    };
-    document.addEventListener("shown.bs.tab", handler);
-    return () => document.removeEventListener("shown.bs.tab", handler);
-  }, []);
+    }
+    document.addEventListener("shown.bs.tab", handler)
+    return () => document.removeEventListener("shown.bs.tab", handler)
+  }, [])
 
   const loadRestaurants = async () => {
     try {
-      const res = await getAllRestaurants();
-      setRestaurants(res.data);
-      console.log("레스토랑 리스트", res.data);
+      let res
+      if (role === "SUPERADMIN") {
+        res = await getAllRestaurants()
+        console.log("SUPERADMIN: 전체 매장 조회 실행됨")
+      } else {
+        res = await getMyRestaurants()
+        console.log("ADMIN: 본인 매장만 조회 실행됨")
+      }
+
+      setRestaurants(res.data)
+      console.log("레스토랑 리스트", res.data)
     } catch (error) {
-      console.error("매장 목록 로딩 실패:", error);
+      console.error("매장 목록 로딩 실패:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadRestaurants();
+    loadRestaurants()
 
-    const handleRefresh = () => loadRestaurants();
-    window.addEventListener("refreshRestaurantList", handleRefresh);
-    return () => window.removeEventListener("refreshRestaurantList", handleRefresh);
-  }, []);
+    const handleRefresh = () => loadRestaurants()
+    window.addEventListener("refreshRestaurantList", handleRefresh)
+    return () => window.removeEventListener("refreshRestaurantList", handleRefresh)
+  }, [])
 
   useEffect(() => {
     if (selectedRestaurant === null) {
-      setSelectedId(null);
+      setSelectedId(null)
     }
-  }, [selectedRestaurant]);
+  }, [selectedRestaurant])
 
   const handleDelete = async (id) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
-        await deleteRestaurant(id);
-        alert("삭제 완료!");
-        loadRestaurants();
+        await deleteRestaurant(id)
+        alert("삭제 완료!")
+        loadRestaurants()
       } catch (error) {
-        console.error("삭제 오류:", error);
-        alert("삭제 중 문제가 발생했습니다.");
+        console.error("삭제 오류:", error)
+        alert("삭제 중 문제가 발생했습니다.")
       }
     }
-  };
+  }
 
   const handleEdit = (restaurant) => {
-    onEdit(restaurant);
+    onEdit(restaurant)
     setTimeout(() => {
-      const tabTrigger = document.querySelector('a[href="#restaurant-info"]');
+      const tabTrigger = document.querySelector('a[href="#restaurant-info"]')
       if (tabTrigger) {
-        const tab = new Tab(tabTrigger);
-        tab.show();
+        const tab = new Tab(tabTrigger)
+        tab.show()
       }
-    }, 0);
-  };
+    }, 0)
+  }
 
   const handleSelect = (restaurant) => {
-    setSelectedId(restaurant.id);
-    onSelectRestaurant(restaurant);
-  };
+    setSelectedId(restaurant.id)
+    onSelectRestaurant(restaurant)
+  }
 
-  // 페이지 관련 계산
-  const totalPages = Math.ceil(restaurants.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = restaurants.slice(startIndex, startIndex + itemsPerPage);
-  console.log(currentItems);
-
-  console.log("currentItems: " +currentItems);
+  const totalPages = Math.ceil(restaurants.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const currentItems = restaurants.slice(startIndex, startIndex + itemsPerPage)
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
-  if (loading) return <p className="text-center mt-4">불러오는 중...</p>;
+  if (loading) return <p className="text-center mt-4">불러오는 중...</p>
 
   return (
     <div className="tab-pane fade" id="restaurant-list">
@@ -131,37 +136,38 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                       <td>{r.description}</td>
                       <td>
                         <button
-                          className={`btn btn-sm me-2 ${selectedId === r.id ? "btn-success" : "btn-secondary"
-                            }`}
+                          className={`btn btn-sm me-2 ${
+                            selectedId === r.id ? "btn-success" : "btn-secondary"
+                          }`}
                           onClick={() => handleSelect(r)}
                         >
                           {selectedId === r.id ? "선택됨" : "선택"}
                         </button>
 
-                        <button
-                          className="btn btn-sm btn-warning me-2"
-                          onClick={() => handleEdit(r)}
-                        >
-                          수정
-                        </button>
-
-                        <button
-                          className="btn btn-sm btn-danger me-2"
-                          onClick={() => handleDelete(r.id)}
-                        >
-                          삭제
-                        </button>
+                        {role === "SUPERADMIN" && (
+                          <>
+                            <button
+                              className="btn btn-sm btn-warning me-2"
+                              onClick={() => handleEdit(r)}
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger me-2"
+                              onClick={() => handleDelete(r.id)}
+                            >
+                              삭제
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* 페이지네이션 */}
               <nav>
                 <ul className="pagination justify-content-center">
-
-                  {/* 이전 버튼 */}
                   <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
                     <button
                       className="page-link"
@@ -171,12 +177,11 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                     </button>
                   </li>
 
-                  {/* 현재 페이지 기준 5개씩 묶어서 표시 */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter((page) => {
-                      const groupStart = Math.floor((currentPage - 1) / 5) * 5 + 1;
-                      const groupEnd = Math.min(groupStart + 4, totalPages);
-                      return page >= groupStart && page <= groupEnd;
+                      const groupStart = Math.floor((currentPage - 1) / 5) * 5 + 1
+                      const groupEnd = Math.min(groupStart + 4, totalPages)
+                      return page >= groupStart && page <= groupEnd
                     })
                     .map((page) => (
                       <li
@@ -192,7 +197,6 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                       </li>
                     ))}
 
-                  {/* 다음 버튼 */}
                   <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
                     <button
                       className="page-link"
@@ -201,14 +205,12 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                       &gt;
                     </button>
                   </li>
-
                 </ul>
               </nav>
-
             </>
           )}
         </div>
       </div>
     </div>
-  );
+  )
 }
