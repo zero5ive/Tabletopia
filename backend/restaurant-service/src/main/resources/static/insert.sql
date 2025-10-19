@@ -1,3 +1,4 @@
+
 -- ==========================================
 -- Tabletopia 프로젝트 더미 데이터 (외래 키 수정 완료)
 -- ==========================================
@@ -11,43 +12,43 @@
 --    ('FACEBOOK');
 
 -- 사용자 데이터
-INSERT INTO `user` (`email`, `password`, `name`, `phone_number`, `sns_provider_id`)
+INSERT INTO `user` (`email`, `password`, `name`, `phone_number`)
 VALUES
-   ('user1@example.com', '$2a$10$abcdefghijk', '김철수', '010-1234-5678', NULL),
-   ('user2@example.com', '$2a$10$abcdefghijk', '이영희', '010-2345-6789', 1),
-   ('user3@example.com', '$2a$10$abcdefghijk', '박민수', '010-3456-7890', 2),
-   ('user4@example.com', '$2a$10$abcdefghijk', '정수진', '010-4567-8901', NULL),
-   ('user5@example.com', '$2a$10$abcdefghijk', '최동훈', '010-5678-9012', 3);
+    ('user1@example.com', '$2a$10$abcdefghijk', '김철수', '010-1234-5678'),
+    ('user2@example.com', '$2a$10$abcdefghijk', '이영희', '010-2345-6789'),
+    ('user3@example.com', '$2a$10$abcdefghijk', '박민수', '010-3456-7890'),
+    ('user4@example.com', '$2a$10$abcdefghijk', '정수진', '010-4567-8901'),
+    ('user5@example.com', '$2a$10$abcdefghijk', '최동훈', '010-5678-9012');
 
 -- 레스토랑 계정
 INSERT INTO `admin` (`email`, `password`, `name`)
 VALUES
-   ('restaurant1@example.com', '$2a$10$restaurant1pass', '레스토랑1'),
-   ('restaurant2@example.com', '$2a$10$restaurant2pass', '레스토랑2'),
-   ('restaurant3@example.com', '$2a$10$restaurant3pass', '레스토랑3'),
-   ('restaurant4@example.com', '$2a$10$restaurant4pass', '레스토랑4'),
-   ('restaurant5@example.com', '$2a$10$restaurant5pass', '레스토랑5');
+    ('restaurant1@example.com', '$2a$10$restaurant1pass', '레스토랑1'),
+    ('restaurant2@example.com', '$2a$10$restaurant2pass', '레스토랑2'),
+    ('restaurant3@example.com', '$2a$10$restaurant3pass', '레스토랑3'),
+    ('restaurant4@example.com', '$2a$10$restaurant4pass', '레스토랑4'),
+    ('restaurant5@example.com', '$2a$10$restaurant5pass', '레스토랑5');
 
 -- 레스토랑 카테고리
 INSERT INTO `restaurant_category` (`name`, `display_order`)
 VALUES
-   ('한식', 1),
-   ('중식', 2),
-   ('일식', 3),
-   ('양식', 4),
-   ('치킨', 5),
-   ('피자', 6),
-   ('카페', 7),
-   ('분식', 8);
+    ('한식', 1),
+    ('중식', 2),
+    ('일식', 3),
+    ('양식', 4),
+    ('치킨', 5),
+    ('피자', 6),
+    ('카페', 7),
+    ('분식', 8);
 
 -- 레스토랑 데이터
 INSERT INTO `restaurant` (`restaurant_category_id`, `admin_id`, `name`, `address`, `latitude`, `longitude`, `region_code`, `phone_number`, `description`)
 VALUES
-   (1, 1, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', 37.50665000, 127.05318700, '11680', '02-1234-5678', '정통 한식을 맛볼 수 있는 곳입니다.'),
-   (2, 2, '중화요리 만리장성', '서울특별시 중구 명동길 456', 37.56394900, 126.98200900, '11140', '02-2345-6789', '정통 중화요리 전문점입니다.'),
-   (3, 3, '스시 마스터', '서울특별시 서초구 강남대로 789', 37.49794200, 127.02762400, '11650', '02-3456-7890', '신선한 스시를 제공합니다.'),
-   (4, 4, '이탈리안 파스타', '서울특별시 마포구 홍대입구역로 321', 37.55704700, 126.92675300, '11560', '02-4567-8901', '정통 이탈리안 파스타 전문점입니다.'),
-   (5, 5, '치킨킹', '서울특별시 송파구 잠실로 654', 37.51334800, 127.10018000, '11710', '02-5678-9012', '바삭한 치킨 전문점입니다.');
+    (1, 1, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', 37.50665000, 127.05318700, '11680', '02-1234-5678', '정통 한식을 맛볼 수 있는 곳입니다.'),
+    (2, 2, '중화요리 만리장성', '서울특별시 중구 명동길 456', 37.56394900, 126.98200900, '11140', '02-2345-6789', '정통 중화요리 전문점입니다.'),
+    (3, 3, '스시 마스터', '서울특별시 서초구 강남대로 789', 37.49794200, 127.02762400, '11650', '02-3456-7890', '신선한 스시를 제공합니다.'),
+    (4, 4, '이탈리안 파스타', '서울특별시 마포구 홍대입구역로 321', 37.55704700, 126.92675300, '11560', '02-4567-8901', '정통 이탈리안 파스타 전문점입니다.'),
+    (5, 5, '치킨킹', '서울특별시 송파구 잠실로 654', 37.51334800, 127.10018000, '11710', '02-5678-9012', '바삭한 치킨 전문점입니다.');
 
 -- 레스토랑 테이블 정보 (수정완료)
 INSERT INTO `restaurant_table` (`restaurant_id`, `name`, `min_capacity`, `max_capacity`, `x_position`, `y_position`, `shape`) VALUES
@@ -151,87 +152,87 @@ INSERT INTO `restaurant_menu` (`restaurant_id`, `name`, `price`, `description`, 
 -- 시설 정보
 INSERT INTO `facility` (`name`)
 VALUES
-   ('주차 가능'),
-   ('Wi-Fi'),
-   ('금연'),
-   ('반려동물 동반 가능'),
-   ('장애인 편의시설'),
-   ('키즈존'),
-   ('단체석'),
-   ('테라스');
+    ('주차 가능'),
+    ('Wi-Fi'),
+    ('금연'),
+    ('반려동물 동반 가능'),
+    ('장애인 편의시설'),
+    ('키즈존'),
+    ('단체석'),
+    ('테라스');
 
 INSERT INTO facility (id, name)
 VALUES
-   (9, '화장실'),
-   (10, '포장 가능'),
-   (11, '배달 가능'),
-   (12, '노키즈존');
+    (9, '화장실'),
+    (10, '포장 가능'),
+    (11, '배달 가능'),
+    (12, '노키즈존');
 
 -- 레스토랑 시설
 INSERT INTO `restaurant_facility` (`restaurant_id`, `facility_id`)
 VALUES
-   (1, 1),
-   (1, 2),
-   (1, 3),
-   (2, 1),
-   (2, 2),
-   (2, 7),
-   (3, 2),
-   (3, 3),
-   (4, 1),
-   (4, 8),
-   (5, 1),
-   (5, 6);
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 1),
+    (2, 2),
+    (2, 7),
+    (3, 2),
+    (3, 3),
+    (4, 1),
+    (4, 8),
+    (5, 1),
+    (5, 6);
 
 -- 키워드
 INSERT INTO `keyword` (`keyword`)
 VALUES
-   ('데이트'),
-   ('가족모임'),
-   ('회식'),
-   ('혼밥'),
-   ('분위기 좋은'),
-   ('가성비'),
-   ('신선한'),
-   ('맛집'),
-   ('조용한'),
-   ('넓은');
+    ('데이트'),
+    ('가족모임'),
+    ('회식'),
+    ('혼밥'),
+    ('분위기 좋은'),
+    ('가성비'),
+    ('신선한'),
+    ('맛집'),
+    ('조용한'),
+    ('넓은');
 
 -- 레스토랑 키워드
 INSERT INTO `restaurant_keyword` (`restaurant_id`, `keyword_id`)
 VALUES
-   (1, 1), (1, 2), (1, 8),  -- 맛있는 한식당: 데이트, 가족모임, 맛집
-   (2, 2), (2, 3), (2, 6),  -- 중화요리: 가족모임, 회식, 가성비
-   (3, 1), (3, 5), (3, 7),  -- 스시 마스터: 데이트, 분위기 좋은, 신선한
-   (4, 1), (4, 5), (4, 8),  -- 이탈리안: 데이트, 분위기 좋은, 맛집
-   (5, 2), (5, 6), (5, 10); -- 치킨킹: 가족모임, 가성비, 넓은
+    (1, 1), (1, 2), (1, 8),  -- 맛있는 한식당: 데이트, 가족모임, 맛집
+    (2, 2), (2, 3), (2, 6),  -- 중화요리: 가족모임, 회식, 가성비
+    (3, 1), (3, 5), (3, 7),  -- 스시 마스터: 데이트, 분위기 좋은, 신선한
+    (4, 1), (4, 5), (4, 8),  -- 이탈리안: 데이트, 분위기 좋은, 맛집
+    (5, 2), (5, 6), (5, 10); -- 치킨킹: 가족모임, 가성비, 넓은
 
 -- 예약 데이터 (수정완료)
 INSERT INTO `reservation` (`user_id`, `restaurant_id`, `restaurant_table_id`, `people_count`, `restaurant_name_snapshot`, `restaurant_address_snapshot`, `restaurant_phone_snapshot`, `restaurant_table_name_snapshot`, `restaurant_table_capacity_snapshot`, `reservation_state`, `reservation_at`)
 VALUES
-   (1, 1, 1, 2, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '1번 테이블', 4, 'CONFIRMED', '2025-09-17 19:00:00'),
-   (2, 2, 5, 4, '중화요리 만리장성', '서울특별시 중구 명동길 456', '02-2345-6789', 'A1', 4, 'PENDING', '2025-09-18 18:30:00'),
-   (3, 3, 8, 2, '스시 마스터', '서울특별시 서초구 강남대로 789', '02-3456-7890', '카운터1', 2, 'CONFIRMED', '2025-09-17 20:00:00'),
-   (4, 1, 3, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 18:00:00'),
-   (5, 4, 11, 3, '이탈리안 파스타', '서울특별시 마포구 홍대입구역로 321', '02-4567-8901', '테이블1', 4, 'CONFIRMED', '2025-09-16 19:30:00'); -- NULL에서 11로 수정
-
-INSERT INTO `reservation` (`user_id`, `restaurant_id`, `restaurant_table_id`, `people_count`, `restaurant_name_snapshot`, `restaurant_address_snapshot`, `restaurant_phone_snapshot`, `restaurant_table_name_snapshot`, `restaurant_table_capacity_snapshot`, `reservation_state`, `reservation_at`) 
-VALUES
-   (4, 1, 2, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 18:00:00');
+    (1, 1, 1, 2, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '1번 테이블', 4, 'CONFIRMED', '2025-09-17 19:00:00'),
+    (2, 2, 5, 4, '중화요리 만리장성', '서울특별시 중구 명동길 456', '02-2345-6789', 'A1', 4, 'PENDING', '2025-09-18 18:30:00'),
+    (3, 3, 8, 2, '스시 마스터', '서울특별시 서초구 강남대로 789', '02-3456-7890', '카운터1', 2, 'CONFIRMED', '2025-09-17 20:00:00'),
+    (4, 1, 3, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 18:00:00'),
+    (5, 4, 11, 3, '이탈리안 파스타', '서울특별시 마포구 홍대입구역로 321', '02-4567-8901', '테이블1', 4, 'CONFIRMED', '2025-09-16 19:30:00'); -- NULL에서 11로 수정
 
 INSERT INTO `reservation` (`user_id`, `restaurant_id`, `restaurant_table_id`, `people_count`, `restaurant_name_snapshot`, `restaurant_address_snapshot`, `restaurant_phone_snapshot`, `restaurant_table_name_snapshot`, `restaurant_table_capacity_snapshot`, `reservation_state`, `reservation_at`)
 VALUES
-   (4, 1, 2, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 17:00:00');
+    (4, 1, 2, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 18:00:00');
+
+INSERT INTO `reservation` (`user_id`, `restaurant_id`, `restaurant_table_id`, `people_count`, `restaurant_name_snapshot`, `restaurant_address_snapshot`, `restaurant_phone_snapshot`, `restaurant_table_name_snapshot`, `restaurant_table_capacity_snapshot`, `reservation_state`, `reservation_at`)
+VALUES
+    (4, 1, 2, 6, '맛있는 한식당', '서울특별시 강남구 테헤란로 123', '02-1234-5678', '3번 테이블', 6, 'COMPLETED', '2025-09-15 17:00:00');
 
 
 -- 웨이팅 데이터
 INSERT INTO `waiting` (`restaurant_id`, `user_id`, `people_count`, `waiting_number`, `waiting_state`, `restaurant_name_snapshot`)
 VALUES
-   (1, 2, 3, 1, 'WAITING', '맛있는 한식당'),
-   (1, 3, 2, 2, 'WAITING', '맛있는 한식당'),
-   (2, 4, 4, 1, 'CALLED', '중화요리 만리장성'),
-   (3, 5, 2, 1, 'WAITING', '스시 마스터'),
-   (4, 1, 2, 1, 'SEATED', '이탈리안 파스타');
+    (1, 2, 3, 1, 'WAITING', '맛있는 한식당'),
+    (1, 3, 2, 2, 'WAITING', '맛있는 한식당'),
+    (2, 4, 4, 1, 'CALLED', '중화요리 만리장성'),
+    (3, 5, 2, 1, 'WAITING', '스시 마스터'),
+    (4, 1, 2, 1, 'SEATED', '이탈리안 파스타');
 
 -- 실시간 테이블 상태 (완전 수정)
 INSERT INTO `table_realtime_state` (`restaurant_table_id`, `table_state`, `start_at`, `end_at`, `current_people_count`, `source_type`, `source_id`) VALUES
@@ -260,82 +261,65 @@ INSERT INTO `table_realtime_state` (`restaurant_table_id`, `table_state`, `start
 -- 리뷰 데이터
 INSERT INTO `restaurant_review` (`user_id`, `restaurant_id`, `rating`, `comment`, `source_type`, `source_id`)
 VALUES
-   (4, 1, 5, '정말 맛있었어요! 김치찌개가 최고입니다.', 'RESERVATION', 4),
-   (1, 3, 4, '신선한 스시와 좋은 분위기. 다시 방문하고 싶어요.', 'RESERVATION', 3),
-   (5, 4, 5, '파스타가 정말 맛있고 분위기도 로맨틱해요.', 'WAITING', 5),
-   (2, 2, 3, '맛은 괜찮은데 서비스가 조금 아쉬워요.', 'WAITING', 3),
-   (3, 1, 5, '가족과 함께 갔는데 모두 만족했습니다.', 'WAITING', 2);
+    (4, 1, 5, '정말 맛있었어요! 김치찌개가 최고입니다.', 'RESERVATION', 4),
+    (1, 3, 4, '신선한 스시와 좋은 분위기. 다시 방문하고 싶어요.', 'RESERVATION', 3),
+    (5, 4, 5, '파스타가 정말 맛있고 분위기도 로맨틱해요.', 'WAITING', 5),
+    (2, 2, 3, '맛은 괜찮은데 서비스가 조금 아쉬워요.', 'WAITING', 3),
+    (3, 1, 5, '가족과 함께 갔는데 모두 만족했습니다.', 'WAITING', 2);
 
 -- 북마크
 INSERT INTO `bookmark` (`user_id`, `restaurant_id`)
 VALUES
-   (1, 1),
-   (1, 3),
-   (2, 1),
-   (2, 2),
-   (3, 3),
-   (4, 4),
-   (5, 1),
-   (5, 5);
+    (1, 1),
+    (1, 3),
+    (2, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 1),
+    (5, 5);
 
 -- 광고 플랜
 INSERT INTO `ad_plan` (`name`, `monthly_price`, `is_main_exposure`, `is_mypage_exposure`)
 VALUES
-   ('베이직', 100000, FALSE, TRUE),
-   ('스탠다드', 300000, TRUE, TRUE),
-   ('프리미엄', 500000, TRUE, TRUE);
+    ('베이직', 100000, FALSE, TRUE),
+    ('스탠다드', 300000, TRUE, TRUE),
+    ('프리미엄', 500000, TRUE, TRUE);
 
 -- 수수료 정책
 INSERT INTO `commission_policy` (`name`, `min_reservation_count`, `max_reservation_count`, `commission_amount`, `effective_start_at`, `effective_end_at`)
 VALUES
-   ('기본 정책', 0, 50, 1000, '2025-01-01 00:00:00', '2025-12-31 23:59:59'),
-   ('대형 업체 정책', 51, 200, 800, '2025-01-01 00:00:00', '2025-12-31 23:59:59'),
-   ('VIP 정책', 201, 999999, 500, '2025-01-01 00:00:00', '2025-12-31 23:59:59');
-
--- 결제 데이터
-INSERT INTO `payment` (`payment_type`, `amount`, `payment_method`, `payment_status`, `paid_at`, `payment_gateway_id`)
-VALUES
-   ('COMMISSION', 50000, 'CARD', 'COMPLETED', '2025-09-01 10:00:00', 'PG_12345'),
-   ('AD_FEE', 300000, 'BANK_TRANSFER', 'COMPLETED', '2025-09-01 14:30:00', 'PG_12346'),
-   ('COMMISSION', 25000, 'VIRTUAL_ACCOUNT', 'PENDING', NULL, 'PG_12347'),
-   ('SUBSCRIPTION', 100000, 'CARD', 'COMPLETED', '2025-09-15 09:15:00', 'PG_12348');
-
--- 수수료 기록
-INSERT INTO `commission_record` (`restaurant_id`, `commission_policy_id`, `applied_date`, `reservation_count`, `total_amount`, `payment_id`)
-VALUES
-   (1, 1, '2025-09-01', 25, 25000, 1),
-   (2, 1, '2025-09-01', 30, 30000, NULL),
-   (3, 1, '2025-09-01', 20, 20000, 3),
-   (4, 2, '2025-09-01', 80, 64000, NULL),
-   (5, 1, '2025-09-01', 15, 15000, NULL);
+    ('기본 정책', 0, 50, 1000, '2025-01-01 00:00:00', '2025-12-31 23:59:59'),
+    ('대형 업체 정책', 51, 200, 800, '2025-01-01 00:00:00', '2025-12-31 23:59:59'),
+    ('VIP 정책', 201, 999999, 500, '2025-01-01 00:00:00', '2025-12-31 23:59:59');
 
 -- 추천 요청
 INSERT INTO `recommendation_request` (`user_id`, `recommendation_type`, `request_data`)
 VALUES
-   (1, 'RESTAURANT', '{"location": "강남구", "cuisine": "한식", "people_count": 2}'),
-   (2, 'TODAY_RESERVATION', '{"date": "2025-09-17", "time": "19:00", "people_count": 4}'),
-   (3, 'KEYWORD', '{"keywords": ["데이트", "분위기좋은"], "region": "서초구"}'),
-   (4, 'RESTAURANT', '{"location": "중구", "max_price": 20000, "people_count": 3}'),
-   (5, 'KEYWORD', '{"keywords": ["가족모임", "주차가능"], "region": "송파구"}');
+    (1, 'RESTAURANT', '{"location": "강남구", "cuisine": "한식", "people_count": 2}'),
+    (2, 'TODAY_RESERVATION', '{"date": "2025-09-17", "time": "19:00", "people_count": 4}'),
+    (3, 'KEYWORD', '{"keywords": ["데이트", "분위기좋은"], "region": "서초구"}'),
+    (4, 'RESTAURANT', '{"location": "중구", "max_price": 20000, "people_count": 3}'),
+    (5, 'KEYWORD', '{"keywords": ["가족모임", "주차가능"], "region": "송파구"}');
 
 -- 추천 결과
 INSERT INTO `recommendation_result` (`recommendation_request_id`, `restaurant_id`, `rank_order`, `score`, `reason`)
 VALUES
-   (1, 1, 1, 95.5, '위치가 가깝고 한식 전문점이며 평점이 높습니다'),
-   (1, 4, 2, 82.3, '분위기가 좋고 데이트 코스로 인기입니다'),
-   (2, 2, 1, 88.7, '오늘 예약 가능하고 4인석이 있습니다'),
-   (2, 3, 2, 76.4, '시간대가 맞고 신선한 재료를 사용합니다'),
-   (3, 3, 1, 91.2, '데이트 코스로 유명하고 분위기가 좋습니다'),
-   (3, 4, 2, 87.8, '로맨틱한 분위기와 테라스석이 있습니다');
+    (1, 1, 1, 95.5, '위치가 가깝고 한식 전문점이며 평점이 높습니다'),
+    (1, 4, 2, 82.3, '분위기가 좋고 데이트 코스로 인기입니다'),
+    (2, 2, 1, 88.7, '오늘 예약 가능하고 4인석이 있습니다'),
+    (2, 3, 2, 76.4, '시간대가 맞고 신선한 재료를 사용합니다'),
+    (3, 3, 1, 91.2, '데이트 코스로 유명하고 분위기가 좋습니다'),
+    (3, 4, 2, 87.8, '로맨틱한 분위기와 테라스석이 있습니다');
 
 -- 알림 데이터
 INSERT INTO `notification` (`waiting_id`, `user_id`, `message`, `notification_type`, `sent_at`)
 VALUES
-   (1, 2, '웨이팅이 등록되었습니다. 현재 1번째 대기중입니다.', 'REGISTERED', '2025-09-16 18:00:00'),
-   (2, 3, '웨이팅이 등록되었습니다. 현재 2번째 대기중입니다.', 'REGISTERED', '2025-09-16 18:15:00'),
-   (3, 4, '곧 차례입니다. 매장 앞에서 대기해 주세요.', 'APPROACHING', '2025-09-16 19:45:00'),
-   (3, 4, '입장 가능합니다. 매장으로 오세요.', 'CALLED', '2025-09-16 19:50:00'),
-   (4, 5, '웨이팅이 등록되었습니다. 현재 1번째 대기중입니다.', 'REGISTERED', '2025-09-16 20:00:00');
+    (1, 2, '웨이팅이 등록되었습니다. 현재 1번째 대기중입니다.', 'REGISTERED', '2025-09-16 18:00:00'),
+    (2, 3, '웨이팅이 등록되었습니다. 현재 2번째 대기중입니다.', 'REGISTERED', '2025-09-16 18:15:00'),
+    (3, 4, '곧 차례입니다. 매장 앞에서 대기해 주세요.', 'APPROACHING', '2025-09-16 19:45:00'),
+    (3, 4, '입장 가능합니다. 매장으로 오세요.', 'CALLED', '2025-09-16 19:50:00'),
+    (4, 5, '웨이팅이 등록되었습니다. 현재 1번째 대기중입니다.', 'REGISTERED', '2025-09-16 20:00:00');
 
 -- ==========================================
 -- 검증 쿼리 (데이터 확인용)
