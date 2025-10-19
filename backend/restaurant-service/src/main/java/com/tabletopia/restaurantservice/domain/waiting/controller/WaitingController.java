@@ -15,6 +15,7 @@ import com.tabletopia.restaurantservice.domain.waiting.service.WaitingNotificati
 import com.tabletopia.restaurantservice.domain.waiting.service.WaitingService;
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -228,7 +229,7 @@ public class WaitingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Pageable pageable = PageRequest.of(page, size, Sort.by("waitingNumber").ascending());
 
     // String을 Enum으로 변환
     WaitingState waitingState = WaitingState.valueOf(status);
@@ -300,12 +301,93 @@ public class WaitingController {
     return ResponseEntity.ok(response);
   }
 
+
   /**
-   * 웨이팅 호출 (관리자용)
+   * 웨이팅 미루기 등록
    *
-   * @author 서예닮
-   * @since 2025-10-13
+   * @author 성유진
    */
+  @PutMapping("/api/user/waitings/{id}/delay")
+  @ResponseBody
+  public ResponseEntity<?> delayWaiting(
+      @PathVariable Long id,
+      @RequestParam Integer targetNumber,
+      @RequestParam Long restaurantId,
+      Principal principal) {
+
+    try {
+      // 현재 사용자 확인
+      String currentUserEmail = principal.getName();
+      User user = userService.findByEmail(currentUserEmail);
+
+      log.info("웨이팅 미루기 요청 - waitingId: {}, userId: {}, targetNumber: {}",
+          id, user.getId(), targetNumber);
+
+      // 웨이팅 미루기 실행
+      Waiting waiting = waitingService.delayWaiting(id, targetNumber, restaurantId);
+
+      //WebSocket으로 변경사항 브로드캐스트
+      WaitingEvent delayEvent = new WaitingEvent();
+      delayEvent.setType("DELAY");
+      delayEvent.setWaitingId(waiting.getId());
+      delayEvent.setRestaurantId(restaurantId);
+      delayEvent.setSender(user.getId());
+      delayEvent.setSenderName(user.getName());
+      delayEvent.setContent(user.getName() + "님이 순서를 " + targetNumber + "번으로 미뤘습니다.");
+      delayEvent.setTimestamp(LocalDateTime.now());
+
+      simpMessagingTemplate.convertAndSend("/topic/delay", delayEvent);
+
+      // 응답 생성
+      WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
+
+      return ResponseEntity.ok(response);} catch (IllegalStateException | IllegalArgumentException e) {
+      log.warn("웨이팅 미루기 실패: {}", e.getMessage());
+      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+
+    } catch (Exception e) {
+      log.error("웨이팅 미루기 중 오류 발생", e);
+      return ResponseEntity.status(500).body(Map.of("error", "웨이팅 미루기에 실패했습니다."));
+    }
+  }
+
+
+  /**
+   * 웨이팅 미루기 조회
+   *
+   * @author 성유진
+   */
+  @GetMapping("/api/user/waitings/{id}/delay")
+  @ResponseBody
+  public ResponseEntity<List<WaitingResponse>> getDelayWaitings( @PathVariable Long id,
+  @RequestParam Long restaurantId,
+  Principal principal) {
+    try {
+      String currentUserEmail = principal.getName();
+      User user = userService.findByEmail(currentUserEmail);
+
+      log.info("미루기 가능한 웨이팅 조회 - waitingId: {}, userId: {}", id, user.getId());
+
+      // 내 웨이팅 이후의 웨이팅 목록 조회
+      List<WaitingResponse> delayOptions = waitingService.getDelayOptions(id, restaurantId);
+
+      return ResponseEntity.ok(delayOptions);
+
+    } catch (Exception e) {
+      log.error("미루기 옵션 조회 중 오류 발생", e);
+      return ResponseEntity.status(500).body(null);
+    }
+
+  }
+
+
+
+    /**
+     * 웨이팅 호출 (관리자용)
+     *
+     * @author 서예닮
+     * @since 2025-10-13
+     */
   @PutMapping("/api/admin/waiting/{id}/called")
   @ResponseBody
   public ResponseEntity<String>callWaiting(@PathVariable Long id, @RequestParam Long restaurantId) {

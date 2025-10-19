@@ -5,6 +5,8 @@ import { getUserWaitingList, waitingCancel } from '../utils/WaitingApi';
 import { getCurrentUser } from '../utils/UserApi';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { delayWaiting } from '../utils/WaitingApi';
+import { getDelayOptions } from '../utils/WaitingApi';
 
 export default function MyReservation() {
     const [allWaitingList, setAllWaitingList] = useState([]); // 전체 데이터
@@ -15,6 +17,60 @@ export default function MyReservation() {
     const [currentPage, setCurrentPage] = useState(0);
     const [userId, setUserId] = useState(null); // 현재 로그인한 사용자 ID
     const pageSize = 10; // 한 페이지에 보여줄 개수
+    const [delay, setDelay] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
+    const [selectedWaiting, setSelectedWaiting] = useState(null); // 선택된 웨이팅
+    const [delayOptions, setDelayOptions] = useState([]); // 미루기 옵션 목록
+
+    // 미루기 버튼 클릭 핸들러
+    const handleDelayClick = async (waiting) => {
+        try {
+            console.log('선택된 웨이팅 정보:', waiting);
+            console.log('canDelay 값:', waiting.canDelay);
+            console.log('delayCount 값:', waiting.delayCount);
+
+            setSelectedWaiting(waiting);
+            setIsModalOpen(true);
+
+            // 미루기 옵션 조회
+            const response = await getDelayOptions(waiting.id, waiting.restaurantId);
+            console.log('미루기 하기위한 웨이팅 리스트 조회', response.data);
+            setDelayOptions(response.data);
+        } catch (error) {
+            console.error('미루기 옵션 조회 실패:', error);
+            alert('미루기 옵션을 불러오는데 실패했습니다.');
+            setIsModalOpen(false);
+        }
+    }
+
+
+    // 웨이팅 선택하여 미루기 등록
+    const handleSelectDelay = async (targetWaiting) => {
+        if (!selectedWaiting) return;
+
+        try {
+            await delayWaiting(selectedWaiting.id, targetWaiting.waitingNumber, selectedWaiting.restaurantId);
+
+            // 성공 후 모달 닫고 웨이팅 목록 새로고침
+            alert('순서가 미뤄졌습니다!');
+            setIsModalOpen(false);
+            setSelectedWaiting(null);
+            setDelayOptions([]);
+            await fetchAllWaitingList(); // 목록 새로고침
+
+        } catch (error) {
+            console.error('웨이팅 미루기 실패:', error);
+            alert(error.response?.data?.error || '미루기에 실패했습니다.');
+        }
+    }
+
+    // 모달 닫기
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedWaiting(null);
+        setDelayOptions([]);
+    }
+
 
     // WebSocket 클라이언트
     const stompClient = useRef(null);
@@ -295,8 +351,9 @@ export default function MyReservation() {
                                         {waiting.waitingState === 'WAITING' && (
                                             <div className={styles['card-actions']}>
                                                 <button className={`${styles.btn} ${styles['btn-secondary']}`}
-                                                 onClick={() => handleCancelChange(waiting.id,waiting.restaurantId)}>대기 취소</button>
-                                                <button className={`${styles.btn} ${styles['btn-secondary']}`}>미루기</button>
+                                                    onClick={() => handleCancelChange(waiting.id, waiting.restaurantId)}>대기 취소</button>
+                                                <button className={`${styles.btn} ${styles['btn-secondary']}`}
+                                                    onClick={() => handleDelayClick(waiting)}>미루기</button>
                                             </div>
                                         )}
 
@@ -355,6 +412,76 @@ export default function MyReservation() {
                 )}
 
             </div>
+
+            {/* 미루기 모달 */}
+            {isModalOpen && (
+                <div className={styles['modal-overlay']} onClick={handleCloseModal}>
+                    <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles['modal-header']}>
+                            <h3 className={styles['modal-title']}>웨이팅 미루기</h3>
+                            <button className={styles['modal-close']} onClick={handleCloseModal}>×</button>
+                        </div>
+                        <div className={styles['modal-body']}>
+                            <div className={styles['modal-info']}>
+                                <span className={styles['modal-info-icon']}>ℹ️</span>
+                                <div className={styles['modal-info-text']}>
+                                    현재 대기번호: <strong>{selectedWaiting?.waitingNumber}번</strong><br />
+                                    순서를 미룰 웨이팅을 선택해주세요.
+                                </div>
+                            </div>
+
+                            {selectedWaiting && !selectedWaiting.canDelay && (
+                                <div className={styles['modal-warning']}>
+                                    <span className={styles['modal-warning-icon']}>⚠️</span>
+                                    <div className={styles['modal-warning-text']}>
+                                        <strong>미루기 횟수를 초과하셨습니다.</strong><br />
+                                        더 이상 순서를 미룰 수 없습니다. (최대 3회)
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedWaiting && selectedWaiting.canDelay && delayOptions.length > 0 ? (
+                                <div className={styles['waiting-list']}>
+                                    {delayOptions.map((option) => (
+                                        <div
+                                            key={option.id}
+                                            className={styles['waiting-item']}
+                                            onClick={() => handleSelectDelay(option)}
+                                        >
+                                            <div className={styles['waiting-item-info']}>
+                                                <div className={styles['waiting-item-number']}>
+                                                    {option.waitingNumber}번
+                                                </div>
+                                                <div className={styles['waiting-item-details']}>
+                                                    {option.peopleCount}명 | {formatDate(option.createdAt)}
+                                                </div>
+                                            </div>
+                                            <span className={styles['waiting-item-arrow']}>→</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : selectedWaiting && selectedWaiting.canDelay ? (
+                                <div className={styles['empty-waiting-list']}>
+                                    <div className={styles['empty-waiting-list-icon']}>📋</div>
+                                    <div className={styles['empty-waiting-list-text']}>
+                                        미룰 수 있는 웨이팅이 없습니다.
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
+                        {selectedWaiting && (
+                            <div className={styles['modal-footer']}>
+                                <div className={styles['delay-count-info']}>
+                                    미루기 사용 횟수: <strong>{selectedWaiting.delayCount || 0}</strong> / 3회
+                                </div>
+                                <div className={styles['delay-count-info']}>
+                                    남은 횟수: <strong>{3 - (selectedWaiting.delayCount || 0)}</strong>회
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </>
     )
 }

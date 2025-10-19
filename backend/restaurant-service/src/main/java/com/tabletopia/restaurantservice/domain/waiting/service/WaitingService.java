@@ -3,6 +3,7 @@ package com.tabletopia.restaurantservice.domain.waiting.service;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -42,4 +43,10 @@ public interface WaitingService {
 
   //관리자가 웨이팅 취소
   public Waiting cancelAdminWaiting(Long id, Long restaurantId);
+
+  //웨이팅 미루기 등록
+  Waiting delayWaiting(Long waitingId, Integer targetNumber, Long restaurantId);
+
+  //웨이팅 미루기 조회
+  public List<WaitingResponse> getDelayOptions(Long waitingId, Long restaurantId);
 }
