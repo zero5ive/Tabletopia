@@ -54,7 +54,6 @@ public class ReservationService {
   private final TableSelectionService tableSelectionService;
   private final UserService userService;
   private final RestaurantOpeningHourService openingHourService;
-  private final JpaPaymentDetailRepository paymentDetailRepository;
 
   private final SimpMessagingTemplate messagingTemplate;
 
