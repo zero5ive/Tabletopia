@@ -13,7 +13,9 @@ import com.tabletopia.restaurantservice.domain.waiting.repository.WaitingReposit
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -155,6 +157,101 @@ public class WaitingServiceImpl implements WaitingService{
     return waitingRepository.save(waiting);
   }
 
+  /**웨이팅 미루기 등록*/
+  @Override
+  @Transactional
+  public Waiting delayWaiting(Long waitingId, Integer targetNumber, Long restaurantId) {
+
+    //미루려는 웨이팅 조회
+    Waiting myWaiting = waitingRepository.findByIdAndRestaurantId(waitingId, restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("웨이팅을 찾을 수 없습니다."));
+
+    //대기 상태 확인
+    if(myWaiting.getWaitingState() != WaitingState.WAITING) {
+      throw new IllegalStateException("대기 중인 웨이팅만 미루기가 가능합니다.");
+    }
+
+    //미루기 횟수 확인
+    if(!myWaiting.canDelay()){
+      throw new IllegalStateException("최대 미루기 횟수(3회)를 초과했습니다.");
+    }
+
+    //현재 웨이팅 번호와 목표 번호 확인
+    Integer currentNumber = myWaiting.getWaitingNumber();
+
+    if (targetNumber <= currentNumber) {
+      throw new IllegalArgumentException("현재 순서보다 뒤로만 미룰 수 있습니다.");
+    }
+
+    //목표 순서가 유효한지 확인(오늘 최대 웨이팅 번호여야 함)
+    Integer maxNumber = waitingRepository.findMaxWaitingNumberByRestaurantIdTodayWithLock(restaurantId);
+    if (maxNumber == null || targetNumber > maxNumber) {
+      throw new IllegalArgumentException("유효하지 않은 목표 순서입니다.");
+    }
+
+      //영향 받은 웨이팅 조회
+      LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay();
+
+      List<Waiting> affectedWaitings = waitingRepository.findWaitingsBetweenNumbers(
+          restaurantId,
+          WaitingState.WAITING,
+          currentNumber,
+          targetNumber,
+          todayStart
+      );
+
+      for(Waiting waiting : affectedWaitings) {
+        waiting.updateWaitingNumber(waiting.getWaitingNumber() -1);
+        waitingRepository.save(waiting);
+      }
+
+      // 8 내 웨이팅을 목표 번호로 변경하고 미루기 횟수 증가
+      myWaiting.updateWaitingNumber(targetNumber);
+      myWaiting.increaseDelayCount();
+
+      return waitingRepository.save(myWaiting);
+    }
+
+    /**웨이팅 미루기 조회*/
+  @Override
+  @Transactional(readOnly = true)
+  public List<WaitingResponse> getDelayOptions(Long waitingId, Long restaurantId) {
+
+    Waiting myWaiting = waitingRepository.findByIdAndRestaurantId(waitingId, restaurantId)
+        .orElseThrow(() -> new EntityNotFoundException("웨이팅을 찾을 수 없습니다."));
+
+    //대기 상태 확인
+    if(myWaiting.getWaitingState() != WaitingState.WAITING) {
+      throw new IllegalStateException("대기 중인 웨이팅만 조회 가능합니다.");
+    }
+
+    Integer currentNumber = myWaiting.getWaitingNumber();
+
+    //오늘의 최대 웨이팅 번호 조회 - Lock 대신 일반 조회 사용
+    Integer maxNumber = waitingRepository.findMaxWaitingNumberByRestaurantIdToday(restaurantId);
+
+    if (maxNumber == null || maxNumber <= currentNumber) {
+      // 내 뒤에 아무도 없음
+      return Collections.emptyList();
+    }
+
+    LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay();
+
+    //내 다음 순서부터 조회
+    List<Waiting> waitingList = waitingRepository.findWaitingsBetweenNumbers(
+        restaurantId,
+        WaitingState.WAITING,
+        currentNumber,      // startNumber: 내 번호
+        maxNumber,          // endNumber: 오늘 최대 번호
+        todayStart
+    );
+
+    // Entity를 DTO로 변환
+    return waitingList.stream()
+        .map(waiting -> WaitingResponse.from(waiting, restaurantId))
+        .collect(Collectors.toList());
+
+  }
 
 
   @Override
@@ -200,7 +297,7 @@ public class WaitingServiceImpl implements WaitingService{
 
     // Entity를 DTO로 변환하고 대기중인 경우 앞 대기팀 수 계산
     return waitingPage.map(waiting -> {
-      WaitingResponse response = modelMapper.map(waiting, WaitingResponse.class);
+      WaitingResponse response = WaitingResponse.from(waiting, waiting.getRestaurant().getId());
 
       // WAITING 상태이고 오늘 날짜인 경우에만 앞 대기팀 수 계산
       LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay(); //오늘 0시

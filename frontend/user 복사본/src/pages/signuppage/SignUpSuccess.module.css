@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.signupSuccessPage {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    background: #FFF8F2 !important;
+    min-height: 100vh !important;
+    width: 100vw !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1000 !important;
+}
+
+.bgAnimation, .particles {
+    display: none !important;
+}
+
+.successContainer {
+    background: #ffffff !important;
+    border: 1px solid #FFD6B8 !important;
+    border-radius: 24px !important;
+    padding: 48px 40px !important;
+    width: 100% !important;
+    max-width: 450px !important;
+    box-shadow: 0 20px 40px rgba(255, 107, 0, 0.1) !important;
+    position: relative !important;
+    animation: slideUp 0.8s ease-out !important;
+    text-align: center !important;
+    z-index: 10 !important;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.successIcon {
+    width: 80px !important;
+    height: 80px !important;
+    background: linear-gradient(135deg, #FF6B00, #FF8A33) !important;
+    border-radius: 50% !important;
+    margin: 0 auto 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    animation: bounceIn 0.6s ease-out 0.2s both !important;
+    box-shadow: 0 8px 25px rgba(255, 107, 0, 0.25) !important;
+}
+
+@keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.successIcon svg {
+    width: 40px !important;
+    height: 40px !important;
+    fill: white !important;
+    animation: checkmark 0.3s ease-out 0.8s both !important;
+}
+
+@keyframes checkmark {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+.successTitle {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #FF6B00, #FF8A33) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 8px !important;
+    animation: fadeInUp 0.6s ease-out 0.4s both !important;
+}
+
+.successSubtitle {
+    color: #7a7a7a !important;
+    font-size: 15px !important;
+    margin-bottom: 24px !important;
+    animation: fadeInUp 0.6s ease-out 0.6s both !important;
+}
+
+.userInfo {
+    background: #FFF8F2 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin: 24px 0 !important;
+    border: 1px solid #FFD6B8 !important;
+    animation: fadeInUp 0.6s ease-out 0.8s both !important;
+}
+
+.userId {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #E56000 !important;
+    margin-bottom: 4px !important;
+}
+
+.welcomeText {
+    font-size: 14px !important;
+    color: #7a7a7a !important;
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.actionButtons {
+    display: flex !important;
+    gap: 12px !important;
+    margin-top: 32px !important;
+    animation: fadeInUp 0.6s ease-out 1s both !important;
+}
+
+.btn {
+    flex: 1 !important;
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid transparent !important;
+}
+
+.btnPrimary {
+    background: #FF6B00 !important;
+    color: white !important;
+}
+
+.btnPrimary:hover {
+    background: #E56000 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 20px rgba(255, 107, 0, 0.2) !important;
+}
+
+.btnSecondary {
+    background: #ffffff !important;
+    color: #FF6B00 !important;
+    border-color: #FFD6B8 !important;
+}
+
+.btnSecondary:hover {
+    background: #FFF8F2 !important;
+    border-color: #FF6B00 !important;
+    transform: translateY(-1px) !important;
+}
+
+.additionalInfo {
+    margin-top: 32px !important;
+    padding-top: 24px !important;
+    border-top: 1px solid #FFD6B8 !important;
+    animation: fadeInUp 0.6s ease-out 1.2s both !important;
+}
+
+.infoItem {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    font-size: 14px !important;
+    color: #7a7a7a !important;
+}
+
+.infoIcon {
+    width: 16px !important;
+    height: 16px !important;
+    fill: #FF8A33 !important;
+}
+
+.redirectTimer {
+    margin-top: 20px !important;
+    font-size: 13px !important;
+    color: #aaa !important;
+    animation: fadeInUp 0.6s ease-out 1.4s both !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+.timerCircle {
+    width: 12px !important;
+    height: 12px !important;
+    border: 2px solid #FFD6B8 !important;
+    border-top: 2px solid #FF6B00 !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
