@@ -6,12 +6,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * AI 챗봇 서비스
+ *
+ * 사용자의 메시지를 분석해 지역 감지, 추천 로직, AI 응답 요청을 처리한다.
+ *
+ * 지역 이름 자동 인식, AI 요약 캐싱, 요청 제한 등
+ * 챗봇 기능 전반을 통합 관리한다.
+ *
+ * @author 김지민
+ * @since 2025-10-19
+ */
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -20,9 +30,15 @@ public class ChatService {
   private final OpenAiService openAiService;
   private final ChatRateLimiter chatRateLimiter;
 
+  // 주소에서 추출된 지역 단어 토큰
   private Set<String> regionTokens = new HashSet<>();
+
+  // AI 요약 결과 캐시 (매장별로 저장)
   private final Map<Long, String> aiSummaryCache = new ConcurrentHashMap<>();
 
+  /**
+   * 애플리케이션 시작 시 레스토랑 주소 정보를 기반으로 지역 토큰 초기화
+   */
   @EventListener(ApplicationReadyEvent.class)
   public void initRegionTokens() {
     regionTokens = restaurantRepository.findAll().stream()
@@ -33,23 +49,43 @@ public class ChatService {
         .collect(Collectors.toSet());
   }
 
+  /**
+   * 단어를 앞부분부터 누적 확장하여 여러 토큰으로 분리
+   * 예: "강남구" → "강", "강남", "강남구"
+   */
   private Stream<String> expandTokens(String word) {
     List<String> tokens = new ArrayList<>();
     for (int i = 1; i <= word.length(); i++) tokens.add(word.substring(0, i));
     return tokens.stream();
   }
 
+  /**
+   * 챗봇 응답 생성
+   *
+   * - 요청 제한 검사
+   * - 지역 기반 맛집 추천
+   * - 지역 감지 실패 시 전국 인기 추천
+   * - 일반 질문은 OpenAI API로 전달
+   *
+   * @param message 사용자 메시지
+   * @param userEmail 사용자 이메일
+   * @param isAdmin 관리자 여부
+   * @return 응답 메시지 (HTML 포맷 포함)
+   */
   public String getReply(String message, String userEmail, boolean isAdmin) {
     message = message.trim();
 
     try {
+      // 일반 사용자 요청 제한
       if (!isAdmin && !chatRateLimiter.canUse(userEmail)) {
         return "오늘은 이미 최대 요청 횟수를 초과했습니다. (일 5회 제한)";
       }
 
+      // 맛집 추천 관련 메시지일 경우
       if (message.contains("맛집") || message.contains("추천")) {
         String region = detectRegionFromMessage(message);
 
+        // 지역이 감지된 경우 DB에서 매장 검색
         if (region != null) {
           List<Restaurant> restaurants = restaurantRepository.findByAddressContaining(region)
               .stream()
@@ -63,6 +99,7 @@ public class ChatService {
           return buildRestaurantSummaries(restaurants);
         }
 
+        // 지역 감지 실패 시 전국 인기 음식 추천
         String generalPrompt =
             "사용자가 '" + message + "' 라고 물었습니다. "
                 + "지역 정보가 없으므로 전국적으로 인기 있는 음식 종류나 맛집 스타일을 "
@@ -75,6 +112,7 @@ public class ChatService {
             + formatAiTextToHtml(aiReply);
       }
 
+      // 일반 대화 처리
       String aiReply = openAiService.askGpt(message);
       if (!isAdmin) chatRateLimiter.incrementUsage(userEmail);
       return formatAiTextToHtml(aiReply);
@@ -85,6 +123,12 @@ public class ChatService {
     }
   }
 
+  /**
+   * DB에 등록된 매장 목록을 기반으로 AI 요약 생성
+   *
+   * 캐시된 요약이 존재하면 재사용하고,
+   * 없는 경우 GPT에게 요청하여 새로 생성한다.
+   */
   private String buildRestaurantSummaries(List<Restaurant> restaurants) {
     restaurants = restaurants.stream()
         .collect(Collectors.collectingAndThen(
@@ -125,7 +169,7 @@ public class ChatService {
       Restaurant r = restaurants.get(i);
       String desc = (i < parts.length) ? parts[i] : "AI 요약을 불러오지 못했습니다";
 
-      // 항상 이름은 위쪽에 bold 처리, 설명은 그 아래 줄
+      // 항상 이름은 bold 처리
       String formatted = "🍽️ <b>" + r.getName() + "</b><br>" + formatAiTextToHtml(desc);
       aiSummaryCache.put(r.getId(), formatted);
       sb.append(formatted).append("<br><br>");
@@ -134,6 +178,13 @@ public class ChatService {
     return sb.toString();
   }
 
+  /**
+   * AI 응답 텍스트를 HTML로 변환
+   *
+   * 줄바꿈 → <br>
+   * 숫자 목록 → 불릿 기호
+   * **굵게** → <b>태그
+   */
   private String formatAiTextToHtml(String text) {
     if (text == null || text.isBlank()) return "";
     text = text.replace("\n", "<br>");
@@ -142,6 +193,12 @@ public class ChatService {
     return text.trim();
   }
 
+  /**
+   * 메시지 내에서 지역명 감지
+   *
+   * regionTokens에 등록된 지역 문자열을 기준으로
+   * 가장 긴 일치 항목을 우선 반환한다.
+   */
   private String detectRegionFromMessage(String message) {
     String cleanMessage = message.replaceAll("\\s+", "");
     if (regionTokens.isEmpty()) initRegionTokens();
