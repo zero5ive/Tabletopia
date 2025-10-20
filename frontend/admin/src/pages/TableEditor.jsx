@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import './TableEditor.css';
 
 export default function TableEditor() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
   const [searchParams] = useSearchParams();
   const restaurantId = searchParams.get('restaurantId');
   const restaurantName = decodeURIComponent(searchParams.get('restaurantName') || '레스토랑');
@@ -298,7 +300,7 @@ export default function TableEditor() {
 
 
       const response = await fetch(
-        `http://localhost:8002/api/admin/restaurants/${restaurantId}/tables/layout`,
+        `${API_BASE_URL}/api/admin/restaurants/${restaurantId}/tables/layout`,
         {
           method: 'POST',
           headers: {
@@ -326,7 +328,7 @@ export default function TableEditor() {
 
     try {
       const response = await fetch(
-        `http://localhost:8002/api/admin/restaurants/${restaurantId}/tables`,
+        `${API_BASE_URL}/api/admin/restaurants/${restaurantId}/tables`,
         {
           method: 'GET',
           credentials: 'include'

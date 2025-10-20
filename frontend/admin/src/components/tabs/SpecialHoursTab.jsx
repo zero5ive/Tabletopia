@@ -6,6 +6,8 @@ import "./SpecialHoursTab.css";
 import RestaurantApi from '../../api/RestaurantApi';
 
 export default function SpecialHoursTab({ selectedRestaurant }) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
   const [specialHours, setSpecialHours] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newDate, setNewDate] = useState(null);
@@ -106,7 +108,7 @@ export default function SpecialHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/special`,
+        `${API_BASE_URL}/api/admin/restaurants/${selectedRestaurant.id}/hours/special`,
         payload,
         { withCredentials: true }
       );

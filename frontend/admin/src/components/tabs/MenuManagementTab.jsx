@@ -4,6 +4,8 @@ import MenuItemCard from "../cards/MenuItemCard";
 import AddMenuModal from "../modals/AddMenuModal";
 
 export default function MenuManagementTab({ selectedRestaurant }) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
   const [menus, setMenus] = useState([]);
   const [editTarget, setEditTarget] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,7 +148,7 @@ export default function MenuManagementTab({ selectedRestaurant }) {
               status={menu.isSoldout ? "품절" : "판매중"}
               image={
                 menu.imageFilename
-                  ? `http://localhost:8002/uploads/menus/${menu.imageFilename}`
+                  ? `${API_BASE_URL}/uploads/menus/${menu.imageFilename}`
                   : "https://placehold.co/300x180/9ACD32/ffffff?text=Img"
               }
               onDelete={() => handleDelete(menu.id)}

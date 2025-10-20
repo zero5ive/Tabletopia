@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { createMenu, updateMenu } from "../../api/MenuApi";
 
 export default function AddMenuModal({ restaurantId, onSuccess, editTarget }) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
   const [menuData, setMenuData] = useState({
     name: "",
     description: "",
@@ -23,7 +25,7 @@ export default function AddMenuModal({ restaurantId, onSuccess, editTarget }) {
         isSoldout: editTarget.isSoldout || false,
         image: null,
         imagePreview: editTarget.imageFilename
-          ? `http://localhost:8002/uploads/menus/${editTarget.imageFilename}`
+          ? `${API_BASE_URL}/uploads/menus/${editTarget.imageFilename}`
           : "",
       });
     } else {

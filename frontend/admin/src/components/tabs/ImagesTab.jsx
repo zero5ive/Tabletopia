@@ -174,7 +174,7 @@ export default function ImagesTab({ selectedRestaurant }) {
               currentImages.map((img) => (
                 <div key={img.id} className="card shadow-sm">
                   <img
-                    src={`http://localhost:8002/uploads/restaurants/${img.imageUrl}`}
+                    src={`${API_BASE_URL}/uploads/restaurants/${img.imageUrl}`}
                     alt="매장 이미지"
                     className="card-img-top"
                     style={{ height: "150px", objectFit: "cover" }}

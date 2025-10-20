@@ -4,6 +4,8 @@ import "./OperatingHoursTab.css";
 import RestaurantApi from '../../api/RestaurantApi';
 
 export default function OperatingHoursTab({ selectedRestaurant }) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
   const [hours, setHours] = useState([]);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -96,7 +98,7 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
 
     try {
       await axios.post(
-        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/opening`,
+        `${API_BASE_URL}/api/admin/restaurants/${selectedRestaurant.id}/hours/opening`,
         payload,
         { withCredentials: true }
       );
@@ -117,7 +119,7 @@ export default function OperatingHoursTab({ selectedRestaurant }) {
     try {
       const today = new Date().toISOString().split("T")[0];
       const res = await axios.get(
-        `http://localhost:8002/api/admin/restaurants/${selectedRestaurant.id}/hours/effective`,
+        `${API_BASE_URL}/api/admin/restaurants/${selectedRestaurant.id}/hours/effective`,
         { withCredentials: true }
       );
       setPreview(res.data);
