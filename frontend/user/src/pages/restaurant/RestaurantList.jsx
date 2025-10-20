@@ -63,16 +63,30 @@ export default function RestaurantList() {
                 categoryId: categoryId,
                 regionCode: regionCode,
                 page: page,
-                size: 9
+                size: 6
             });
 
-            console.log('레스토랑 검색 결과:', response);
+            console.log('🔍 레스토랑 검색 응답:', response);
 
-            const pageData = response.data;
-            setRestaurants(pageData.content || []);
-            setTotalPages(pageData.totalPages || 0);
-            setTotalElements(pageData.totalElements || 0);
-            setCurrentPage(pageData.number || 0);
+            const responseData = response.data;
+
+            // 백엔드 응답 구조: { content: [], page: { size, number, totalElements, totalPages } }
+            const content = responseData.content || [];
+            const pageInfo = responseData.page || {};
+
+            console.log('📄 페이징 정보:', pageInfo);
+
+            setRestaurants(content);
+            setTotalPages(pageInfo.totalPages || 0);
+            setTotalElements(pageInfo.totalElements || 0);
+            setCurrentPage(pageInfo.number || 0);
+
+            console.log('✅ 상태 업데이트 완료:', {
+                currentPage: pageInfo.number,
+                totalPages: pageInfo.totalPages,
+                totalElements: pageInfo.totalElements,
+                contentLength: content.length
+            });
 
         } catch (error) {
             console.error('레스토랑 조회 실패:', error);
@@ -428,11 +442,11 @@ export default function RestaurantList() {
                         </div>
                     )}
 
+
                     {/* 페이징 */}
-                    {totalPages > 1 && (
-                        <div className={styles['demo-section']}>
-                            <div className={styles['pagination-container']}>
-                                <div className={styles.pagination}>
+                    <div className={styles['demo-section']}>
+                        <div className={styles['pagination-container']}>
+                            <div className={styles.pagination}>
                                     <button
                                         className={`${styles['pagination-btn']} ${styles.arrow} ${currentPage === 0 ? styles.disabled : ''}`}
                                         onClick={() => handlePageChange(currentPage - 1)}
@@ -477,7 +491,6 @@ export default function RestaurantList() {
                                 </div>
                             </div>
                         </div>
-                    )}
 
                 </div>
             </main>
