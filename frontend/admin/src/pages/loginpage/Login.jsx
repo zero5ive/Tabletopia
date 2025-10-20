@@ -83,7 +83,8 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+         //JWT가 존재하여 userController로 admin로그인 요청이 들어가는 현상을 방지하기 위한 코드
+        localStorage.clear();
         const newErrors = {};
         if (!formData.emailLocal.trim()) newErrors.email = '이메일을 입력해주세요.';
         if (!formData.password) newErrors.password = '비밀번호를 입력해주세요.';

@@ -131,8 +131,8 @@ public class WaitingServiceImpl implements WaitingService{
 
     Page<Waiting> waitingPage = waitingRepository.findByRestaurantIdAndWaitingStateAndCreatedAtAfter(
         restaurantId, status, todayStart, pageable);
-    // Entity를 DTO로 변환
-    return waitingPage.map(waiting -> modelMapper.map(waiting, WaitingResponse.class));
+    // Entity를 DTO로 변환 (ModelMapper 대신 from() 메서드 사용)
+    return waitingPage.map(waiting -> WaitingResponse.from(waiting, restaurantId));
   }
 
   /**웨이팅 최대번호 계산 메서드*/
