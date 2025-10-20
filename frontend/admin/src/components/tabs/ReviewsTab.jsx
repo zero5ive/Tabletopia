@@ -15,9 +15,21 @@ export default function ReviewsTab({ selectedRestaurant }) {
     setLoading(true)
     try {
       const res = await axios.get(`http://localhost:8002/api/user/restaurants/${selectedRestaurant.id}/reviews`)
-      setReviews(res.data)
+      console.log('리뷰 API 응답:', res.data)
+
+      // 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 설정
+      if (Array.isArray(res.data)) {
+        setReviews(res.data)
+      } else if (res.data && Array.isArray(res.data.content)) {
+        // 페이징 응답인 경우 content 배열 사용
+        setReviews(res.data.content)
+      } else {
+        console.warn('예상하지 못한 응답 형태:', res.data)
+        setReviews([])
+      }
     } catch (err) {
       console.error("리뷰 목록 로드 실패:", err)
+      setReviews([])
     } finally {
       setLoading(false)
     }
