@@ -20,7 +20,7 @@ export default function MyBookMark() {
         try {
             const response = await getBookmarks(page, pageSize)
             const data = response.data
-
+            console.log(response.data.content);
             if (data.success) {
                 console.log('북마크 조회 성공:', {
                     현재페이지: page,
@@ -92,7 +92,7 @@ export default function MyBookMark() {
                     ) : (
                         <>
                             <div className={styles['bookmarks-grid']}>
-                                {bookmarks.map(bookmark => (
+                                {bookmarks.map((bookmark, index) => (
                                     <Link
                                         key={bookmark.bookmarkId}
                                         to={`/restaurant/${bookmark.restaurantId}`}
@@ -100,9 +100,10 @@ export default function MyBookMark() {
                                     >
                                         <div className={styles['bookmark-image']}>
                                             <img
-                                                src={bookmark.mainImageUrl || getDefaultImage()}
-                                                alt={bookmark.restaurantName}
-                                            />
+                                        src={`http://localhost:8002/uploads/restaurants/${bookmark.mainImageUrl}`}
+                                        alt={`썸네일 ${index + 1}`}
+                                    />
+
                                             <button
                                                 className={styles['bookmark-btn-overlay']}
                                                 onClick={(e) => {

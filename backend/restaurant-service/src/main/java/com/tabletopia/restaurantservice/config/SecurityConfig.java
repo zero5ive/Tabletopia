@@ -122,7 +122,7 @@ public class SecurityConfig {
 
               // 매장 CRUD 중 조회만 ADMIN 허용, 나머지는 SUPERADMIN만 가능
               .requestMatchers(HttpMethod.GET, "/api/admin/restaurants/**").hasAnyRole("ADMIN", "SUPERADMIN")
-              .requestMatchers(HttpMethod.POST, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
+              .requestMatchers(HttpMethod.POST, "/api/admin/restaurants/**").hasAnyRole("ADMIN", "SUPERADMIN")
               .requestMatchers(HttpMethod.PUT, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
               .requestMatchers(HttpMethod.DELETE, "/api/admin/restaurants/**").hasRole("SUPERADMIN")
 
