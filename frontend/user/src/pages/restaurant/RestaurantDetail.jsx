@@ -82,10 +82,18 @@ export default function RestaurantList() {
         }
     };
 
-    // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기
-    const today = new Date().toISOString().split('T')[0];
+    // 내일 날짜를 YYYY-MM-DD 형식으로 가져오기 (로컬 시간 기준)
+    const getTomorrowLocal = () => {
+        const now = new Date();
+        now.setDate(now.getDate() + 1); // 내일로 설정
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    const tomorrow = getTomorrowLocal();
 
-    const [date, setDate] = useState(today); // 초기 날짜를 오늘로 설정
+    const [date, setDate] = useState(tomorrow); // 초기 날짜를 내일로 설정
 
     /**
      * 초기 로드
@@ -93,7 +101,7 @@ export default function RestaurantList() {
     useEffect(() => {
         if (restaurantId) {
             fetchRestaurantDetail(restaurantId);
-            fetchAvailableTimeSlots(restaurantId, today);
+            fetchAvailableTimeSlots(restaurantId, tomorrow);
         }
     }, [restaurantId])
 
@@ -344,7 +352,7 @@ export default function RestaurantList() {
                                     type="date"
                                     className={styles["selector-input"]}
                                     value={date}
-                                    min={today} // 오늘 이전 날짜 선택 불가
+                                    min={tomorrow} // 내일부터 선택 가능 (오늘은 선택 불가)
                                     onChange={handleDateChange}
                                 />
                             </div>

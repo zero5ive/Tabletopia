@@ -26,6 +26,10 @@ const ReservationConfirm = () => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [reservationResult, setReservationResult] = useState(null);
 
+  // 선점 만료 타이머 상태
+  const [remainingTime, setRemainingTime] = useState(null);
+  const [isExpired, setIsExpired] = useState(false);
+
   useEffect(() => {
     // 결제 완료 메시지 리스너
     const handlePaymentMessage = (event) => {
@@ -68,6 +72,27 @@ const ReservationConfirm = () => {
     setReservationData(parsedData);
     console.log('예약 데이터 설정 완료:', parsedData);
 
+    // 선점 만료 시간 확인
+    const activeSelection = sessionStorage.getItem('activeTableSelection');
+    if (activeSelection) {
+      try {
+        const selection = JSON.parse(activeSelection);
+        if (selection.expiryTime) {
+          const expiryTime = new Date(selection.expiryTime).getTime();
+          const now = Date.now();
+          const timeLeft = Math.max(0, expiryTime - now);
+
+          if (timeLeft > 0) {
+            setRemainingTime(Math.floor(timeLeft / 1000)); // 초 단위
+          } else {
+            setIsExpired(true);
+          }
+        }
+      } catch (error) {
+        console.error('선점 정보 파싱 오류:', error);
+      }
+    }
+
     // 사용자 정보 불러오기
     const fetchUserInfo = async () => {
       try {
@@ -86,6 +111,35 @@ const ReservationConfirm = () => {
     };
     fetchUserInfo();
   }, []);
+
+  // 타이머 카운트다운
+  useEffect(() => {
+    if (remainingTime === null || remainingTime <= 0 || paymentCompleted) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          setIsExpired(true);
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingTime, paymentCompleted]);
+
+  // 만료 시 처리
+  useEffect(() => {
+    if (isExpired && !paymentCompleted) {
+      alert('선점 시간이 만료되었습니다. 테이블을 다시 선택해주세요.');
+      sessionStorage.removeItem('activeTableSelection');
+      window.close();
+    }
+  }, [isExpired, paymentCompleted]);
 
   /**
    * 페이지 이탈/종료 시 선점 해제
@@ -375,8 +429,31 @@ const ReservationConfirm = () => {
     );
   }
 
+  // 시간 포맷 함수 (분:초)
+  const formatTime = (seconds) => {
+    if (seconds === null) return '';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className={styles.container}>
+      {/* 선점 만료 타이머 */}
+      {remainingTime !== null && remainingTime > 0 && !paymentCompleted && (
+        <div className={`${styles.countdownTimer} ${
+          remainingTime <= 30 ? styles.timerCritical :
+          remainingTime <= 60 ? styles.timerWarning :
+          styles.timerNormal
+        }`}>
+          <span className={styles.timerIcon}>⏱️</span>
+          <div className={styles.timerContent}>
+            <div className={styles.timerLabel}>선점 만료까지</div>
+            <div className={styles.timerValue}>{formatTime(remainingTime)}</div>
+          </div>
+        </div>
+      )}
+
       {/* 진행 단계 바 */}
       <div className={styles.progressBar}>
         <div className={styles.progressStep}>

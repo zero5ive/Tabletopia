@@ -51,14 +51,14 @@ export default function MainContent() {
 
 
   return (
-    <div className="col-md-9 col-lg-10">
+    <div className="">
       <div className="main-content" onClick={handleTabClick}>
         <div className="header-section">
           <div className="container-fluid">
             <div className="d-flex justify-content-between align-items-center">
-              <div>
+              {/* <div>
                 <h2 className="mb-0">매장 관리</h2>
-              </div>
+              </div> */}
 
               {selectedRestaurant ? (
                 <div className="selected-restaurant-badge">
