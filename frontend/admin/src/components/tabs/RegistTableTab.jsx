@@ -269,11 +269,11 @@ export const RestaurantSeatEditor = () => {
     const sizes = {
       'table-2': { width: 80, height: 60 },
       'table-4': { width: 100, height: 100 },
-      'counter': { width: 200, height: 40 },
-      'seat': { width: 30, height: 30 },
-      'wall': { width: 100, height: 20 },
-      'door': { width: 60, height: 20 },
-      'window': { width: 100, height: 20 }
+      // 'counter': { width: 200, height: 40 },
+      // 'seat': { width: 30, height: 30 },
+      // 'wall': { width: 100, height: 20 },
+      // 'door': { width: 60, height: 20 },
+      // 'window': { width: 100, height: 20 }
     };
     return sizes[type] || { width: 50, height: 50 };
   };
@@ -285,7 +285,7 @@ export const RestaurantSeatEditor = () => {
     const names = {
       'table-2': '사각 테이블',
       'table-4': '원형 테이블',
-      'counter': '카운터',
+      // 'counter': '카운터',
       // 'seat': '좌석',
       // 'wall': '벽',
       // 'door': '문',
@@ -326,11 +326,11 @@ export const RestaurantSeatEditor = () => {
     const typeStyles = {
       'table-2': { background: '#8B4513', borderRadius: '4px' },
       'table-4': { background: '#8B4513', borderRadius: '50%' },
-      'counter': { background: '#6f4e37', borderRadius: '20px' },
-      'seat': { background: '#007bff', borderRadius: '4px' },
-      'wall': { background: '#6c757d', borderRadius: '4px' },
-      'door': { background: '#28a745', borderRadius: '4px' },
-      'window': { background: '#17a2b8', borderRadius: '4px' }
+      // 'counter': { background: '#6f4e37', borderRadius: '20px' },
+      // 'seat': { background: '#007bff', borderRadius: '4px' },
+      // 'wall': { background: '#6c757d', borderRadius: '4px' },
+      // 'door': { background: '#28a745', borderRadius: '4px' },
+      // 'window': { background: '#17a2b8', borderRadius: '4px' }
     };
 
     const selectedStyle = isSelected ? {
@@ -577,14 +577,10 @@ export const RestaurantSeatEditor = () => {
           // shape에 따라 type 결정
           let type = 'table-2'; // 기본값
 
-          if (table.shape === 'CIRCLE' && table.maxCapacity <= 2) {
-            type = 'seat';
-          } else if (table.shape === 'CIRCLE' && table.maxCapacity === 4) {
+          if (table.shape === 'CIRCLE') {
             type = 'table-4';
-          } else if (table.shape === 'RECTANGLE' && table.maxCapacity <= 2) {
-            type = 'table-2';
           } else if (table.shape === 'RECTANGLE' && table.maxCapacity >= 4) {
-            type = 'table-4';
+            type = 'table-2';
           }
 
           const size = getDefaultSize(type);
