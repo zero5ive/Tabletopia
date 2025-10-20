@@ -10,6 +10,7 @@ import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectio
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,6 +22,9 @@ import java.util.UUID;
 @Slf4j
 public class PaymentService {
     private final PaymentRepository paymentRepository;
+
+    @Value("${payment.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     /**
      * 결제요청을 보내고 ok를 받아오는 메서드
@@ -40,8 +44,8 @@ public class PaymentService {
             jsonBody.put("apiKey", "sk_test_w5lNQylNqa5lNQe013Nq");
             jsonBody.put("autoExecute", true);
             jsonBody.put("resultCallback", "https://pay.toss.im/payfront/demo/callback");
-            jsonBody.put("retUrl", "http://localhost:3000/reservations/payment/success");
-            jsonBody.put("retCancelUrl", "https://pay.toss.im/payfront/demo/cancel");
+            jsonBody.put("retUrl", frontendUrl + "/reservations/payment/success");
+            jsonBody.put("retCancelUrl", frontendUrl + "/reservations/payment/cancel");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
