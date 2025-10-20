@@ -11,26 +11,28 @@
 
 Frontend 코드가 환경 변수를 통해 API 주소를 설정하도록 수정되었습니다.
 
+**중요:** 이 프로젝트는 **Vite**를 사용하므로 환경 변수는 `VITE_` 접두사를 사용합니다.
+
 ##### User Frontend 설정
 `frontend/user/.env.production` 파일을 수정하세요:
 
 ```bash
-# 네이버 클라우드 Backend 서버 주소로 변경
-REACT_APP_API_BASE_URL=https://your-backend-url.ncloud.com
-REACT_APP_WS_URL=https://your-backend-url.ncloud.com/ws
-REACT_APP_OAUTH_URL=https://your-backend-url.ncloud.com
+# 네이버 클라우드 Backend 서버 주소 (현재 설정됨)
+VITE_API_BASE_URL=http://223.130.138.158:8002
+VITE_WS_URL=http://223.130.138.158:8002/ws
+VITE_OAUTH_URL=http://223.130.138.158:8002
 ```
 
 ##### Admin Frontend 설정
 `frontend/admin/.env.production` 파일을 수정하세요:
 
 ```bash
-# 네이버 클라우드 Backend 서버 주소로 변경
-REACT_APP_API_BASE_URL=https://your-backend-url.ncloud.com
-REACT_APP_WS_URL=https://your-backend-url.ncloud.com/ws
+# 네이버 클라우드 Backend 서버 주소 (현재 설정됨)
+VITE_API_BASE_URL=http://223.130.138.158:8002
+VITE_WS_URL=http://223.130.138.158:8002/ws
 ```
 
-**중요:** `your-backend-url.ncloud.com`을 실제 네이버 클라우드 Backend 서버의 도메인 또는 IP 주소로 교체하세요.
+**참고:** 위 설정은 이미 `http://223.130.138.158:8002`로 구성되어 있습니다.
 
 #### 2. 로컬 개발 환경 설정
 
@@ -65,6 +67,11 @@ npm run build
 cat frontend/user/.env.production
 cat frontend/admin/.env.production
 ```
+
+**Vite 환경 변수 참고사항:**
+- Vite에서는 `VITE_` 접두사가 있는 환경 변수만 클라이언트 번들에 노출됩니다
+- 코드에서 `import.meta.env.VITE_API_BASE_URL` 형식으로 접근합니다
+- `process.env`가 아닌 `import.meta.env`를 사용합니다
 
 #### 5. HTTPS 사용 권장
 
@@ -102,9 +109,10 @@ public class WebConfig implements WebMvcConfigurer {
 4. 환경 변수가 빌드 시 올바르게 적용되었는지 확인
 
 #### 환경 변수가 적용되지 않는 경우
-- React 앱에서 환경 변수는 **빌드 시**에 적용됩니다
+- Vite 앱에서 환경 변수는 **빌드 시**에 적용됩니다
 - `.env.production` 파일 수정 후 **반드시 다시 빌드**해야 합니다
-- 환경 변수는 `REACT_APP_` 접두사로 시작해야 합니다
+- 환경 변수는 `VITE_` 접두사로 시작해야 합니다 (Vite 프로젝트)
+- 코드에서 `import.meta.env.VITE_변수명` 형식으로 접근합니다
 
 #### WebSocket 연결 실패
 - HTTPS를 사용하는 경우 WebSocket도 WSS(Secure WebSocket)를 사용해야 합니다

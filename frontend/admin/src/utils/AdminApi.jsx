@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Axios 인스턴스 생성
 const AdminApi = axios.create({
-    baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8002', // 기본 URL 설정
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002', // 기본 URL 설정
     withCredentials: true // ⭐ 세션 쿠키 포함
 });
 

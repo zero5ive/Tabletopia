@@ -1,6 +1,6 @@
 // API 설정 파일
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8002';
-export const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+export const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8002/ws';
 
 // 이미지 URL 헬퍼
 export const getImageUrl = (path) => {

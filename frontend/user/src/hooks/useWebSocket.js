@@ -8,7 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
-const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8002/ws';
 
 /**
  * 웹소켓 연결 및 테이블 상태 관리를 위한 커스텀 훅

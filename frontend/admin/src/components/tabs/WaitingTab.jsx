@@ -4,7 +4,7 @@ import { Client } from '@stomp/stompjs';
 import { getWaitingList, waitingCancel, waitingCall, waitingSeated, getWaitingStatus } from '../../utils/WaitingApi';
 import { useSearchParams } from 'react-router-dom';
 
-const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8002/ws';
 
 export default function WaitingTab({selectedRestaurant}) {
   const [activeFilter, setActiveFilter] = useState('웨이팅');

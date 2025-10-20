@@ -6,7 +6,7 @@ import { getCurrentUser } from '../../pages/utils/UserApi'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client';
 
-const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8002/ws';
 
 export function WaitingStatus() {
     const [activeWaiting, setActiveWaiting] = useState(null)

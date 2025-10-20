@@ -347,7 +347,7 @@ useEffect(() => {
       setLoading(true);
       console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
 
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8002';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
       const response = await axios.get(`${API_BASE_URL}/api/user/restaurants/${restaurantId}/tables`);
       const data = response.data;
 
