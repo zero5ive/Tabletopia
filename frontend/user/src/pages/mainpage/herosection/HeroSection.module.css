@@ -1,13 +1,59 @@
-/* Hero Section */
+/* Banner Link - 링크 스타일 제거 */
+.bannerLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.bannerLink:hover {
+    transform: translateY(-4px);
+}
+
+/* Hero Section - 배너 스타일 */
 .heroSection {
     background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    border-radius: 20px;
-    padding: 60px 40px;
+    border-radius: 16px;
+    padding: 0;
     color: white;
-    text-align: center;
     margin-bottom: 60px;
     position: relative;
     overflow: hidden;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bannerLink:hover .heroSection {
+    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+}
+
+/* 배경 이미지 */
+.backgroundImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.backgroundImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
 }
 
 /* 배경 파티클 컨테이너 */
@@ -127,11 +173,21 @@
     animation: pulse 8s ease-in-out infinite 0.5s;
 }
 
-/* 콘텐츠 영역 */
+/* 콘텐츠 영역 - 좌우 배치 */
 .heroContent {
     position: relative;
     z-index: 2;
-    animation: fadeInUp 1s ease-out;
+    padding: 40px 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.mainText {
+    flex: 1;
+    text-align: left;
 }
 
 @keyframes fadeInUp {
@@ -145,12 +201,68 @@
     }
 }
 
+/* 상단 문구 */
+.topLine {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffcc00;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
 .heroContent h1 {
     font-size: 48px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     font-weight: 700;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
-    animation: fadeInUp 1s ease-out 0.2s backwards;
+    text-shadow: 0 3px 15px rgba(0, 0, 0, 0.6);
+    line-height: 1.2;
+}
+
+/* 서브 정보 - 한 줄 배치 */
+.subInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    flex-wrap: wrap;
+}
+
+.rating {
+    font-weight: 600;
+}
+
+.separator {
+    opacity: 0.6;
+}
+
+.location {
+    font-weight: 500;
+}
+
+.stat {
+    font-weight: 600;
+}
+
+/* CTA 버튼 */
+.ctaButton {
+    background: #ff4444;
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+    white-space: nowrap;
+}
+
+.bannerLink:hover .ctaButton {
+    background: #ff5555;
+    box-shadow: 0 6px 20px rgba(255, 68, 68, 0.6);
+    transform: translateY(-2px);
 }
 
 .heroContent p {
@@ -184,36 +296,38 @@
 /* 반응형 */
 @media (max-width: 768px) {
     .heroSection {
-        padding: 40px 20px;
+        height: auto;
+        min-height: 200px;
+    }
+
+    .heroContent {
+        padding: 30px 24px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .topLine {
+        font-size: 14px;
     }
 
     .heroContent h1 {
-        font-size: 32px;
+        font-size: 28px;
     }
 
-    .heroContent p {
-        font-size: 16px;
+    .subInfo {
+        font-size: 13px;
+        gap: 8px;
     }
 
-    .featuredDish {
-        width: 120px;
-        height: 120px;
-        right: 20px;
+    .ctaButton {
+        font-size: 15px;
+        padding: 12px 28px;
+        width: 100%;
     }
 
-    /* 모바일에서 파티클 크기 조정 */
-    .particle1, .particle3, .particle6 {
-        width: 40px;
-        height: 40px;
-    }
-
-    .particle2, .particle4, .particle7, .particle8 {
-        width: 30px;
-        height: 30px;
-    }
-
-    .particle5 {
-        width: 20px;
-        height: 20px;
+    /* 모바일에서 파티클 숨기기 */
+    .particles {
+        display: none;
     }
 }

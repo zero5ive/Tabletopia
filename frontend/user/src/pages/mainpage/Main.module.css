@@ -9,50 +9,84 @@
 .sectionTitle {
     font-size: 28px;
     font-weight: 600;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
     color: #212529;
 }
 
 .categoriesGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 16px;
     margin-bottom: 60px;
 }
 
+/* 지역 카테고리 그리드 - 6개씩 2줄 */
+.locationGrid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+    margin-bottom: 60px;
+}
+
+/* 기본 카테고리 아이템 (지역용) */
 .categoryItem {
     background: white;
-    padding: 32px 20px;
-    border-radius: 16px;
+    padding: 20px 12px;
+    border-radius: 12px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 1px solid #f1f3f4;
 }
 
+/* 음식 카테고리 아이템 - 동그랗고 배경 없음 */
+.foodCategoryItem {
+    background: transparent;
+    padding: 20px 12px;
+    border-radius: 50%;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
 .categoryItem:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     border-color: #ff6b35;
 }
 
+.foodCategoryItem:hover {
+    transform: scale(1.1);
+}
+
+.foodCategoryItem:hover .categoryIcon {
+    background: rgba(255, 107, 53, 0.1);
+}
+
 .categoryIcon {
-    width: 48px;
-    height: 48px;
-    background: #ff6b35;
+    width: 60px;
+    height: 60px;
+    background: white;
     border-radius: 12px;
-    margin: 0 auto 16px;
+    margin: 0 auto 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    color: white;
+    font-size: 36px;
+    transition: all 0.3s ease;
 }
 
 .categoryName {
     font-weight: 600;
     color: #212529;
     margin-bottom: 4px;
+    font-size: 14px;
 }
 
 .categoryName a {
@@ -233,6 +267,10 @@
 
     .categoriesGrid {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .locationGrid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .restaurantsGrid {
