@@ -6,6 +6,8 @@ import { getCurrentUser } from '../../pages/utils/UserApi'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client';
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 export function WaitingStatus() {
     const [activeWaiting, setActiveWaiting] = useState(null)
     const [initialLoading, setInitialLoading] = useState(true)
@@ -120,7 +122,7 @@ export function WaitingStatus() {
 
         // WebSocket 연결
         const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
+            webSocketFactory: () => new SockJS(WS_URL),
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,

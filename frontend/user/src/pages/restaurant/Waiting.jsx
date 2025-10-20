@@ -13,6 +13,8 @@ import { getWaitingStatus } from '../utils/WaitingApi';
 import { updateUser, getCurrentUser } from '../utils/UserApi';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 export default function Waiting({ reservationType }) {
 
   const { addNotification } = useWebSocket(); // WebSocketContext 사용
@@ -110,7 +112,7 @@ export default function Waiting({ reservationType }) {
 
 
     // 3. 웹소켓 연결 및 실시간 업데이트 구독
-    const socket = new SockJS('http://localhost:8002/ws');
+    const socket = new SockJS(WS_URL);
 
     // JWT 토큰이 있는 경우에만 connectHeaders에 추가
     const token = localStorage.getItem('accessToken');

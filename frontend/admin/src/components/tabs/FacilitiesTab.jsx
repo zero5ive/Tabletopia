@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8002";
+
 const api = axios.create({
-  baseURL: "http://localhost:8002/api",
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true, // 세션 쿠키(JSESSIONID) 전송
 });
 

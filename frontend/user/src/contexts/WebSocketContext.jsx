@@ -3,6 +3,8 @@ import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { getCurrentUser } from '../pages/utils/UserApi'
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 const WebSocketContext = createContext()
 
 export const useWebSocket = () => {
@@ -121,7 +123,7 @@ export const WebSocketProvider = ({ children }) => {
         console.log('[WebSocketContext] WebSocket 연결 시작 - userId:', userId)
         console.log('[WebSocketContext] accessToken 존재:', token.substring(0, 20) + '...')
 
-        const socket = new SockJS('http://localhost:8002/ws')
+        const socket = new SockJS(WS_URL)
         const client = new Client({
             webSocketFactory: () => socket,
             connectHeaders: {

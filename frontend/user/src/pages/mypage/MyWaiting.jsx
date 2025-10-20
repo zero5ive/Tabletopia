@@ -9,6 +9,8 @@ import { delayWaiting } from '../utils/WaitingApi';
 import { getDelayOptions } from '../utils/WaitingApi';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 export default function MyReservation() {
     const { waitingStateChange } = useWebSocket(); // WebSocketContext 사용
     const [allWaitingList, setAllWaitingList] = useState([]); // 전체 데이터
@@ -239,7 +241,7 @@ export default function MyReservation() {
     // WebSocket 연결
     const connectWebSocket = () => {
         const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
+            webSocketFactory: () => new SockJS(WS_URL),
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,

@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8002";
+
 const api = axios.create({
-  baseURL: "http://localhost:8002/api/admin/restaurants",
+  baseURL: `${API_BASE_URL}/api/admin/restaurants`,
   withCredentials: true,
 });
 

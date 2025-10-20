@@ -4,6 +4,8 @@ import { Client } from '@stomp/stompjs';
 import { getWaitingList, waitingCancel, waitingCall, waitingSeated, getWaitingStatus } from '../../utils/WaitingApi';
 import { useSearchParams } from 'react-router-dom';
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 export default function WaitingTab({selectedRestaurant}) {
   const [activeFilter, setActiveFilter] = useState('웨이팅');
   const [waitingList, setWaitingList] = useState([]);
@@ -252,7 +254,7 @@ export default function WaitingTab({selectedRestaurant}) {
 
     console.log('WebSocket 연결 시작, restaurantId:', selectedRestaurant.id);
 
-    const socket = new SockJS('http://localhost:8002/ws');
+    const socket = new SockJS(WS_URL);
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {

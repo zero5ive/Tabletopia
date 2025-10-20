@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8002";
+
 const api = axios.create({
-  baseURL: "http://localhost:8002/api/user/waiting",
+  baseURL: `${API_BASE_URL}/api/user/waiting`,
   withCredentials: true, // JWT 토큰 전송
 });
 
@@ -11,7 +13,7 @@ export const getWaitingStatus = (restaurantId) =>
 
 //리스트 조회 (관리자용 - 사용자는 사용하지 않을 것으로 예상)
 export const getWaitingList=(restaurantId, status = 'WAITING', size = 1000)=>
-    axios.get(`http://localhost:8002/api/admin/restaurants/${restaurantId}/waiting?status=${status}&size=${size}`);
+    axios.get(`${API_BASE_URL}/api/admin/restaurants/${restaurantId}/waiting?status=${status}&size=${size}`);
 
 // 사용자의 웨이팅 내역 조회
 export const getUserWaitingList = (page = 0, size = 10) => {
@@ -27,7 +29,7 @@ export const getUserWaitingList = (page = 0, size = 10) => {
 //웨이팅 대기 취소
 export const waitingCancel = (id, restaurantId) => {
     const token = localStorage.getItem('accessToken');
-    return axios.put(`http://localhost:8002/api/user/waitings/${id}/cancel?restaurantId=${restaurantId}`, null, {
+    return axios.put(`${API_BASE_URL}/api/user/waitings/${id}/cancel?restaurantId=${restaurantId}`, null, {
         headers: {
             'Authorization': token ? `Bearer ${token}` : ''
         }
@@ -48,7 +50,7 @@ export const getWaitingStatusMy = () => {
 export const delayWaiting = (waitingId, targetNumber, restaurantId) => {
     const token = localStorage.getItem('accessToken');
     return axios.put(
-        `http://localhost:8002/api/user/waitings/${waitingId}/delay`,
+        `${API_BASE_URL}/api/user/waitings/${waitingId}/delay`,
         null,  // body는 null
         {
             params: {
@@ -67,7 +69,7 @@ export const delayWaiting = (waitingId, targetNumber, restaurantId) => {
 export const getDelayOptions = (waitingId, restaurantId) => {
     const token = localStorage.getItem('accessToken');
     return axios.get(
-        `http://localhost:8002/api/user/waitings/${waitingId}/delay`,
+        `${API_BASE_URL}/api/user/waitings/${waitingId}/delay`,
         {
             params: { restaurantId },
             headers: {

@@ -14,7 +14,8 @@ export default function ReviewsTab({ selectedRestaurant }) {
     if (!selectedRestaurant) return
     setLoading(true)
     try {
-      const res = await axios.get(`http://localhost:8002/api/user/restaurants/${selectedRestaurant.id}/reviews`)
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8002';
+      const res = await axios.get(`${API_BASE_URL}/api/user/restaurants/${selectedRestaurant.id}/reviews`)
       console.log('리뷰 API 응답:', res.data)
 
       // 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 설정

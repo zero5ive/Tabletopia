@@ -8,6 +8,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8002/ws';
+
 /**
  * 웹소켓 연결 및 테이블 상태 관리를 위한 커스텀 훅
  *
@@ -51,7 +53,7 @@ export const useWebSocket = (restaurantId, onTableStatusUpdate) => {
         // STOMP 클라이언트 생성
         const client = new Client({
             // SockJS를 통한 WebSocket 연결
-            webSocketFactory: () => new SockJS('http://localhost:8002/ws'),
+            webSocketFactory: () => new SockJS(WS_URL),
 
             // JWT 인증 헤더 추가
             connectHeaders: {

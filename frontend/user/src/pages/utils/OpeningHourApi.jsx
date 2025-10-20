@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL="http://localhost:8002/api/user/restaurants";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8002";
+const BASE_URL=`${API_BASE_URL}/api/user/restaurants`;
 
 export const getOpeningHours = (id) => {
     return axios.get(`${BASE_URL}/${id}/hours/opening`);

@@ -180,7 +180,8 @@ const SignUp = () => {
     try {
       const fullEmail = getFullEmail();
 
-      const response = await axios.post('http://localhost:8002/api/user/auth/register', {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8002';
+      const response = await axios.post(`${API_BASE_URL}/api/user/auth/register`, {
         name: formData.name,
         phoneNumber: formData.phoneNumber,
         email: fullEmail,

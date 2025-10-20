@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8002";
+
 const api = axios.create({
-  baseURL: "http://localhost:8002/api/admin",
+  baseURL: `${API_BASE_URL}/api/admin`,
   withCredentials: true, // 세션 쿠키 전송 필수
 });
 
