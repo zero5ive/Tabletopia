@@ -29,7 +29,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173")
+                .allowedOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "http://223.130.138.158:3000",  // User Frontend 배포 URL
+                        "http://223.130.138.158:5173"   // Admin Frontend 배포 URL (포트 확인 필요)
+                )
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);

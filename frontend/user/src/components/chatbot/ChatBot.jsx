@@ -61,9 +61,10 @@ export default function ChatBot() {
 
     try {
       const token = localStorage.getItem("accessToken")
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
 
       const res = await axios.post(
-        "http://localhost:8002/api/chat",
+        `${API_BASE_URL}/api/chat`,
         { message: userMessage },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
