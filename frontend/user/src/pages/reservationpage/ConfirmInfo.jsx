@@ -80,12 +80,18 @@ const ReservationConfirm = () => {
         console.log('🔍 선점 정보:', selection);
 
         if (selection.expiryTime) {
-          const expiryTime = new Date(selection.expiryTime).getTime();
+          // LocalDateTime을 UTC로 파싱 (서버가 LocalDateTime을 사용하므로 타임존 정보가 없음)
+          // ISO 문자열에 'Z'를 붙여서 UTC로 명시
+          const expiryTimeStr = selection.expiryTime.endsWith('Z')
+            ? selection.expiryTime
+            : selection.expiryTime + 'Z';
+          const expiryTime = new Date(expiryTimeStr).getTime();
           const now = Date.now();
           const timeLeft = Math.max(0, expiryTime - now);
 
           console.log('⏰ 만료 시간 체크:', {
             expiryTime: selection.expiryTime,
+            expiryTimeStr: expiryTimeStr,
             expiryTimeMs: expiryTime,
             nowMs: now,
             timeLeftMs: timeLeft,
