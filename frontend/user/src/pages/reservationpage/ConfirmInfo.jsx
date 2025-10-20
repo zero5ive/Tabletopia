@@ -77,27 +77,53 @@ const ReservationConfirm = () => {
     if (activeSelection) {
       try {
         const selection = JSON.parse(activeSelection);
+        console.log('🔍 선점 정보:', selection);
+
         if (selection.expiryTime) {
           const expiryTime = new Date(selection.expiryTime).getTime();
           const now = Date.now();
           const timeLeft = Math.max(0, expiryTime - now);
 
+          console.log('⏰ 만료 시간 체크:', {
+            expiryTime: selection.expiryTime,
+            expiryTimeMs: expiryTime,
+            nowMs: now,
+            timeLeftMs: timeLeft,
+            timeLeftSec: Math.floor(timeLeft / 1000),
+            expiryDate: new Date(expiryTime).toLocaleString(),
+            nowDate: new Date(now).toLocaleString()
+          });
+
           if (timeLeft > 0) {
             setRemainingTime(Math.floor(timeLeft / 1000)); // 초 단위
           } else {
+            console.error('❌ 이미 만료됨!');
             setIsExpired(true);
           }
+        } else {
+          console.warn('⚠️ expiryTime이 없습니다.');
         }
       } catch (error) {
         console.error('선점 정보 파싱 오류:', error);
       }
+    } else {
+      console.warn('⚠️ activeTableSelection이 없습니다.');
     }
 
     // 사용자 정보 불러오기
     const fetchUserInfo = async () => {
       try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.error('토큰이 없습니다. 로그인이 필요합니다.');
+          alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+          navigate('/login');
+          return;
+        }
+
         const response = await getCurrentUser();
         const userData = response.data;
+        console.log('사용자 정보 로드 성공:', userData);
         setCustomerInfo({
           id: userData.id,
           name: userData.name,
@@ -106,7 +132,9 @@ const ReservationConfirm = () => {
         });
       } catch (error) {
         console.error('유저 정보 조회 실패:', error);
-        alert('유저 정보를 불러오지 못했습니다.');
+        console.error('에러 상세:', error.response?.data || error.message);
+        alert('유저 정보를 불러오지 못했습니다. 로그인 페이지로 이동합니다.');
+        navigate('/login');
       }
     };
     fetchUserInfo();
@@ -135,11 +163,13 @@ const ReservationConfirm = () => {
   // 만료 시 처리
   useEffect(() => {
     if (isExpired && !paymentCompleted) {
+      console.error('선점 만료됨 - 현재 시간:', new Date().toLocaleString());
       alert('선점 시간이 만료되었습니다. 테이블을 다시 선택해주세요.');
       sessionStorage.removeItem('activeTableSelection');
-      window.close();
+      localStorage.removeItem('finalReservationData');
+      navigate('/reservations/table');
     }
-  }, [isExpired, paymentCompleted]);
+  }, [isExpired, paymentCompleted, navigate]);
 
   /**
    * 페이지 이탈/종료 시 선점 해제
@@ -162,8 +192,9 @@ const ReservationConfirm = () => {
           return;
         }
 
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
         const success = navigator.sendBeacon(
-          'http://localhost:10022/api/realtime/table/cancel',
+          `${API_BASE_URL}/api/realtime/table/cancel`,
           new Blob([JSON.stringify({
             restaurantId: data.restaurantId,
             tableId: data.tableId,
