@@ -4,6 +4,8 @@ import styles from './MyWaiting.module.css'
 import { getBookmarks, deleteBookmark } from '../utils/UserApi'
 
 export default function MyBookMark() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
     const [bookmarks, setBookmarks] = useState([])
     const [loading, setLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(0)
@@ -100,7 +102,7 @@ export default function MyBookMark() {
                                     >
                                         <div className={styles['bookmark-image']}>
                                             <img
-                                        src={`http://localhost:8002/uploads/restaurants/${bookmark.mainImageUrl}`}
+                                        src={`${API_BASE_URL}/uploads/restaurants/${bookmark.mainImageUrl}`}
                                         alt={`썸네일 ${index + 1}`}
                                     />
 

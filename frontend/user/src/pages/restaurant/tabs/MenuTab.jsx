@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useEffect } from 'react';
 
 export default function MenuTab() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
 
     const [menu, setMenu] = useState([]);
     const [searchParams] = useSearchParams();
@@ -32,7 +33,7 @@ export default function MenuTab() {
                             <img
                                 src={
                                     item.imageFilename
-                                        ? `http://localhost:8002/uploads/menus/${item.imageFilename}`
+                                        ? `${API_BASE_URL}/uploads/menus/${item.imageFilename}`
                                         : "https://placehold.co/300x180/9ACD32/ffffff?text=Img"
                                 }
                                 alt={item.name}

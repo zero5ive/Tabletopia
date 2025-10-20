@@ -5,6 +5,8 @@ import { getRestaurantList, getRestaurantBookmarks } from '../../utils/Restauran
 import { getReservationList } from '../../utils/ReservationApi'
 
 export default function HeroSection(){
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
     const [featuredRestaurant, setFeaturedRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -159,7 +161,7 @@ export default function HeroSection(){
                                     // 메인 이미지 찾기
                                     const mainImage = featuredRestaurant.restaurantImage.find(img => img.isMain);
                                     const imageUrl = mainImage ? mainImage.imageUrl : featuredRestaurant.restaurantImage[0].imageUrl;
-                                    return `http://localhost:8002/uploads/restaurants/${imageUrl}`;
+                                    return `${API_BASE_URL}/uploads/restaurants/${imageUrl}`;
                                 }
                                 return '/placeholder-restaurant.png';
                             })()}

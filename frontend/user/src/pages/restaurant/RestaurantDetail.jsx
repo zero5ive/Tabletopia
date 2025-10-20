@@ -16,6 +16,7 @@ import { getAvailableTimeSlots } from "../utils/OpeningHourApi";
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RestaurantList() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
 
     //레스토랑 상세페이지
     const [restaurantDetail, setRestaurantDetail] = useState(null);
@@ -245,7 +246,7 @@ export default function RestaurantList() {
                     <div className={styles["main-image"]}>
                         <img
                             src={restaurantDetail.imageUrls && restaurantDetail.imageUrls.length > 0 && restaurantDetail.imageUrls[selectedImageIndex]
-                                ? `http://localhost:8002/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`
+                                ? `${API_BASE_URL}/uploads/restaurants/${restaurantDetail.imageUrls[selectedImageIndex]}`
                                 : '/placeholder-restaurant.png'}
                             alt={`매장 이미지 ${selectedImageIndex + 1}`}
                         />
@@ -259,7 +260,7 @@ export default function RestaurantList() {
                                     onClick={() => setSelectedImageIndex(index)}
                                 >
                                     <img
-                                        src={`http://localhost:8002/uploads/restaurants/${imageUrl}`}
+                                        src={`${API_BASE_URL}/uploads/restaurants/${imageUrl}`}
                                         alt={`썸네일 ${index + 1}`}
                                     />
                                 </div>

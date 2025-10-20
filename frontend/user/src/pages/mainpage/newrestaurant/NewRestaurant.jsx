@@ -6,6 +6,7 @@ import { getRestaurantList } from '../../utils/RestaurantApi';
 import { getRestaurantBookmarks } from '../../utils/RestaurantApi';
 
 export default function NewRestaurant() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
 
     const [top3, setTop3] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -218,7 +219,7 @@ export default function NewRestaurant() {
                 <div className={styles['card-image']}>
                     <img
                         src={restaurant.restaurantImage && restaurant.restaurantImage.length > 0
-                            ? `http://localhost:8002/uploads/restaurants/${restaurant.restaurantImage[0].imageUrl}`
+                            ? `${API_BASE_URL}/uploads/restaurants/${restaurant.restaurantImage[0].imageUrl}`
                             : '/placeholder-restaurant.png'
                         }
                         alt={restaurant.name}

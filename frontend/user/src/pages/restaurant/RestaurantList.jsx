@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import { searchRestaurants, addBookmark } from "../utils/RestaurantApi";
 import { getBookmarks, deleteBookmark } from "../utils/UserApi";
 import { getCurrentUser } from "../utils/UserApi";
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
 
 
 
 export default function RestaurantList() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002';
+
     const [restaurants, setRestaurants] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -386,7 +388,7 @@ export default function RestaurantList() {
                                     <div className={styles["restaurant-card"]}>
                                         <div className={styles["card-image"]}>
                                             <img src={restaurant.mainImageUrl
-                                                ? `http://localhost:8002/uploads/restaurants/${restaurant.mainImageUrl}`
+                                                ? `${API_BASE_URL}/uploads/restaurants/${restaurant.mainImageUrl}`
                                                 : '/placeholder-restaurant.png'}
                                                 alt={restaurant.name} />
                                             <button
