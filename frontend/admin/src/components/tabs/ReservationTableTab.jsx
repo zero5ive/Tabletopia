@@ -14,6 +14,35 @@ export default function ReservationTableTab({selectedRestaurant}){
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [reservations, setReservations] = useState([]);
+  const [timeSlots, setTimeSlots] = useState([]);
+
+  /**
+   * 테이블 에디터 팝업 열기
+   */
+  const openTableEditorPopup = () => {
+    if (!restaurantId) {
+      alert('매장을 먼저 선택해주세요.');
+      return;
+    }
+
+    // 팝업 창 열기 (1400x900 크기)
+    const width = 1400;
+    const height = 900;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+
+    // RegistTableTab 컴포넌트로 이동
+    const popup = window.open(
+      `/admin/regist-table?restaurantId=${restaurantId}`,
+      'RegistTableEditor',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+
+    if (!popup) {
+      alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+    }
+  };
 
   // 맵 인터랙션 상태
   const [scale, setScale] = useState(1);
@@ -22,17 +51,122 @@ export default function ReservationTableTab({selectedRestaurant}){
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapRef = useRef(null);
 
-  const restaurantId = 1; // 관리자 대시보드에서는 고정값 사용
+  const restaurantId = selectedRestaurant?.id;
 
-  // 오늘 날짜를 기본값으로 설정
+  /**
+   * 타임슬롯 조회
+   */
+  const fetchTimeSlots = useCallback(async (date, shouldResetTime = false) => {
+    if (!date || !restaurantId) return;
+    try {
+      console.log(`타임슬롯 조회 중... restaurantId: ${restaurantId}, date: ${date}`);
+      const response = await api.get(`/${restaurantId}/time-slots`, {
+        params: { date }
+      });
+      console.log('타임슬롯:', response.data);
+      const slots = response.data || [];
+      setTimeSlots(slots);
+
+      // 첫 번째 타임슬롯을 기본 선택 (초기 로드 시에만)
+      if (slots.length > 0 && shouldResetTime) {
+        setSelectedTime(slots[0]);
+      }
+    } catch (err) {
+      console.error('타임슬롯 조회 실패:', err);
+      setTimeSlots([]);
+    }
+  }, [restaurantId]);
+
+  /**
+   * 예약 목록 조회
+   */
+  const fetchReservations = useCallback(async () => {
+    if (!restaurantId) return;
+    try {
+      console.log(`예약 목록 조회 중... restaurantId: ${restaurantId}`);
+      const response = await api.get(`/${restaurantId}/reservations`);
+      console.log('예약 목록:', response.data);
+      setReservations(response.data.data || []);
+    } catch (err) {
+      console.error('예약 목록 조회 실패:', err);
+    }
+  }, [restaurantId]);
+
+  /**
+   * 예약 상태 변경
+   */
+  const updateReservationStatus = async (reservationId, status, reason = null) => {
+    try {
+      const requestBody = { status };
+      if (reason) {
+        requestBody.reason = reason;
+      }
+
+      await api.patch(`/${restaurantId}/reservations/${reservationId}/status`, requestBody);
+
+      // 예약 목록 갱신
+      fetchReservations();
+      alert('예약 상태가 변경되었습니다.');
+    } catch (err) {
+      console.error('예약 상태 변경 실패:', err);
+      alert('예약 상태 변경에 실패했습니다.');
+    }
+  };
+
+  /**
+   * 예약 승인
+   */
+  const handleApprove = (reservationId) => {
+    if (window.confirm('예약을 승인하시겠습니까?')) {
+      updateReservationStatus(reservationId, 'APPROVED');
+    }
+  };
+
+  /**
+   * 예약 취소
+   */
+  const handleCancel = (reservationId) => {
+    const reason = window.prompt('취소 사유를 입력해주세요:');
+    if (reason !== null && reason.trim() !== '') {
+      updateReservationStatus(reservationId, 'CANCELED', reason);
+    }
+  };
+
+  /**
+   * 방문 처리
+   */
+  const handleVisit = (reservationId) => {
+    if (window.confirm('방문 처리하시겠습니까?')) {
+      updateReservationStatus(reservationId, 'VISITED');
+    }
+  };
+
+  /**
+   * 미방문 처리
+   */
+  const handleNoShow = (reservationId) => {
+    if (window.confirm('미방문(노쇼) 처리하시겠습니까?')) {
+      updateReservationStatus(reservationId, 'NO_SHOW');
+    }
+  };
+
+  // 오늘 날짜를 기본값으로 설정 (초기 로드)
   useEffect(() => {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
-    setSelectedDate(`${yyyy}-${mm}-${dd}`);
-    setSelectedTime('12:00'); // 기본 시간
-  }, []);
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    setSelectedDate(dateStr);
+    fetchTimeSlots(dateStr, true); // 초기 로드이므로 시간도 리셋
+  }, [fetchTimeSlots]);
+
+  // 날짜 변경 시 타임슬롯 다시 조회 (시간은 유지)
+  useEffect(() => {
+    if (selectedDate && restaurantId) {
+      fetchTimeSlots(selectedDate, false); // 날짜만 변경된 경우이므로 시간은 유지
+    }
+  }, [selectedDate, restaurantId, fetchTimeSlots]);
 
   /**
    * 웹소켓 테이블 상태 업데이트 핸들러
@@ -67,14 +201,15 @@ export default function ReservationTableTab({selectedRestaurant}){
       setTableData(prevTables =>
         prevTables.map(table => {
           if (table.originalId === data.tableId) {
-            const statusObj = data.tableStatus || {};
+            // 백엔드가 { tableId, status } 또는 { tableId, tableStatus: { status } } 형식으로 보낼 수 있음
+            const status = data.status || data.tableStatus?.status || 'AVAILABLE';
             return {
               ...table,
-              status: statusObj.status || 'AVAILABLE',
-              occupied: statusObj.status !== 'AVAILABLE',
-              selectedBy: statusObj.selectedBy,
-              selectedAt: statusObj.selectedAt,
-              expiryTime: statusObj.expiryTime
+              status: status,
+              occupied: status !== 'AVAILABLE',
+              selectedBy: data.selectedBy || data.tableStatus?.selectedBy,
+              selectedAt: data.selectedAt || data.tableStatus?.selectedAt,
+              expiryTime: data.expiryTime || data.tableStatus?.expiryTime
             };
           }
           return table;
@@ -107,6 +242,7 @@ export default function ReservationTableTab({selectedRestaurant}){
    * API에서 테이블 기본 정보 가져오기
    */
   const fetchTableData = useCallback(async () => {
+    if (!restaurantId) return;
     try {
       setLoading(true);
       console.log(`테이블 데이터 조회 중... restaurantId: ${restaurantId}`);
@@ -192,7 +328,8 @@ export default function ReservationTableTab({selectedRestaurant}){
   // 컴포넌트 마운트 시 테이블 데이터 로드
   useEffect(() => {
     fetchTableData();
-  }, [fetchTableData, selectedRestaurant]);
+    fetchReservations();
+  }, [fetchTableData, fetchReservations, selectedRestaurant]);
 
   // 날짜/시간 변경 시 테이블 상태 조회
   useEffect(() => {
@@ -270,19 +407,124 @@ export default function ReservationTableTab({selectedRestaurant}){
     return ' (상태 미확인)';
   };
 
+  /**
+   * 예약 상태 한글 변환
+   */
+  const getReservationStatusText = (status) => {
+    switch (status) {
+      case 'PENDING': return '승인 대기';
+      case 'CONFIRMED': return '승인 완료';
+      case 'COMPLETED': return '방문 완료';
+      case 'CANCELLED': return '취소됨';
+      case 'NO_SHOW': return '노쇼';
+      default: return status;
+    }
+  };
+
+  /**
+   * 예약 상태 배지 색상
+   */
+  const getReservationStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'PENDING': return 'bg-warning';
+      case 'CONFIRMED': return 'bg-info';
+      case 'COMPLETED': return 'bg-success';
+      case 'CANCELLED': return 'bg-secondary';
+      case 'NO_SHOW': return 'bg-danger';
+      default: return 'bg-secondary';
+    }
+  };
+
+  /**
+   * 날짜 포맷팅
+   */
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return '';
+    const date = new Date(dateTimeStr);
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  /**
+   * 선택한 날짜의 모든 예약을 시간별로 그룹핑
+   */
+  const getReservationsByDate = () => {
+    if (!selectedDate) return [];
+
+    return reservations.filter(reservation => {
+      if (!reservation.reservationAt) return false;
+
+      const reservationDate = new Date(reservation.reservationAt);
+      const selectedDateTime = new Date(selectedDate);
+
+      // 예약 날짜와 선택한 날짜가 같은지 확인
+      return (
+        reservationDate.getFullYear() === selectedDateTime.getFullYear() &&
+        reservationDate.getMonth() === selectedDateTime.getMonth() &&
+        reservationDate.getDate() === selectedDateTime.getDate()
+      );
+    });
+  };
+
+  /**
+   * 예약을 시간별로 그룹핑
+   */
+  const groupReservationsByTime = () => {
+    const dateReservations = getReservationsByDate();
+    const grouped = {};
+
+    dateReservations.forEach(reservation => {
+      const reservationDate = new Date(reservation.reservationAt);
+      const timeKey = `${String(reservationDate.getHours()).padStart(2, '0')}:${String(reservationDate.getMinutes()).padStart(2, '0')}`;
+
+      if (!grouped[timeKey]) {
+        grouped[timeKey] = [];
+      }
+      grouped[timeKey].push(reservation);
+    });
+
+    // 시간순으로 정렬
+    return Object.keys(grouped)
+      .sort()
+      .map(time => ({
+        time,
+        reservations: grouped[time]
+      }));
+  };
+
+  const groupedReservations = groupReservationsByTime();
+
+  // 매장이 선택되지 않았을 때 안내 화면
+  if (!selectedRestaurant) {
+    return (
+      <div className="tab-pane fade" id="reservationtable">
+        <div className="card text-center mt-4 border-warning">
+          <div className="card-body py-5">
+            <i className="fas fa-store-slash fa-3x text-warning mb-3"></i>
+            <h5 className="text-warning fw-bold">매장이 선택되지 않았습니다</h5>
+            <p className="text-muted mb-0">
+              예약 관리를 하려면 먼저 매장 목록에서 매장을 선택해주세요.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tab-pane fade" id="reservationtable">
-      {/* 실시간 테이블 현황 */}
-      <div className="row">
+      {/* 날짜/시간 선택 - 상단 고정 */}
+      <div className="row mb-3">
         <div className="col-12">
           <div className="card">
-            <div className="card-header">
-              <i className="fas fa-table me-2"></i>예약 테이블 현황
-            </div>
             <div className="card-body">
-              {/* 날짜/시간 선택 */}
-              <div className="row mb-4">
-                <div className="col-md-3">
+              <div className="row align-items-end">
+                <div className="col-md-2">
                   <label className="form-label">날짜 선택</label>
                   <input
                     type="date"
@@ -291,27 +533,23 @@ export default function ReservationTableTab({selectedRestaurant}){
                     onChange={(e) => setSelectedDate(e.target.value)}
                   />
                 </div>
-                <div className="col-md-3">
-                  <label className="form-label">시간 선택</label>
+                <div className="col-md-2">
+                  <label className="form-label">시간 선택 (테이블 현황)</label>
                   <select
                     className="form-select"
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
+                    disabled={timeSlots.length === 0}
                   >
-                    <option value="09:00">09:00</option>
-                    <option value="10:00">10:00</option>
-                    <option value="11:00">11:00</option>
-                    <option value="12:00">12:00</option>
-                    <option value="13:00">13:00</option>
-                    <option value="14:00">14:00</option>
-                    <option value="15:00">15:00</option>
-                    <option value="16:00">16:00</option>
-                    <option value="17:00">17:00</option>
-                    <option value="18:00">18:00</option>
-                    <option value="19:00">19:00</option>
-                    <option value="20:00">20:00</option>
-                    <option value="21:00">21:00</option>
-                    <option value="22:00">22:00</option>
+                    {timeSlots.length === 0 ? (
+                      <option>타임슬롯 없음</option>
+                    ) : (
+                      timeSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div className="col-md-6 d-flex align-items-end">
@@ -322,17 +560,39 @@ export default function ReservationTableTab({selectedRestaurant}){
                     <span className="badge" style={{backgroundColor: '#e0e0e0'}}>미확인</span>
                   </div>
                 </div>
+                <div className="col-md-2 d-flex align-items-end justify-content-end">
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={openTableEditorPopup}
+                    title="테이블 배치 에디터 열기"
+                  >
+                    <i className="fas fa-external-link-alt me-1"></i>
+                    에디터 열기
+                  </button>
+                </div>
               </div>
 
               {/* 웹소켓 연결 상태 */}
               {!isConnected && (
-                <div className="alert alert-warning">
+                <div className="alert alert-warning mt-3 mb-0">
                   <i className="fas fa-exclamation-circle me-2"></i>
                   실시간 연결 중... {connectionError && `(${connectionError})`}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-              {/* 로딩 상태 */}
+      {/* 좌우 분할: 테이블 현황 + 예약 목록 */}
+      <div className="row">
+        {/* 왼쪽: 테이블 현황 맵 */}
+        <div className="col-lg-6">
+          <div className="card" style={{height: 'calc(100vh - 280px)', minHeight: '600px'}}>
+            <div className="card-header">
+              <i className="fas fa-table me-2"></i>테이블 현황
+            </div>
+            <div className="card-body p-2" style={{height: 'calc(100% - 60px)', overflow: 'hidden'}}>
               {loading ? (
                 <div className="text-center py-5">
                   <div className="spinner-border text-primary" role="status">
@@ -348,7 +608,7 @@ export default function ReservationTableTab({selectedRestaurant}){
               ) : (
                 <>
                   {/* 컨트롤 패널 */}
-                  <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div className="d-flex justify-content-between align-items-center mb-2 px-2">
                     <div className="btn-group">
                       <button onClick={handleZoomIn} className="btn btn-sm btn-outline-secondary">
                         <i className="fas fa-search-plus"></i>
@@ -361,7 +621,7 @@ export default function ReservationTableTab({selectedRestaurant}){
                       </button>
                     </div>
                     <small className="text-muted">
-                      총 {tableData.length}개 테이블 | 드래그하여 이동, 휠로 확대/축소
+                      총 {tableData.length}개 테이블
                     </small>
                   </div>
 
@@ -369,7 +629,7 @@ export default function ReservationTableTab({selectedRestaurant}){
                   <div
                     style={{
                       width: '100%',
-                      height: '500px',
+                      height: 'calc(100% - 40px)',
                       border: '1px solid #dee2e6',
                       borderRadius: '4px',
                       overflow: 'hidden',
@@ -429,6 +689,123 @@ export default function ReservationTableTab({selectedRestaurant}){
                     </div>
                   </div>
                 </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 오른쪽: 예약 목록 (시간별 그룹핑) */}
+        <div className="col-lg-6">
+          <div className="card" style={{height: 'calc(100vh - 280px)', minHeight: '600px'}}>
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <i className="fas fa-list me-2"></i>예약 목록 ({selectedDate})
+              </div>
+              <span className="badge bg-primary">{getReservationsByDate().length}건</span>
+            </div>
+            <div className="card-body p-2" style={{height: 'calc(100% - 60px)', overflow: 'auto'}}>
+              {groupedReservations.length === 0 ? (
+                <div className="text-center py-5 text-muted">
+                  <i className="fas fa-calendar-times fa-3x mb-3"></i>
+                  <p>선택한 날짜에 예약 내역이 없습니다.</p>
+                </div>
+              ) : (
+                groupedReservations.map(({ time, reservations: timeReservations }) => (
+                  <div key={time} className="mb-3">
+                    {/* 시간대 헤더 */}
+                    <div
+                      className={`d-flex align-items-center justify-content-between p-2 ${time === selectedTime ? 'bg-primary text-white' : 'bg-light'}`}
+                      style={{
+                        borderLeft: time === selectedTime ? '4px solid #0056b3' : '4px solid #dee2e6',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => setSelectedTime(time)}
+                    >
+                      <div>
+                        <i className="fas fa-clock me-2"></i>
+                        <strong>{time}</strong>
+                      </div>
+                      <span className={`badge ${time === selectedTime ? 'bg-white text-primary' : 'bg-primary'}`}>
+                        {timeReservations.length}건
+                      </span>
+                    </div>
+
+                    {/* 해당 시간대 예약 목록 */}
+                    <div className="table-responsive mt-2">
+                      <table className="table table-hover table-sm mb-0">
+                        <thead>
+                          <tr>
+                            <th>번호</th>
+                            <th>고객명</th>
+                            <th>연락처</th>
+                            <th>테이블</th>
+                            <th>인원</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {timeReservations.map((reservation) => (
+                            <tr key={reservation.id}>
+                              <td>{reservation.id}</td>
+                              <td>{reservation.name}</td>
+                              <td className="small">{reservation.phoneNumber}</td>
+                              <td><strong>{reservation.restaurantTableNameSnapshot}</strong></td>
+                              <td>{reservation.peopleCount}명</td>
+                              <td>
+                                <span className={`badge ${getReservationStatusBadgeClass(reservation.reservationState)}`}>
+                                  {getReservationStatusText(reservation.reservationState)}
+                                </span>
+                              </td>
+                              <td>
+                                {reservation.reservationState === 'PENDING' && (
+                                  <div className="btn-group btn-group-sm" role="group">
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() => handleApprove(reservation.id)}
+                                      title="승인"
+                                    >
+                                      <i className="fas fa-check"></i>
+                                    </button>
+                                    <button
+                                      className="btn btn-danger btn-sm"
+                                      onClick={() => handleCancel(reservation.id)}
+                                      title="취소"
+                                    >
+                                      <i className="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                )}
+                                {reservation.reservationState === 'CONFIRMED' && (
+                                  <div className="btn-group btn-group-sm" role="group">
+                                    <button
+                                      className="btn btn-primary btn-sm"
+                                      onClick={() => handleVisit(reservation.id)}
+                                      title="방문"
+                                    >
+                                      <i className="fas fa-user-check"></i>
+                                    </button>
+                                    <button
+                                      className="btn btn-warning btn-sm"
+                                      onClick={() => handleNoShow(reservation.id)}
+                                      title="미방문"
+                                    >
+                                      <i className="fas fa-user-times"></i>
+                                    </button>
+                                  </div>
+                                )}
+                                {['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(reservation.reservationState) && (
+                                  <span className="text-muted">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>

@@ -128,6 +128,7 @@ const TableSelection = () => {
           console.log('✅ 선점 성공! 다음 단계로 이동');
 
           activeSelection.isConfirmed = true;
+          activeSelection.expiryTime = tableStatus.expiryTime; // 만료 시간 추가
           sessionStorage.setItem('activeTableSelection', JSON.stringify(activeSelection));
 
           const step1 = JSON.parse(localStorage.getItem('reservationStep1'));
@@ -175,15 +176,78 @@ useEffect(() => {
   }
 }, [mySessionId]);
 
-  // 컴포넌트 마운트/언마운트 추적
+  // 컴포넌트 마운트/언마운트 추적 및 선점 해제
   useEffect(() => {
     isMountedRef.current = true;
 
     return () => {
-      console.log('컴포넌트 언마운트');
+      console.log('컴포넌트 언마운트 - 선점 해제 시도');
       isMountedRef.current = false;
+
+      // sessionStorage에서 활성 선점 정보 확인
+      const activeSelectionStr = sessionStorage.getItem('activeTableSelection');
+      if (activeSelectionStr) {
+        try {
+          const activeSelection = JSON.parse(activeSelectionStr);
+
+          // 선점이 확정되지 않았으면 (결제 완료 전) 해제
+          if (!activeSelection.isConfirmed) {
+            console.log('선점 해제 중:', activeSelection);
+
+            // 웹소켓으로 선점 해제 요청
+            if (cancelTable) {
+              cancelTable(
+                activeSelection.tableId,
+                activeSelection.date,
+                activeSelection.time
+              );
+            }
+
+            // sessionStorage 정리
+            sessionStorage.removeItem('activeTableSelection');
+          } else {
+            console.log('선점 확정됨 (결제 완료) - 해제하지 않음');
+          }
+        } catch (error) {
+          console.error('선점 해제 중 오류:', error);
+        }
+      }
     };
-  }, []);
+  }, [cancelTable]);
+
+  // 페이지 새로고침/브라우저 닫기 시 선점 해제
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const activeSelectionStr = sessionStorage.getItem('activeTableSelection');
+      if (activeSelectionStr) {
+        try {
+          const activeSelection = JSON.parse(activeSelectionStr);
+
+          // 선점이 확정되지 않았으면 해제
+          if (!activeSelection.isConfirmed && cancelTable) {
+            console.log('페이지 종료 - 선점 해제');
+
+            // 동기식으로 선점 해제 요청 (비동기는 페이지 종료 시 실행 안 될 수 있음)
+            cancelTable(
+              activeSelection.tableId,
+              activeSelection.date,
+              activeSelection.time
+            );
+
+            sessionStorage.removeItem('activeTableSelection');
+          }
+        } catch (error) {
+          console.error('페이지 종료 시 선점 해제 오류:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [cancelTable]);
 
   // Alert 자동 숨김
   useEffect(() => {

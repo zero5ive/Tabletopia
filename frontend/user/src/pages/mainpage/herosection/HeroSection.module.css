@@ -10,18 +10,165 @@
     overflow: hidden;
 }
 
+/* 배경 파티클 컨테이너 */
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 개별 파티클 기본 스타일 */
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+}
+
+/* 파티클 애니메이션 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translateY(-30px) rotate(180deg);
+        opacity: 0.8;
+    }
+}
+
+@keyframes float-reverse {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translateY(30px) rotate(-180deg);
+        opacity: 0.8;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+}
+
+/* 각 파티클 개별 설정 */
+.particle1 {
+    width: 60px;
+    height: 60px;
+    top: 10%;
+    left: 10%;
+    animation: float 8s ease-in-out infinite;
+}
+
+.particle2 {
+    width: 40px;
+    height: 40px;
+    top: 60%;
+    left: 15%;
+    animation: float-reverse 10s ease-in-out infinite 1s;
+}
+
+.particle3 {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    right: 15%;
+    animation: pulse 6s ease-in-out infinite 2s;
+}
+
+.particle4 {
+    width: 50px;
+    height: 50px;
+    bottom: 15%;
+    right: 20%;
+    animation: float 12s ease-in-out infinite 3s;
+}
+
+.particle5 {
+    width: 30px;
+    height: 30px;
+    top: 40%;
+    left: 25%;
+    animation: pulse 7s ease-in-out infinite 1.5s;
+}
+
+.particle6 {
+    width: 70px;
+    height: 70px;
+    bottom: 25%;
+    left: 30%;
+    animation: float-reverse 9s ease-in-out infinite 2.5s;
+}
+
+.particle7 {
+    width: 45px;
+    height: 45px;
+    top: 70%;
+    right: 35%;
+    animation: float 11s ease-in-out infinite 4s;
+}
+
+.particle8 {
+    width: 55px;
+    height: 55px;
+    top: 35%;
+    right: 40%;
+    animation: pulse 8s ease-in-out infinite 0.5s;
+}
+
+/* 콘텐츠 영역 */
+.heroContent {
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .heroContent h1 {
     font-size: 48px;
     margin-bottom: 16px;
     font-weight: 700;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 1s ease-out 0.2s backwards;
 }
 
 .heroContent p {
     font-size: 20px;
-    opacity: 0.9;
-    margin-bottom: 32px;
+    opacity: 0.95;
+    margin-bottom: 12px;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
 
+.heroContent p:nth-child(2) {
+    animation: fadeInUp 1s ease-out 0.4s backwards;
+}
+
+.heroContent p:nth-child(3) {
+    animation: fadeInUp 1s ease-out 0.6s backwards;
+}
+
+/* 우측 원형 장식 - 펄스 효과 추가 */
 .featuredDish {
     position: absolute;
     right: 60px;
@@ -31,4 +178,42 @@
     height: 200px;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="rgba(255,255,255,0.2)"/><circle cx="100" cy="100" r="60" fill="rgba(255,255,255,0.1)"/></svg>');
     border-radius: 50%;
+    animation: pulse 4s ease-in-out infinite;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .heroSection {
+        padding: 40px 20px;
+    }
+
+    .heroContent h1 {
+        font-size: 32px;
+    }
+
+    .heroContent p {
+        font-size: 16px;
+    }
+
+    .featuredDish {
+        width: 120px;
+        height: 120px;
+        right: 20px;
+    }
+
+    /* 모바일에서 파티클 크기 조정 */
+    .particle1, .particle3, .particle6 {
+        width: 40px;
+        height: 40px;
+    }
+
+    .particle2, .particle4, .particle7, .particle8 {
+        width: 30px;
+        height: 30px;
+    }
+
+    .particle5 {
+        width: 20px;
+        height: 20px;
+    }
 }

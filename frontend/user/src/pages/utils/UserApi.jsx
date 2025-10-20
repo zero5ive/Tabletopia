@@ -47,6 +47,10 @@ export const confirmPayment = (confirmationData) =>
 export const getReservations = (status)=>
     UserApi.get(`/api/user/reservations/my?status=${status}`)
 
+//예약 취소
+export const cancelReservation = (reservationId) =>
+    UserApi.patch(`/api/user/reservations/${reservationId}/cancel`)
+
 //마이페이지 북마크 목록 조회
 export const getBookmarks = (page = 0, size = 10) =>
     UserApi.get(`/api/user/bookmarks?page=${page}&size=${size}`)

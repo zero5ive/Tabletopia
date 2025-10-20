@@ -1035,3 +1035,63 @@
         width: 100%;
     }
 }
+
+/* 타이머 스타일 */
+.countdownTimer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timerNormal {
+    background-color: #4CAF50;
+}
+
+.timerWarning {
+    background-color: #ff4444;
+}
+
+.timerCritical {
+    background-color: #ff4444;
+    animation: pulse 1s infinite;
+}
+
+.timerIcon {
+    font-size: 18px;
+}
+
+.timerContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.timerLabel {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.timerValue {
+    font-size: 20px;
+}
+
+/* 타이머 펄스 애니메이션 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}

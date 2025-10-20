@@ -1,9 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.service;
 
 import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
-import com.tabletopia.restaurantservice.domain.payment.repository.JpaPaymentDetailRepository;
-import com.tabletopia.restaurantservice.domain.payment.repository.PaymentRepository;
-import com.tabletopia.restaurantservice.domain.payment.service.PaymentService;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest.CustomerInfo;
 import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;
@@ -18,20 +15,17 @@ import com.tabletopia.restaurantservice.domain.reservation.entity.Reservation;
 import com.tabletopia.restaurantservice.domain.reservation.enums.ReservationStatus;
 import com.tabletopia.restaurantservice.domain.reservation.enums.TableSelectStatus;
 import com.tabletopia.restaurantservice.domain.reservation.repository.ReservationRepository;
-import com.tabletopia.restaurantservice.domain.reservation.service.TableSelectionService;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.dto.RestaurantEffectiveHourResponse;
 import com.tabletopia.restaurantservice.domain.restaurantOpeningHour.service.RestaurantOpeningHourService;
 import com.tabletopia.restaurantservice.domain.restaurantTable.entity.RestaurantTable;
 import com.tabletopia.restaurantservice.domain.restaurantTable.service.RestaurantTableService;
 import com.tabletopia.restaurantservice.domain.user.service.UserService;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -240,7 +234,7 @@ public class ReservationService {
    * @param payment            결제 정보
    * @param authenticatedEmail 인증된 이메일
    * @return 생성된 예약 ID
-   * @author Claude Code
+   * @author 김예진
    * @since 2025-10-19
    */
   @Transactional
@@ -601,6 +595,67 @@ public class ReservationService {
       log.error("테이블 상태 변경 알림 발송 실패: restaurantId={}, tableId = {}", restaurantId, tableId, e);
         // 웹소켓 알림 실패해도 예약 상태 변경은 성공으로 처리
   }
+  }
+
+  /**
+   * 사용자가 자신의 예약 취소
+   *
+   * @param reservationId 예약 ID
+   * @param userId 사용자 ID
+   * @author 김예진
+   * @since 2025-10-20
+   */
+  @Transactional
+  public void cancelReservationByUser(Long reservationId, Long userId) {
+    // 1. 예약 조회
+    Reservation reservation = reservationRepository.findById(reservationId)
+        .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다"));
+
+    // 2. 본인의 예약인지 검증
+    if (!reservation.getUserId().equals(userId)) {
+      throw new IllegalArgumentException("본인의 예약만 취소할 수 있습니다");
+    }
+
+    // 3. 취소 가능한 상태인지 검증 (PENDING 또는 CONFIRMED만 취소 가능)
+    if (reservation.getReservationState() != ReservationStatus.PENDING &&
+        reservation.getReservationState() != ReservationStatus.CONFIRMED) {
+      throw new IllegalStateException("취소할 수 없는 예약 상태입니다: " + reservation.getReservationState());
+    }
+
+    // 4. 상태 변경 전 웹소켓 알림용 정보 저장
+    Long restaurantId = reservation.getRestaurantId();
+    Long tableId = reservation.getRestaurantTableId();
+    LocalDateTime reservationAt = reservation.getReservationAt();
+
+    // 5. 예약 취소
+    reservation.cancelReservation("사용자 취소");
+
+    // 6. 저장
+    reservationRepository.save(reservation);
+
+    // 7. Redis 캐시 무효화
+    String timeSlot = formatTimeSlot(reservationAt);
+    tableSelectionService.deleteCachedReservationStatus(restaurantId, tableId, timeSlot);
+
+    // 8. 웹소켓 브로드캐스트 (테이블 상태를 AVAILABLE로 변경)
+    try {
+      messagingTemplate.convertAndSend(
+          String.format("/topic/restaurant/%d/tables/status", restaurantId),
+          Map.of(
+              "success", true,
+              "message", "예약 취소",
+              "tableId", tableId,
+              "status", "AVAILABLE",
+              "date", reservationAt.toLocalDate().toString(),
+              "time", reservationAt.toLocalTime().toString().substring(0, 5)
+          )
+      );
+
+      log.debug("테이블 상태 변경 알림 발송: restaurantId={}, tableId={}, status=AVAILABLE", restaurantId, tableId);
+    } catch (Exception e) {
+      log.error("테이블 상태 변경 알림 발송 실패: restaurantId={}, tableId={}", restaurantId, tableId, e);
+      // 웹소켓 알림 실패해도 예약 취소는 성공으로 처리
+    }
   }
 
   /**
