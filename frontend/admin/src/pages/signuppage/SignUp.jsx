@@ -11,7 +11,8 @@ const SignUp = () => {
     emailDomain: 'gmail.com', // @ 뒷부분
     password: '',
     confirmPassword: '',
-    phoneNumber:''
+    phoneNumber:'',
+    role:'ADMIN'
   });
 
   const [errors, setErrors] = useState({});
@@ -177,11 +178,13 @@ const SignUp = () => {
 
     try {
       const fullEmail = getFullEmail();
-
+      console.log("회원가입 요청 객체", formData);
+      
       const response = await AdminApi.post('/api/admin/auth/register', {
         email: fullEmail, // 완전한 이메일 주소 전송
         password: formData.password,
-        name: formData.name
+        name: formData.name,
+        role: formData.role
       });
 
       const data = response.data;

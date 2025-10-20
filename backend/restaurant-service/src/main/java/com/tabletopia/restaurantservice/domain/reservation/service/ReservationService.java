@@ -1,9 +1,6 @@
 package com.tabletopia.restaurantservice.domain.reservation.service;
 
 import com.tabletopia.restaurantservice.domain.payment.entity.Payment;
-import com.tabletopia.restaurantservice.domain.payment.repository.JpaPaymentDetailRepository;
-import com.tabletopia.restaurantservice.domain.payment.repository.PaymentRepository;
-import com.tabletopia.restaurantservice.domain.payment.service.PaymentService;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest;
 import com.tabletopia.restaurantservice.domain.reservation.dto.ReservationRequest.CustomerInfo;
 import com.tabletopia.restaurantservice.domain.reservation.dto.RestaurantSnapshot;

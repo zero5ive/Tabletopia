@@ -29,10 +29,16 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
   Integer findMaxWaitingNumberByRestaurantIdToday(@Param("restaurantId") Long restaurantId);
 
   //레스토랑  리스트 하루 지나면 초기화 되게
+  @Query("SELECT w FROM Waiting w " +
+      "JOIN FETCH w.user " +
+      "JOIN FETCH w.restaurant " +
+      "WHERE w.restaurant.id = :restaurantId " +
+      "AND w.waitingState = :waitingState " +
+      "AND w.createdAt >= :createdAt")
   Page<Waiting> findByRestaurantIdAndWaitingStateAndCreatedAtAfter(
-      Long restaurantId,
-      WaitingState waitingState,
-      LocalDateTime createdAt,
+      @Param("restaurantId") Long restaurantId,
+      @Param("waitingState") WaitingState waitingState,
+      @Param("createdAt") LocalDateTime createdAt,
       Pageable pageable);
 
 
