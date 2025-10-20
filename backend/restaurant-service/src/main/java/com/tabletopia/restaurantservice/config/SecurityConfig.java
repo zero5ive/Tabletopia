@@ -96,7 +96,13 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000")); // 프론트 주소
+                    // 로컬 개발 환경 + 네이버 클라우드 배포 환경
+                    config.setAllowedOrigins(List.of(
+                            "http://localhost:5173",  // Admin 로컬
+                            "http://localhost:3000",  // User 로컬
+                            "http://223.130.138.158:5173",  // Admin 배포 (포트는 실제 배포 포트로 변경)
+                            "http://223.130.138.158:3000"   // User 배포 (포트는 실제 배포 포트로 변경)
+                    ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     config.setAllowCredentials(true); // 세션 쿠키 허용
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
@@ -153,7 +159,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+                    // 로컬 개발 환경 + 네이버 클라우드 배포 환경
+                    config.setAllowedOrigins(List.of(
+                            "http://localhost:5173",  // Admin 로컬
+                            "http://localhost:3000",  // User 로컬
+                            "http://223.130.138.158:5173",  // Admin 배포 (포트는 실제 배포 포트로 변경)
+                            "http://223.130.138.158:3000"   // User 배포 (포트는 실제 배포 포트로 변경)
+                    ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
@@ -199,7 +211,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+                    // 로컬 개발 환경 + 네이버 클라우드 배포 환경
+                    config.setAllowedOrigins(List.of(
+                            "http://localhost:5173",  // Admin 로컬
+                            "http://localhost:3000",  // User 로컬
+                            "http://223.130.138.158:5173",  // Admin 배포 (포트는 실제 배포 포트로 변경)
+                            "http://223.130.138.158:3000"   // User 배포 (포트는 실제 배포 포트로 변경)
+                    ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(List.of("*"));
