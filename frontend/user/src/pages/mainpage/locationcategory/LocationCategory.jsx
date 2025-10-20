@@ -9,7 +9,7 @@ export default function LocationCategory() {
         <>
             <section>
                 <h2 className={styles.sectionTitle}>어디로 가시나요?</h2>
-                <div className={styles.categoriesGrid}>
+                <div className={styles.locationGrid}>
                     <Link
                         to={`/restaurant/list`}
                         className={styles.noUnderline}

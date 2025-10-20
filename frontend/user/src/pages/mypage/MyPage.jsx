@@ -1,76 +1,66 @@
+import { Link } from 'react-router-dom';
 import styles from './MyPage.module.css';
 
 export default function MyPage() {
+    const menuItems = [
+        {
+            path: '/mypage/reservation',
+            title: '예약 내역',
+            description: '나의 예약 현황을 확인하고 관리하세요',
+            icon: '📅',
+            color: '#4f46e5'
+        },
+        {
+            path: '/mypage/review',
+            title: '리뷰 내역',
+            description: '작성한 리뷰를 확인하고 수정하세요',
+            icon: '⭐',
+            color: '#f59e0b'
+        },
+        {
+            path: '/mypage/bookmark',
+            title: '나의 북마크',
+            description: '저장한 맛집 목록을 확인하세요',
+            icon: '❤️',
+            color: '#ef4444'
+        },
+        {
+            path: '/mypage/waiting',
+            title: '실시간 웨이팅',
+            description: '현재 대기 중인 웨이팅 현황을 확인하세요',
+            icon: '⏱️',
+            color: '#10b981'
+        }
+    ];
+
     return (
-        <>
-            <main className={styles['main-content']}>
-                <section className={styles['content-section']}>
-                    <div className={styles['section-header']}>
-                        <h3 className={styles['section-title']}>예약 내역</h3>
-                    </div>
-                    <div className={styles['feature-banner']}>
-                        <div className={styles['feature-banner-icon']}>🎁</div>
-                        <div className={styles['feature-banner-content']}>
-                            <div className={styles['feature-banner-title']}>
-                                <a href="/mypage/reservation" className={styles['feature-banner-link']}>예약 내역 이동</a>
-                            </div>
-                            <div className={styles['feature-banner-subtitle']}>최신 예약 정보를 확인하세요</div>
-                        </div>
-                    </div>
-                </section>
+        <main className={styles['main-content']}>
+            <div className={styles.dashboardHeader}>
+                <h1 className={styles.dashboardTitle}>마이페이지</h1>
+                <p className={styles.dashboardSubtitle}>나의 예약, 리뷰, 북마크를 한눈에 확인하세요</p>
+            </div>
 
-                <section className={styles['content-section']}>
-                    <div className={styles['section-header']}>
-                        <h3 className={styles['section-title']}>리뷰 내역</h3>
-                    </div>
-                    <div className={styles['individual-review']}>
-                        <div className={styles['review-header']}>
-                            <div className={styles['reviewer-info']}>
-                                <div className={styles['reviewer-avatar']}>김</div>
-                                <div>
-                                    <div className={styles['reviewer-name']}>김**님</div>
-                                    <div className={styles['review-date']}>2025.08.28</div>
-                                </div>
-                            </div>
-                            <div className={styles['review-rating']}>⭐⭐⭐⭐⭐</div>
+            <div className={styles.dashboardGrid}>
+                {menuItems.map((item, index) => (
+                    <Link
+                        key={index}
+                        to={item.path}
+                        className={styles.dashboardCard}
+                        style={{ '--card-color': item.color }}
+                    >
+                        <div className={styles.dashboardCardIcon}>{item.icon}</div>
+                        <div className={styles.dashboardCardContent}>
+                            <h3 className={styles.dashboardCardTitle}>{item.title}</h3>
+                            <p className={styles.dashboardCardDescription}>{item.description}</p>
                         </div>
-                        <img src="#" alt="이미지" />
-                        <div className={styles['review-text']}>
-                            정말 최고의 오마카세였습니다! 셰프님의 정성이 느껴지는 요리 하나하나가 예술 작품 같았어요.
-                            특히 참치 뱃살은 입에서 녹는 느낌이었고, 성게도 정말 신선했습니다.
-                            분위기도 조용하고 고급스러워서 특별한 날에 가기 딱 좋은 곳이에요. 다음에도 꼭 방문하겠습니다!
+                        <div className={styles.dashboardCardArrow}>
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </div>
-                    </div>
-                </section>
-
-                <section className={styles['content-section']}>
-                    <div className={styles['section-header']}>
-                        <h3 className={styles['section-title']}>북마크</h3>
-                    </div>
-
-                    <div className={styles['card-image']}>
-                        <div className={styles['image-section']}>
-                            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=120&h=120&fit=crop" alt="소시센몬" />
-                        </div>
-                        <div className={styles['content-section']}>
-                            <button className={styles['bookmark-btn']}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                </svg>
-                            </button>
-                            <div>
-                                <div className={styles['restaurant-title']}>소시센몬</div>
-                                <div className={styles['restaurant-desc']}>소시지 전문점 • 강남구</div>
-                            </div>
-                            <div className={styles['quick-info']}>
-                                <span className={styles['info-badge']}>영업중</span>
-                                <span className={styles['info-badge']}>예약가능</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-            </main>
-        </>
-    )
+                    </Link>
+                ))}
+            </div>
+        </main>
+    );
 }

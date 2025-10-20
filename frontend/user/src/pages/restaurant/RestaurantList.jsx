@@ -26,6 +26,7 @@ export default function RestaurantList() {
     const categoryId = searchParams.get('categoryId');
     const regionCode = searchParams.get('regionCode');
     const nameFromUrl = searchParams.get('name');
+    const pageFromUrl = parseInt(searchParams.get('page') || '0', 10);
 
     // 지역 목록
     const regions = [
@@ -68,10 +69,10 @@ export default function RestaurantList() {
             console.log('레스토랑 검색 결과:', response);
 
             const pageData = response.data;
-            setRestaurants(pageData.content);
-            setTotalPages(pageData.totalPages);
-            setTotalElements(pageData.totalElements);
-            setCurrentPage(pageData.number);
+            setRestaurants(pageData.content || []);
+            setTotalPages(pageData.totalPages || 0);
+            setTotalElements(pageData.totalElements || 0);
+            setCurrentPage(pageData.number || 0);
 
         } catch (error) {
             console.error('레스토랑 조회 실패:', error);
@@ -172,6 +173,9 @@ export default function RestaurantList() {
             params.set('regionCode', regionCode);
         }
 
+        // 검색 시 페이지는 0으로 리셋
+        params.set('page', '0');
+
         // URL 변경 (빈 쿼리스트링 처리)
         const queryString = params.toString();
         navigate(`/restaurant/list${queryString ? '?' + queryString : ''}`);
@@ -208,6 +212,9 @@ export default function RestaurantList() {
             params.set('regionCode', selectedRegion);
         }
 
+        // 필터 변경 시 페이지는 0으로 리셋
+        params.set('page', '0');
+
         const queryString = params.toString();
         navigate(`/restaurant/list${queryString ? '?' + queryString : ''}`);
     };
@@ -234,6 +241,9 @@ export default function RestaurantList() {
             params.set('regionCode', regionCode);
         }
 
+        // 필터 변경 시 페이지는 0으로 리셋
+        params.set('page', '0');
+
         const queryString = params.toString();
         navigate(`/restaurant/list${queryString ? '?' + queryString : ''}`);
     };
@@ -241,7 +251,24 @@ export default function RestaurantList() {
     // 페이지 변경 핸들러
     const handlePageChange = (page) => {
         if (page >= 0 && page < totalPages) {
-            fetchRestaurant(page);
+            const params = new URLSearchParams();
+
+            // 모든 검색 조건 유지
+            if (nameFromUrl) {
+                params.set('name', nameFromUrl);
+            }
+            if (categoryId) {
+                params.set('categoryId', categoryId);
+            }
+            if (regionCode) {
+                params.set('regionCode', regionCode);
+            }
+
+            // 페이지 번호 설정
+            params.set('page', page.toString());
+
+            const queryString = params.toString();
+            navigate(`/restaurant/list${queryString ? '?' + queryString : ''}`);
         }
     };
 
@@ -264,9 +291,9 @@ export default function RestaurantList() {
 
     // 검색 실행 (URL 파라미터 변경 시)
     useEffect(() => {
-        console.log('검색 조건:', { name: nameFromUrl, categoryId, regionCode });
-        fetchRestaurant(0);
-    }, [nameFromUrl, categoryId, regionCode]);
+        console.log('검색 조건:', { name: nameFromUrl, categoryId, regionCode, page: pageFromUrl });
+        fetchRestaurant(pageFromUrl);
+    }, [nameFromUrl, categoryId, regionCode, pageFromUrl]);
 
     // URL의 검색어를 input에 반영
     useEffect(() => {

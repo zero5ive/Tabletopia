@@ -43,7 +43,7 @@ export default function FoodCategory() {
                         to={`/restaurant/list`}
                         className={styles.noUnderline}
                     >
-                        <div className={styles.categoryItem}>
+                        <div className={styles.foodCategoryItem}>
                             <div className={styles.categoryIcon}>🍴</div>
                             <div className={styles.categoryName}>전체</div>
                         </div>
@@ -54,7 +54,7 @@ export default function FoodCategory() {
                             to={`/restaurant/list?categoryId=${category.id}`}
                             className={styles.noUnderline}
                         >
-                            <div className={styles.categoryItem}>
+                            <div className={styles.foodCategoryItem}>
                                 <div className={styles.categoryIcon}>
                                     {categoryIcons[category.name]}
                                 </div>

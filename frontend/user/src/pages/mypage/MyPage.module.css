@@ -192,10 +192,130 @@
     font-size: 16px;
 }
 
-.main-content {
+/* 대시보드 헤더 */
+.dashboardHeader {
+    margin-bottom: 40px;
+}
+
+.dashboardTitle {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.dashboardSubtitle {
+    font-size: 16px;
+    color: #666;
+    font-weight: 400;
+}
+
+/* 대시보드 그리드 */
+.dashboardGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* 대시보드 카드 */
+.dashboardCard {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
     display: flex;
-    flex-direction: column;
-    gap: 24px;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dashboardCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--card-color);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.dashboardCard:hover::before {
+    transform: scaleY(1);
+}
+
+.dashboardCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    border-color: var(--card-color);
+}
+
+.dashboardCardIcon {
+    font-size: 48px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.dashboardCard:hover .dashboardCardIcon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.dashboardCardContent {
+    flex: 1;
+}
+
+.dashboardCardTitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.dashboardCardDescription {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.dashboardCardArrow {
+    color: #999;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.dashboardCard:hover .dashboardCardArrow {
+    color: var(--card-color);
+    transform: translateX(4px);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .dashboardGrid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .dashboardCard {
+        padding: 20px;
+    }
+
+    .dashboardCardIcon {
+        font-size: 40px;
+    }
+
+    .dashboardCardTitle {
+        font-size: 18px;
+    }
+
+    .dashboardCardDescription {
+        font-size: 13px;
+    }
 }
 
 .content-section {
