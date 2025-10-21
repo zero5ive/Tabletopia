@@ -117,6 +117,7 @@ export default function HeroSection(){
             if (allTopRestaurants.length > 0) {
                 const randomIndex = Math.floor(Math.random() * allTopRestaurants.length);
                 setFeaturedRestaurant(allTopRestaurants[randomIndex]);
+                console.log("🚀 배포 테스트용 변경");
             }
 
             setLoading(false);
