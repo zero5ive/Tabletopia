@@ -2,7 +2,7 @@ name: Deploy to Naver Cloud
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ deploy ]
 
 jobs:
   deploy:
