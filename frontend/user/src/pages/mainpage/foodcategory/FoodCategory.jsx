@@ -23,6 +23,7 @@ export default function FoodCategory() {
         try {
             const response = await getCategoryList();
             console.log('카테고리 리스트', response);
+            console.log("🚀 배포 테스트용 변경 v2");  // 숫자 바꾸기
 
             setCategoryList(response.data);
         } catch (error) {
