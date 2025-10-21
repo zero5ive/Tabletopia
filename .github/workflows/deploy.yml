@@ -15,9 +15,10 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd ~/Tabletopia
-          git fetch origin deploy
-          git reset --hard origin deploy
-          docker-compose down
-          docker-compose up -d --build
+      script: |
+        cd ~/Tabletopia
+        git fetch origin
+        git checkout deploy
+        git reset --hard origin/deploy
+        docker-compose down
+        docker-compose up -d --build
