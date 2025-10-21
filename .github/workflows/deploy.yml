@@ -17,6 +17,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd ~/Tabletopia
-          git pull origin deploy
+          git fetch origin deploy
+          git reset --hard origin deploy
           docker-compose down
           docker-compose up -d --build
