@@ -1,20 +1,63 @@
-# 🍽️ Tabletopia - 실시간 레스토랑 예약 & 웨이팅 플랫폼
+# 🍽️ Tabletopia (테이블토피아) - 실시간 레스토랑 예약 & 웨이팅 플랫폼
 
-테이블토피아는 실시간으로 레스토랑 테이블 예약 및 웨이팅을 관리하는 종합 플랫폼입니다. 
+## 🧭 목차
+* [🚀 프로젝트 소개](#-프로젝트-소개)
+* [🎯 핵심 가치 및 주요 기능](#-핵심-가치-및-주요-기능)
+* [🧩 기술 스택](#-기술-스택)
+* [🏃 ZEROFIVE 팀](#-zerofive-팀)
 
-고객은 레스토랑의 방문 시간과 원하는 테이블을 즉시 예약하거나 웨이팅을 등록할 수 있으며, AI 챗봇을 통해 개인 취향에 맞는 레스토랑을 추천받을 수 있습니다.
+## 🚀 프로젝트 소개
 
-레스토랑은 직관적인 관리자 대시보드를 통해 테이블 예약 및 웨이팅 현황을 실시간으로 확인하며 매장을 효율적으로 관리할 수 있습니다.
+**일상 속 소소한 즐거움, 외식.**
 
-본 프로젝트는 **신세계아이앤씨 JAVA 기반 백엔드 개발자 양성 과정 8차수 ZEROFIVE 팀**의 최종 프로젝트로 진행되었습니다.
+하지만 맛집을 **찾고, 예약하고, 웨이팅하는 과정**은 여전히 **불편함**으로 가득합니다.
 
-## 🎯 **핵심 가치**
-- ⚡ **실시간 예약**: 테이블 예약 현황을 실시간으로 확인하고 즉시 예약
-- 🕐 **스마트 웨이팅**: 대기 순서를 실시간으로 관리하고 안내
-- 🤖 **AI 맞춤 추천**: "강남의 분위기 좋고 넓은 양식 가게에 가고싶어요." → 개인화된 레스토랑 추천
-- 📊 **통합 매장 관리**: 예약·웨이팅·테이블 관리까지 가능
+### 😵 혹시 이런 경험, 해본 적 있으신가요?
 
-## 🧩 기술 스택 (Tech Stack)
+* **🍽️ "오늘 저녁 뭐 먹지?"**
+    * 네이버, 인스타그램, 카카오맵을 오가며 맛집을 찾지만, 정작 **지금 예약 가능한 곳인지 알 수가 없고...**
+* **⏰ "예약 가능한 시간이 언제지? 자리는 어디지?"**
+    * 전화 예약은 영업시간에만 가능하고, **원하는 자리를 선택할 수 없어 답답하고...**
+* **🪑 "결제 직전에 '이미 선택된 좌석입니다'?"**
+    * 좌석을 고르고, 결제를 클릭하는 순간 뜨는 **"이미 선택된 좌석입니다."** 한 마디에 처음부터 다시 시작해야 하는 짜증나는 경험...
+* **🚶 "웨이팅 몇 팀이나 남았지?"**
+    * 내 차례가 언제인지, **얼마나 더 기다려야 하는지** 알 수 없어 막연하고...
+* **🔍 "이 식당 분위기는 어때?"**
+    * 광고성 리뷰와 오래된 정보들 사이에서 **진짜 방문 후기를 찾기란 너무 어렵고...**
+
+<br>
+
+✨ **테이블토피아는 이런 불편함을 모두 해결하는 데서 시작했습니다.**
+
+---
+
+## 🎯 핵심 가치 및 주요 기능
+
+테이블토피아는 사용자 및 사장님 모두에게 **최적화된 외식/운영 경험**을 제공합니다.
+
+### 1. 📱 실시간 테이블 현황 확인 (No More '이선좌'!)
+* **WebSocket + Redis 기반 실시간 동기화**
+* 다른 사용자가 좌석을 홀드하는 즉시 반영됩니다.
+* **보이는 좌석 = 예약 가능한 좌석**을 보장합니다.
+
+### 2. ⚡ 스마트 웨이팅 시스템
+* **대기팀 실시간 반영**으로 현재 내 앞에 몇 팀이 있는지 정확하게 확인합니다.
+* **입장 알림 기능을 제공**하여 내 차례가 되면 자동으로 알림을 받아 식당 앞에서 **줄 설 필요가 없습니다.**
+
+### 3. 🤖 AI 기반 맞춤 추천
+* **취향·상황 기반 음식점 추천**
+* **OpenAI API 활용**으로 사용자에게 가장 적합한 식당을 찾아줍니다.
+
+### 4. ⭐ 실제 방문자 리뷰
+* **광고성 리뷰 NO**
+* **방문자 인증 기반**의 신뢰 가능한 후기만 제공하여 정확한 정보를 얻을 수 있습니다.
+
+### 5. 📊 통합 매장 관리 시스템 (사장님용)
+* 매장 관리 + 예약 + 웨이팅 + 테이블 관리가 **하나의 시스템으로 통합**됩니다.
+* 사장님을 위한 **올인원 운영 솔루션**입니다.
+---
+
+## 🧩 기술 스택
 
 ### 🖥 Front-End
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
@@ -46,13 +89,30 @@
 ![Toss Payments](https://img.shields.io/badge/Toss%20Payments-0064FF?style=flat-square&logo=visa&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/OpenAI%20API-412991?style=flat-square&logo=openai&logoColor=white)
 ### ☁ 인프라 (Infrastructure)
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazon-aws&logoColor=white)
+![Naver Cloud](https://img.shields.io/badge/Naver%20Cloud-03C75A?style=flat-square&logo=naver&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-4F4F4F?style=flat-square&logo=socketdotio&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
 
 
 ---
+## 시스템 구조
+<img width="1100" height="837" alt="image" src="https://github.com/user-attachments/assets/1e2bb526-7aac-4010-98ef-a94a6493442c" />
 
+## 🎯 유즈케이스 다이어그램
+<img width="1517" height="893" alt="image" src="https://github.com/user-attachments/assets/fe5064da-ac09-4c26-8c9b-746ba4f0ce17" />
+
+## ERD
+<img width="4700" height="3406" alt="Tabletopia (1)" src="https://github.com/user-attachments/assets/5276ff52-d907-46ba-9dfb-df7904da8b86" />
+
+---
+
+## 🤔 개발 고민과 의사결정  
+- [인증 방식 선택 기록 (JWT vs 세션)](https://github.com/zero5ive/Tabletopia/wiki/%EC%9D%B8%EC%A6%9D-%EB%B0%A9%EC%8B%9D-%EC%84%A0%ED%83%9D-%EA%B8%B0%EB%A1%9D-(JWT-vs-%EC%84%B8%EC%85%98))  
+- [테이블 선점에 Redis 도입하기](https://github.com/zero5ive/Tabletopia/wiki/Redis-%EA%B8%B0%EB%B0%98-%EC%8B%A4%EC%8B%9C%EA%B0%84-%ED%85%8C%EC%9D%B4%EB%B8%94-%EC%84%A0%EC%A0%90-%EC%8B%9C%EC%8A%A4%ED%85%9C)
+- [네이버 클라우드에 배포하기](https://github.com/zero5ive/Tabletopia/wiki/%EC%8A%A4%ED%94%84%EB%A7%81-%EB%B6%80%ED%8A%B8---%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%84%A4%EC%9D%B4%EB%B2%84-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-%EB%B0%B0%ED%8F%AC)
+
+
+---
 ## 🏃 ZEROFIVE 팀
 <table align="center"> 
   <tr> 
