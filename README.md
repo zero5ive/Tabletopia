@@ -36,23 +36,35 @@
 테이블토피아는 사용자 및 사장님 모두에게 **최적화된 외식/운영 경험**을 제공합니다.
 
 ### 1. 📱 실시간 테이블 현황 확인 (No More '이선좌'!)
+https://github.com/user-attachments/assets/0652af43-5253-4e0c-a17d-7e684d8bca22
+
 * **WebSocket + Redis 기반 실시간 동기화**
 * 다른 사용자가 좌석을 홀드하는 즉시 반영됩니다.
 * **보이는 좌석 = 예약 가능한 좌석**을 보장합니다.
 
 ### 2. ⚡ 스마트 웨이팅 시스템
+https://github.com/user-attachments/assets/32df2fbc-057e-4f8c-9937-c0763e7a786a
+
 * **대기팀 실시간 반영**으로 현재 내 앞에 몇 팀이 있는지 정확하게 확인합니다.
 * **입장 알림 기능을 제공**하여 내 차례가 되면 자동으로 알림을 받아 식당 앞에서 **줄 설 필요가 없습니다.**
 
 ### 3. 🤖 AI 기반 맞춤 추천
+https://github.com/user-attachments/assets/d154198c-bd43-4929-9baf-30891779eef7
+
 * **취향·상황 기반 음식점 추천**
 * **OpenAI API 활용**으로 사용자에게 가장 적합한 식당을 찾아줍니다.
 
-### 4. ⭐ 실제 방문자 리뷰
-* **광고성 리뷰 NO**
+### 4. ⭐ 즐겨찾기 및 실제 방문자 리뷰
+https://github.com/user-attachments/assets/74a6eb7c-3340-41fc-b026-b73281d33c3b
+
+* 좋아하는 식당을 즐겨찾기로 저장해둘 수 있습니다.
 * **방문자 인증 기반**의 신뢰 가능한 후기만 제공하여 정확한 정보를 얻을 수 있습니다.
 
 ### 5. 📊 통합 매장 관리 시스템 (사장님용)
+https://github.com/user-attachments/assets/6ef975df-6c27-43cc-9f9b-81d6414ba164
+
+https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
+
 * 매장 관리 + 예약 + 웨이팅 + 테이블 관리가 **하나의 시스템으로 통합**됩니다.
 * 사장님을 위한 **올인원 운영 솔루션**입니다.
 ---
@@ -98,8 +110,17 @@
 ## 시스템 구조
 <img width="1100" height="837" alt="image" src="https://github.com/user-attachments/assets/1e2bb526-7aac-4010-98ef-a94a6493442c" />
 
+---
+
+## CD/CD 자동 배포 파이프라인
+<img width="1495" height="274" alt="image" src="https://github.com/user-attachments/assets/4eae41ea-76e0-4e0a-8894-919bea8ffcb7" />
+
+---
+
 ## 🎯 유즈케이스 다이어그램
 <img width="1517" height="893" alt="image" src="https://github.com/user-attachments/assets/fe5064da-ac09-4c26-8c9b-746ba4f0ce17" />
+
+---
 
 ## ERD
 <img width="4700" height="3406" alt="Tabletopia (1)" src="https://github.com/user-attachments/assets/5276ff52-d907-46ba-9dfb-df7904da8b86" />
@@ -158,22 +179,3 @@
           </td>
   </tr>
 </table>
-
-
-## 설치 및 실행
-
-```
-# /frontend, /backend에서 실행
-npm install
-```
-
-  ```
-# /frontend에서 실행
-# axios
-npm install axios
-# jwt
-npm install jwt-decode
-
-# root폴더에 있는 리액트 프로젝트가 서로 다른 포트 번호로 모두 실행
-npm run start:all
-```
