@@ -46,7 +46,10 @@ public class UserController {
     private final RefreshTokenService refreshTokenService;
 
     /**
-     * 회원가입 처리
+     * 프론트엔드에서 보내는 회원가입 요청처리를 받는 메서드
+     *
+     * @author 이세형
+     * @since 2025-12-03
      */
     @PostMapping("/auth/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDTO userDto) {
@@ -59,7 +62,10 @@ public class UserController {
     }
 
     /**
-     * 로그인 처리
+     * 프론트엔드에서 보내는 로그인 요청처리를 받는 메서드
+     *
+     * @author 이세형
+     * @since 2025-12-03
      */
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request) {
@@ -80,7 +86,7 @@ public class UserController {
                     .secure(false)
                     .httpOnly(true)
                     .build();
-            log.debug("들-=====어갈 쿠키는"+ cookie.toString());
+            log.debug("들어갈 쿠키는"+ cookie.toString());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -94,8 +100,11 @@ public class UserController {
     }
 
     /**
-     * Access Token 재발급
+     * Access Token을 재발급하기 위한 메서드
+     * 요청시, 로그인시 여러 상황에서 호출하여 사용할 수 있다.
      *
+     * @author 이세형
+     * @since 2025-12-03
      */
     @PostMapping("/auth/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
@@ -109,7 +118,10 @@ public class UserController {
     }
 
     /**
-     * 로그아웃 처리
+     * 프론트엔드에서 보내는 로그아웃 요청처리를 받는 메서드
+     *
+     * @author 이세형
+     * @since 2025-12-03
      */
     @PostMapping("/auth/logout")
     public ResponseEntity<Map<String, Object>> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
@@ -127,7 +139,10 @@ public class UserController {
     }
 
     /**
-     * 현재 로그인된 사용자 정보 조회
+     * 현재 로그인된 사용자 정보 조회하기 위한 메서드
+     *
+     * @author 이세형
+     * @since 2025-12-03
      */
     @GetMapping("/auth/me")
     public ResponseEntity<UserInfoDTO> getCurrentUser() {

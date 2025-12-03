@@ -23,11 +23,11 @@ UserApi.interceptors.request.use(
     }
 );
 
-//현재 로그인한 유저 정보 조회
+// 현재 로그인한 유저 정보 조회
 export const getCurrentUser = () =>
     UserApi.get('/api/user/auth/me')
 
-//마이페이지 유저정보 업데이트
+// 마이페이지 유저정보 업데이트
 export const updateUser = (userData) =>
     UserApi.put(`/api/user/profile/update`, userData)
 
@@ -43,31 +43,31 @@ export const processPayment = (paymentData) =>
 export const confirmPayment = (confirmationData) =>
     UserApi.post('/api/user/payment/confirm', confirmationData);
 
-//마이페이지 예약 내역 조회
+// 마이페이지 예약 내역 조회
 export const getReservations = (status)=>
     UserApi.get(`/api/user/reservations/my?status=${status}`)
 
-//예약 취소
+// 예약 취소
 export const cancelReservation = (reservationId) =>
     UserApi.patch(`/api/user/reservations/${reservationId}/cancel`)
 
-//마이페이지 북마크 목록 조회
+// 마이페이지 북마크 목록 조회
 export const getBookmarks = (page = 0, size = 10) =>
     UserApi.get(`/api/user/bookmarks?page=${page}&size=${size}`)
 
-//북마크 삭제
+// 북마크 삭제
 export const deleteBookmark = (bookmarkId) =>
     UserApi.delete(`/api/user/bookmarks/${bookmarkId}`)
 
-//마이페이지 리뷰 내역 조회
+// 마이페이지 리뷰 내역 조회
 export const getMyReviews = () =>
     UserApi.get('/api/user/reviews/my')
 
-//리뷰 삭제
+// 리뷰 삭제
 export const deleteReview = (reviewId) =>
     UserApi.delete(`/api/user/reviews/${reviewId}`)
 
-//리뷰 작성
+// 리뷰 작성
 export const createReview = (reviewData) =>
     UserApi.post('/api/user/reviews', reviewData)
 

@@ -50,7 +50,7 @@ const Login = () => {
         checkFormValidity();
     }, [formData]);
 
-    // 배경에 떠다니는 파티클 생성 함수
+    // 배경에 떠다니는 파티클 생성 함수(Design)
     const createParticles = () => {
         const particleContainer = particlesRef.current;
         if (!particleContainer) return;

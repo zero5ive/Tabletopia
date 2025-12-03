@@ -27,9 +27,7 @@ const SignUp = () => {
     'naver.com',
     'daum.net',
     'kakao.com',
-    'yahoo.com',
-    'hotmail.com',
-    'outlook.com'
+    'yahoo.com'
   ];
 
   // 파티클 생성
@@ -318,7 +316,7 @@ const SignUp = () => {
             )}
           </div>
 
-          {/* 전화번호 입력 */}
+          {/* 전화번호 입력 및  frontend단 유효성 검증*/}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="phoneNumber">전화번호</label>
             <input
@@ -367,7 +365,7 @@ const SignUp = () => {
             )}
           </div>
 
-          {/* 비밀번호 확인 */}
+          {/* 비밀번호 확인 및 frontend단 유효성 검증*/}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="confirmPassword">비밀번호 확인</label>
             <input
@@ -390,6 +388,7 @@ const SignUp = () => {
             </div>
           </div>
 
+          {/* 회원가입 버튼 */}
           <button
             type="button"
             onClick={handleSubmit}
@@ -400,9 +399,11 @@ const SignUp = () => {
           </button>
         </div>
 
+        {/* 로그인 페이지 이동버튼 */}
         <div className={styles.loginLink}>
           이미 계정이 있으신가요? <a href="/users/loginform">로그인</a>
         </div>
+        {/* 홈페이지 메인화면 이동버튼 */}
         <div className={styles.loginLink}>
           <a href="/">홈페이지 메인화면으로 돌아가기</a>
         </div>
