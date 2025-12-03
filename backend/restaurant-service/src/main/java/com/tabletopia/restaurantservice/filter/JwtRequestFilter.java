@@ -50,15 +50,34 @@ public class JwtRequestFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        final String authorizationHeader = request.getHeader("Authorization");
+        // 요청 기본 정보 확인을 위한로깅
+        log.warn("Request Method: {}", request.getMethod());
 
+        final String authorizationHeader = request.getHeader("Authorization");
         String username = null;
         String jwt = null;
 
+        // Header 먼저 체크하고 없으면 바로 리턴
+        // JWT 없으면 예외 터뜨리지 않고 그냥 인증 실패 처리
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.debug("No valid Authorization header - continuing without authentication");
+            chain.doFilter(request, response);
+            return;
+        }
+
         // Authorization 헤더에서 JWT 추출
+        jwt = authorizationHeader.substring(7);
+
+        // 빈 jwt 체크(admin session에서 넘어오는 것을 차단)
+        // adminSessionException 만들어도 좋을것 같다
+        if (jwt.isEmpty()) {
+            log.warn("JWT token is empty after 'Bearer ' prefix");
+            chain.doFilter(request, response);
+            return;
+        }
+        log.debug("Extracted JWT: {}", jwt);
+
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            log.debug("Extracted JWT: {}", jwt);
             try {
                 // JWT에서 username 추출
                 username = jwtUtil.extractUsername(jwt);
@@ -73,7 +92,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } else {
             log.debug("Authorization header is missing or does not start with Bearer.");
         }
-
         // SecurityContextHolder에 인증 정보가 없는 경우에만 인증 수행
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             log.debug("Attempting to authenticate user: {}", username);
