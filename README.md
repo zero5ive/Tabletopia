@@ -4,10 +4,11 @@
 * [🚀 프로젝트 소개](#-프로젝트-소개)
 * [🎯 핵심 기능 및 시연](#-핵심-기능-및-시연)
 * [🛠️ 기술 스택](#-기술-스택)
-* [🏗️ 시스템 아키텍처 및 설계](#-시스템-아키텍처-및-설계)
+* [🏗️ 시스템 아키텍처 및 설계](#시스템-아키텍처-및-설계)
 * [⚡ 트러블 슈팅 및 의사결정](#-트러블-슈팅-및-의사결정)
-  <!--[💻 설치 및 실행 방법](#-설치-및-실행-방법)-->
 * [🏃 ZEROFIVE 팀](#-zerofive-팀)
+
+<!--[💻 설치 및 실행 방법](#-설치-및-실행-방법)-->
 
 ## 🚀 프로젝트 소개
 
@@ -110,12 +111,12 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
 
 ---
 
-### 🏗️ 시스템 아키텍처 및 설계
+## 🏗️ 시스템 아키텍처 및 설계
 
-#### 🗂️ 시스템 구조
+### 🗂️ 시스템 구조
 <img width="1100" height="837" alt="image" src="https://github.com/user-attachments/assets/1e2bb526-7aac-4010-98ef-a94a6493442c" />
 
-#### 🔁 CD/CD 자동 배포 파이프라인
+### 🔁 CD/CD 자동 배포 파이프라인
 <img width="1495" height="274" alt="image" src="https://github.com/user-attachments/assets/4eae41ea-76e0-4e0a-8894-919bea8ffcb7" />
 
 ### 🗄️ ERD
@@ -134,7 +135,8 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
     - **결과**: 서비스 간 의존성을 줄이고, 별도의 네트워크 통신 없이 **서명(Signature) 검증**만으로 빠른 인증 처리를 구현.
 - **테이블 선점에 Redis 도입하기** [(Wiki)](https://github.com/zero5ive/Tabletopia/wiki/Redis-%EA%B8%B0%EB%B0%98-%EC%8B%A4%EC%8B%9C%EA%B0%84-%ED%85%8C%EC%9D%B4%EB%B8%94-%EC%84%A0%EC%A0%90-%EC%8B%9C%EC%8A%A4%ED%85%9C)
     - **문제:** 다수의 사용자가 동시에 동일 좌석을 선택할 때 발생하는 **동시성 이슈**와 RDBMS 부하.
-    - **해결:** **Redis**를 도입하여 실시간 좌석 선점(Hold) 시스템 구축. 인메모리의 빠른 속도와 **싱글 스레드 기반의 원자성**을 활용해 데이터 무결성 보장 및 DB 부하 최소화.
+    - **해결:** **Redis**를 도입하여 실시간 좌석 선점(Hold) 시스템 구축.
+    - **결과:** 인메모리의 빠른 속도와 **싱글 스레드 기반의 원자성**을 활용해 데이터 무결성 보장 및 DB 부하 최소화.
 
 - **네이버 클라우드 배포 및 트러블 슈팅** [(Wiki)](https://github.com/zero5ive/Tabletopia/wiki/%EB%84%A4%EC%9D%B4%EB%B2%84-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C%EC%97%90-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0)
     - **배경**: 국내 사용자에게 최적화된 네트워크 속도와 초기 인프라 비용 효율성을 고려하여 **Naver Cloud Platform** 채택.
@@ -162,7 +164,7 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
       <b>김예진</b><br/> 
       <sub>
          테이블 예약<br>
-         Docker 배포 & NCP 인프라<br>
+         Docker 배포 & NCP 인프라
       </sub><br/> <!-- 담당 파트 추가 -->
       <a href="https://github.com/yejeeni">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
