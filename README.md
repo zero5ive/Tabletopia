@@ -1,11 +1,12 @@
-# 🍽️ Tabletopia (테이블토피아) - 실시간 레스토랑 예약 & 웨이팅 플랫폼
+# 🍽️ 테이블토피아 - 실시간 레스토랑 예약 & 웨이팅 플랫폼
 
 ## 🧭 목차
 * [🚀 프로젝트 소개](#-프로젝트-소개)
-* [🎯 핵심 가치 및 주요 기능](#-핵심-가치-및-주요-기능)
-* [🛠️ 아키텍처 및 기술](#-아키텍처-및-기술)
-* [🧩 기술 스택](#-기술-스택)
-* [📊 시스템 설계 및 다이어그램](#-시스템-설계-및-다이어그램)
+* [🎯 핵심 기능 및 시연](#-핵심-기능-및-시연)
+* [🛠️ 기술 스택](#-기술-스택)
+* [🏗️ 시스템 아키텍처 및 설계](#-시스템-아키텍처-및-설계)
+* [⚡ 트러블 슈팅 및 의사결정](#-트러블-슈팅-및-의사결정)
+  <!--[💻 설치 및 실행 방법](#-설치-및-실행-방법)-->
 * [🏃 ZEROFIVE 팀](#-zerofive-팀)
 
 ## 🚀 프로젝트 소개
@@ -33,7 +34,7 @@
 
 ---
 
-## 🎯 핵심 가치 및 주요 기능
+## 🎯 핵심 기능 및 시연
 
 테이블토피아는 사용자 및 사장님 모두에게 **최적화된 외식/운영 경험**을 제공합니다.
 
@@ -72,65 +73,74 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
 
 ---
 
-## 🛠️ 아키텍처 및 기술
+## 🛠️ 기술 스택
 
-### 시스템 구조
-<img width="1100" height="837" alt="image" src="https://github.com/user-attachments/assets/1e2bb526-7aac-4010-98ef-a94a6493442c" />
-
-### CD/CD 자동 배포 파이프라인
-<img width="1495" height="274" alt="image" src="https://github.com/user-attachments/assets/4eae41ea-76e0-4e0a-8894-919bea8ffcb7" />
-
-### 🤔 개발 고민과 의사결정  
-- [인증 방식 선택 기록 (JWT vs 세션)](https://github.com/zero5ive/Tabletopia/wiki/%EC%9D%B8%EC%A6%9D-%EB%B0%A9%EC%8B%9D-%EC%84%A0%ED%83%9D-%EA%B8%B0%EB%A1%9D-(JWT-vs-%EC%84%B8%EC%85%98))  
-- [테이블 선점에 Redis 도입하기](https://github.com/zero5ive/Tabletopia/wiki/Redis-%EA%B8%B0%EB%B0%98-%EC%8B%A4%EC%8B%9C%EA%B0%84-%ED%85%8C%EC%9D%B4%EB%B8%94-%EC%84%A0%EC%A0%90-%EC%8B%9C%EC%8A%A4%ED%85%9C)
-- [네이버 클라우드에 배포하기](https://github.com/zero5ive/Tabletopia/wiki/%EC%8A%A4%ED%94%84%EB%A7%81-%EB%B6%80%ED%8A%B8---%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%84%A4%EC%9D%B4%EB%B2%84-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-%EB%B0%B0%ED%8F%AC)
-
----
-
-## 🧩 기술 스택
-
-#### 🖥 Front-End
+#### Front-End
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
-#### ⚙️ Back-End
+#### Back-End
 ![Java](https://img.shields.io/badge/Java-007396?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=spring-boot&logoColor=white)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
 ![Apache Tomcat](https://img.shields.io/badge/Apache%20Tomcat-F8DC75?style=flat-square&logo=apache-tomcat&logoColor=black)
-#### 🗄 Database & ORM
+#### Database & ORM
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
 ![JPA](https://img.shields.io/badge/JPA/Hibernate-59666C?style=flat-square&logo=hibernate&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
-#### 💻 개발 환경 (Development Environment)
+#### 개발 환경 (Development Environment)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-000000?style=flat-square&logo=intellij-idea&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle&logoColor=white)
 ![Lombok](https://img.shields.io/badge/Lombok-BC0000?style=flat-square&logo=lombok&logoColor=white)
-#### 🔧 형상 관리 (Version Control)
+#### 형상 관리 (Version Control)
 ![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)
 ![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat-square&logo=jira&logoColor=white)
-#### 🌐 외부 API (External APIs)
+#### 외부 API (External APIs)
 ![Google Maps](https://img.shields.io/badge/Google%20Maps-4285F4?style=flat-square&logo=googlemaps&logoColor=white)
 ![Toss Payments](https://img.shields.io/badge/Toss%20Payments-0064FF?style=flat-square&logo=visa&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/OpenAI%20API-412991?style=flat-square&logo=openai&logoColor=white)
-#### ☁ 인프라 (Infrastructure)
+#### 인프라 (Infrastructure)
 ![Naver Cloud](https://img.shields.io/badge/Naver%20Cloud-03C75A?style=flat-square&logo=naver&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-4F4F4F?style=flat-square&logo=socketdotio&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
 
 ---
 
-## 📊 시스템 설계 및 다이어그램
+### 🏗️ 시스템 아키텍처 및 설계
+
+#### 🗂️ 시스템 구조
+<img width="1100" height="837" alt="image" src="https://github.com/user-attachments/assets/1e2bb526-7aac-4010-98ef-a94a6493442c" />
+
+#### 🔁 CD/CD 자동 배포 파이프라인
+<img width="1495" height="274" alt="image" src="https://github.com/user-attachments/assets/4eae41ea-76e0-4e0a-8894-919bea8ffcb7" />
+
+### 🗄️ ERD
+<img width="4700" height="3406" alt="Tabletopia (1)" src="https://github.com/user-attachments/assets/5276ff52-d907-46ba-9dfb-df7904da8b86" />
 
 ### 🎯 유즈케이스 다이어그램
 <img width="1517" height="893" alt="image" src="https://github.com/user-attachments/assets/fe5064da-ac09-4c26-8c9b-746ba4f0ce17" />
 
-### ERD
-<img width="4700" height="3406" alt="Tabletopia (1)" src="https://github.com/user-attachments/assets/5276ff52-d907-46ba-9dfb-df7904da8b86" />
+
+---
+
+## ⚡ 트러블 슈팅 및 의사결정 
+- **인증 방식 선택 기록 (JWT vs 세션)** [(Wiki)](https://github.com/zero5ive/Tabletopia/wiki/%EC%9D%B8%EC%A6%9D-%EB%B0%A9%EC%8B%9D-%EC%84%A0%ED%83%9D-%EA%B8%B0%EB%A1%9D-(JWT-vs-%EC%84%B8%EC%85%98))
+    - **문제**: User-Service와 Realtime-Service가 분리된 환경에서, 매 요청마다 인증 서버를 거치면 발생하는 **네트워크 오버헤드** 우려.
+    - **해결**: **JWT** 를 도입하고, 각 서비스가 Secret Key를 공유하여 토큰을 독립적으로 검증하는 구조 설계.
+    - **결과**: 서비스 간 의존성을 줄이고, 별도의 네트워크 통신 없이 **서명(Signature) 검증**만으로 빠른 인증 처리를 구현.
+- **테이블 선점에 Redis 도입하기** [(Wiki)](https://github.com/zero5ive/Tabletopia/wiki/Redis-%EA%B8%B0%EB%B0%98-%EC%8B%A4%EC%8B%9C%EA%B0%84-%ED%85%8C%EC%9D%B4%EB%B8%94-%EC%84%A0%EC%A0%90-%EC%8B%9C%EC%8A%A4%ED%85%9C)
+    - **문제:** 다수의 사용자가 동시에 동일 좌석을 선택할 때 발생하는 **동시성 이슈**와 RDBMS 부하.
+    - **해결:** **Redis**를 도입하여 실시간 좌석 선점(Hold) 시스템 구축. 인메모리의 빠른 속도와 **싱글 스레드 기반의 원자성**을 활용해 데이터 무결성 보장 및 DB 부하 최소화.
+
+- **네이버 클라우드 배포 및 트러블 슈팅** [(Wiki)](https://github.com/zero5ive/Tabletopia/wiki/%EB%84%A4%EC%9D%B4%EB%B2%84-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C%EC%97%90-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0)
+    - **배경**: 국내 사용자에게 최적화된 네트워크 속도와 초기 인프라 비용 효율성을 고려하여 **Naver Cloud Platform** 채택.
+    - **구현**: **Docker & Docker Compose**를 활용하여 Spring Boot(App), MySQL(DB), Redis(Cache), React(Web) 컨테이너를 통합 관리하는 환경 구축.
+    - **트러블 슈팅**: 배포 과정에서 발생한 한글 인코딩 깨짐, CORS 포트 매핑 문제, Nginx 라우팅 오류 등을 해결하고 문서화하여 운영 안정성 확보.
+
 
 ---
 ## 🏃 ZEROFIVE 팀
@@ -139,8 +149,10 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
         <td align="center" width="150"> 
       <img src="https://github.com/sh-Dang.png" width="100" style="border-radius: 50%;"/><br/> 
       <b>이세형</b><br/> 
-      <sub><b>
-      </b></sub><br/> <!-- 담당 파트 추가 -->
+      <sub>
+         로그인/회원가입<br>결제 연동
+      </sub><br/> <!-- 담당 파트 추가 -->
+           <br>
       <a href="https://github.com/sh-Dang">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
       </a> 
@@ -148,7 +160,10 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
     <td align="center" width="150"> 
       <img src="https://github.com/yejeeni.png" width="100" style="border-radius: 50%;"/><br/> 
       <b>김예진</b><br/> 
-      <sub><b></b></sub><br/> <!-- 담당 파트 추가 -->
+      <sub>
+         테이블 예약<br>
+         Docker 배포 & NCP 인프라<br>
+      </sub><br/> <!-- 담당 파트 추가 -->
       <a href="https://github.com/yejeeni">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
       </a> 
@@ -156,7 +171,10 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
         <td align="center" width="150"> 
       <img src="https://github.com/Shypanda0119.png" width="100" style="border-radius: 50%;"/><br/> 
       <b>김지민</b><br/> 
-      <sub><b></b></sub><br/> <!-- 담당 파트 추가 -->
+      <sub>
+         챗봇<br>
+         관리자 페이지<br>
+      </sub><br/> <!-- 담당 파트 추가 -->
       <a href="https://github.com/Shypanda0119">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
       </a> 
@@ -164,7 +182,10 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
         <td align="center" width="150"> 
       <img src="https://github.com/dev-Kiwi7.png" width="100" style="border-radius: 50%;"/><br/> 
       <b>서예닮</b><br/> 
-      <sub><b></b></sub><br/> <!-- 담당 파트 추가 -->
+      <sub>
+      웨이팅<br>
+      마이페이지   <br>      
+      </sub><br/> <!-- 담당 파트 추가 -->
       <a href="https://github.com/dev-Kiwi7">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
       </a> 
@@ -172,7 +193,10 @@ https://github.com/user-attachments/assets/19fc5d71-8e14-4a61-ac08-140c1d857280
         <td align="center" width="150"> 
       <img src="https://github.com/yudinee.png" width="100" style="border-radius: 50%;"/><br/> 
       <b>성유진</b><br/> 
-      <sub><b></b></sub><br/> <!-- 담당 파트 추가 -->
+      <sub>
+         웨이팅<br>
+         메인/상세 페이지<br>
+      </sub><br/> <!-- 담당 파트 추가 -->
       <a href="https://github.com/yudinee">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/> 
       </a> 
