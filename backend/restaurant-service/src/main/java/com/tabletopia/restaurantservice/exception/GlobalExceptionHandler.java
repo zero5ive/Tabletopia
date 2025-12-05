@@ -1,10 +1,18 @@
 package com.tabletopia.restaurantservice.exception;
 
 import com.tabletopia.restaurantservice.domain.admin.exception.AdminNotFoundException;
+import com.tabletopia.restaurantservice.domain.reservation.exception.InvalidReservationStatusException;
+import com.tabletopia.restaurantservice.domain.reservation.exception.ReservationNotFoundException;
+import com.tabletopia.restaurantservice.domain.reservation.exception.TableSelectionNotFoundException;
+import com.tabletopia.restaurantservice.domain.reservation.exception.UnauthorizedReservationAccessException;
 import com.tabletopia.restaurantservice.dto.ErrorResponse;
 import com.tabletopia.restaurantservice.domain.user.exception.UserAlreadyExistsException;
 import com.tabletopia.restaurantservice.domain.user.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.filters.ExpiresFilter.XHttpServletResponse;
+import org.apache.coyote.Response;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -121,4 +129,65 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(ErrorResponse.of(e.getMessage(), "USER_NOT_FOUND"));
     }
+
+  /**
+   * ===========================================================
+   * Reservation 예외처리
+   * ===========================================================
+   */
+
+  /**
+   * 유효하지 않은 예약 상태일 때 예외 처리
+   * @author 김예진
+   * @since 2025-12-05
+   */
+  @ExceptionHandler(InvalidReservationStatusException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidReservationStatusException(InvalidReservationStatusException e){
+    log.warn("예약 상태 변경 실패: {}", e.getMessage());
+    return ResponseEntity
+        .badRequest()
+        .body(ErrorResponse.of(e.getMessage(), "INVALID_RESERVATION_STATUS_EXCEPTION"));
+  }
+
+  /**
+   * 예약을 찾을 수 없을 때 예외 처리
+   * @author 김예진
+   * @since 2025-12-05
+   */
+  @ExceptionHandler(ReservationNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleReservationNotFoundException(ReservationNotFoundException e){
+    log.warn("예약을 찾을 수 없음: {}", e.getMessage());
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND) // 404 not found
+        .body(ErrorResponse.of(e.getMessage(), "RESERVATION_NOT_FOUND"));
+  }
+
+  /**
+   * 테이블 선점 정보를 찾을 수 없을 때 예외 처리
+   * @author 김예진
+   * @since 2025-12-05
+   */
+  @ExceptionHandler(TableSelectionNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleTableSelectionNotFoundException(TableSelectionNotFoundException e){
+    log.warn("테이블 선점 정보 없음: {}", e.getMessage());
+    return ResponseEntity
+        .badRequest()
+        .body(ErrorResponse.of(e.getMessage(), "TABLE_SELECTION_NOT_FOUND"));
+  }
+
+  /**
+   * 권한이 없는 예약에 접근할 때 예외 처리
+   * @author 김예진
+   * @since 2025-12-05
+   */
+  @ExceptionHandler(UnauthorizedReservationAccessException.class)
+  public ResponseEntity<ErrorResponse> handleUnauthorizedReservationAccessException(UnauthorizedReservationAccessException e){
+    log.warn("예약 접근 권한 없음: {}", e.getMessage());
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN) // 403 forbidden
+        .body(ErrorResponse.of(e.getMessage(), "UNAUTHORIZED_RESERVATION_ACCESS"));
+  }
+
+
+
 }
