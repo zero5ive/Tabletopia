@@ -72,6 +72,7 @@ public class UserController {
         try {
             log.debug("로그인 요청: {},{}", request.getEmail(), request.getPassword());
 
+            // 유저의 이메일과 비밀번호를 조회하여 인증객체 생성(Token)
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );

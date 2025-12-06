@@ -1,7 +1,7 @@
 package com.tabletopia.restaurantservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.tabletopia.restaurantservice.exception.CustomAuthenticationEntryPoint;
 import com.tabletopia.restaurantservice.filter.JwtRequestFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,43 +33,63 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 
 
 /**
- * 스프링 시큐리티의 설정 Bean입니다
+ * Spring Security 전체 설정을 담당하는 Config 클래스
+ * - Admin: 세션 기반 로그인
+ * - User: JWT 기반 인증
  *
  * @author 이세형
- * @since 2025-09-27
- *
+ * @since 2025-12-06
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // JWT 필터 (User 인증용)
     private final JwtRequestFilter jwtRequestFilter;
+    // JSON응답을 위한 Object mapper
     private final ObjectMapper objectMapper;
+    // Admin 인증용 UserDetailsService
     private final AdminDetailsService adminDetailsService;
+    // User 인증용 UserDetailsService
     private final CustomUserDetailsService customUserDetailsService;
+    // 인증 실패 시 동작할 Custom EntryPoint
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    /**
+     * 비밀번호 암호화를 위한 Encoder Bean
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Admin 로그인을 위한 DaoAuthenticationProvider 설정
+     */
     @Bean
     public DaoAuthenticationProvider adminAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(adminDetailsService);
-        provider.setPasswordEncoder(passwordEncoder()); // Use the bean directly
+        provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
+    /**
+     * User(JWT) 로그인을 위한 DaoAuthenticationProvider 설정
+     */
     @Bean
     public DaoAuthenticationProvider userAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(customUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder()); // Use the bean directly
+        provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
+    /**
+     * AuthenticationManager 수동 설정
+     * - 두 개의 Provider (Admin, User)를 모두 등록함
+     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration,
@@ -94,6 +114,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
+                // CORS 설정
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
                     config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000")); // 프론트 주소
@@ -129,6 +150,7 @@ public class SecurityConfig {
               // 기타 관리자 API — ADMIN 이상 접근 가능
               .anyRequest().hasAnyRole("ADMIN", "SUPERADMIN")
           )
+        // Session 기반 인증 사용
           .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
           .securityContext(ctx -> ctx.requireExplicitSave(false));
 
@@ -157,6 +179,7 @@ public class SecurityConfig {
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    config.setExposedHeaders(List.of("Set-Cookie"));
                     return config;
                 }))
                 .authorizeHttpRequests(authorize -> authorize
@@ -177,6 +200,7 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(e -> e.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
