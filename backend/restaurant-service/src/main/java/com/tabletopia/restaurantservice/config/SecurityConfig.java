@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -86,20 +89,31 @@ public class SecurityConfig {
         return provider;
     }
 
+//    @Bean
+//    public AuthenticationManager authenticationManager(
+//            AuthenticationConfiguration authenticationConfiguration,
+//            HttpSecurity http
+//    ) throws Exception {
+//        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+//        authenticationManagerBuilder
+//                .authenticationProvider(adminAuthenticationProvider())
+//                .authenticationProvider(userAuthenticationProvider());
+//        return authenticationManagerBuilder.build();
+//    }
     /**
-     * AuthenticationManager 수동 설정
-     * - 두 개의 Provider (Admin, User)를 모두 등록함
+     * AuthenticationManager - 두 개의 Provider를 등록
+     * HttpSecurity에서 가져오지 말고 독립적으로 생성
+     *
+     * @since 2025-12-09
      */
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration,
-            HttpSecurity http
-    ) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder
-                .authenticationProvider(adminAuthenticationProvider())
-                .authenticationProvider(userAuthenticationProvider());
-        return authenticationManagerBuilder.build();
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(
+                Arrays.asList(
+                        adminAuthenticationProvider(),
+                        userAuthenticationProvider()
+                )
+        );
     }
 
     /**
@@ -114,6 +128,15 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
+//                .formLogin(form -> form
+//                    .loginProcessingUrl("/api/admin/auth/login")
+//                    .successHandler(adminAuthenticationSuccessHandler())
+//                    .failureHandler(adminAuthenticationFailureHandler())
+//                )
+                // authentication provider를 명시적으로 각각 설정
+                .authenticationProvider(adminAuthenticationProvider())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 // CORS 설정
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
@@ -171,6 +194,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
+                .authenticationProvider(userAuthenticationProvider())
                 .securityMatcher("/api/user/**", "/api/chat/**")
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
@@ -234,23 +258,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
-
-    private AuthenticationSuccessHandler adminAuthenticationSuccessHandler() {
-        return (request, response, authentication) -> {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(objectMapper.writeValueAsString(Map.of("success", true, "message", "Admin login successful")));
-        };
-    }
-
-    private AuthenticationFailureHandler adminAuthenticationFailureHandler() {
-        return (request, response, exception) -> {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(objectMapper.writeValueAsString(Map.of("success", false, "message", "Admin login failed: " + exception.getMessage())));
-        };
     }
 }

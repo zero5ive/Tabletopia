@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
@@ -61,26 +62,36 @@ public class AdminController {
         }
     }
 
+    /**
+     * admin의 로그인을 시도하는 메서드
+     *
+     * @param adminLoginDTO 순수 로그인에 필요한 정보만을 담은 객체
+     * @return ResponseEntity에 로그인 확인 정보를 담아서 반환
+     */
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody AdminLoginDTO adminLoginDTO) {
         log.debug("admin 로그인 시도 요청이 있었습니다................");
+
+        // TODO: 비밀번호가 틀리면 문제생기는 부분 수정
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(adminLoginDTO.getEmail(), adminLoginDTO.getPassword())
             );
+            log.debug("인증객체가 생성됐습니다.");
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 세션에 SecurityContext 저장
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-            HttpSession session = request.getSession(true);
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+        log.debug("로그인에 성공하여 인증객체가 spring security의 인증으로 인정되었습니다.");
 
+//            // 세션에 SecurityContext 저장
+//            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+//            HttpSession session = request.getSession(true);
+//            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
             Admin admin = adminService.getAdminEntityByEmail(adminLoginDTO.getEmail());
-            log.debug("Admin login successful for user: {}", adminLoginDTO.getEmail());
+            log.debug("관리자 로그인에 성공했습니다. 관리자 명: {}", adminLoginDTO.getEmail());
             return ResponseEntity.ok(Map.of(
               "success", true,
-              "message", "Admin login successful",
+              "message", "관리자 로그인 성공",
               "role", admin.getRole()
             ));
         } catch (Exception e) {
@@ -88,7 +99,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "오류입니다.실패하였습니다."));
         }
     }
-
 
     @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {

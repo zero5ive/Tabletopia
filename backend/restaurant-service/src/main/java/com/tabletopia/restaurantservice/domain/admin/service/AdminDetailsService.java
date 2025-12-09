@@ -26,9 +26,9 @@ public class AdminDetailsService implements UserDetailsService {
     String roleName = "ROLE_" + admin.getRole().name();
     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleName));
 
-    System.out.println("✅ 로그인한 관리자 이메일: " + admin.getEmail());
-    System.out.println("✅ 로그인한 관리자 ROLE: " + admin.getRole());
-    System.out.println("✅ 부여된 권한: " + authorities);
+    System.out.println("로그인한 관리자 이메일: " + admin.getEmail());
+    System.out.println("로그인한 관리자 ROLE: " + admin.getRole());
+    System.out.println("부여된 권한: " + authorities);
     return new User(admin.getEmail(), admin.getPassword(), authorities);
   }
 }
