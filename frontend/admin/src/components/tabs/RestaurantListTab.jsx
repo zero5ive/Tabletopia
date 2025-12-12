@@ -8,7 +8,12 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
   const [selectedId, setSelectedId] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
-  const role = localStorage.getItem("adminRole")
+  const [role, setRole] = useState(null)
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem("adminRole")
+    setRole(savedRole)
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -41,6 +46,24 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
     }
   }
 
+  // 1) role 변경 이벤트 감지 → role 업데이트
+  useEffect(() => {
+    const handleRoleChange = () => {
+      const newRole = localStorage.getItem("adminRole")
+      console.log("변경된 role =", newRole)
+      setRole(newRole)
+    }
+
+    window.addEventListener("adminRoleChanged", handleRoleChange)
+    return () => window.removeEventListener("adminRoleChanged", handleRoleChange)
+  }, [])
+
+  // 2) role 변경될 때 loadRestaurants 재실행
+  useEffect(() => {
+    if (role) loadRestaurants()
+  }, [role])
+
+  // 3) 첫 렌더 시 초기 매장 로드
   useEffect(() => {
     loadRestaurants()
 
@@ -136,9 +159,8 @@ export default function RestaurantListTab({ onEdit, onSelectRestaurant, selected
                       <td>{r.description}</td>
                       <td>
                         <button
-                          className={`btn btn-sm me-2 ${
-                            selectedId === r.id ? "btn-success" : "btn-secondary"
-                          }`}
+                          className={`btn btn-sm me-2 ${selectedId === r.id ? "btn-success" : "btn-secondary"
+                            }`}
                           onClick={() => handleSelect(r)}
                         >
                           {selectedId === r.id ? "선택됨" : "선택"}

@@ -84,7 +84,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
          //JWT가 존재하여 userController로 admin로그인 요청이 들어가는 현상을 방지하기 위한 코드
-        localStorage.clear();
+        // localStorage.clear();
         const newErrors = {};
         if (!formData.emailLocal.trim()) newErrors.email = '이메일을 입력해주세요.';
         if (!formData.password) newErrors.password = '비밀번호를 입력해주세요.';
@@ -109,6 +109,7 @@ const Login = () => {
                 if (data.role) {
                     const role = data.role.replace("ROLE_", "")
                     localStorage.setItem("adminRole", role)
+                    window.dispatchEvent(new Event("adminRoleChanged"))
                     console.log("✅ 저장된 adminRole:", role)
                 }
                 navigate('/main'); // 로그인 후 메인 페이지로 이동

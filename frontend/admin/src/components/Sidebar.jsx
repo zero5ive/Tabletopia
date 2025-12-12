@@ -6,9 +6,20 @@ export default function Sidebar() {
   const [role, setRole] = useState(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem('adminRole')
-    console.log('현재 저장된 adminRole:', stored)
-    if (stored) setRole(stored.replace('ROLE_', ''))
+    const loadRole = () => {
+      const stored = localStorage.getItem("adminRole")
+      setRole(stored ? stored : null)
+    }
+
+    // 처음 실행
+    loadRole()
+
+    // 🔥 로그인 페이지에서 보낸 이벤트 감지
+    window.addEventListener("adminRoleChanged", loadRole)
+
+    return () => {
+      window.removeEventListener("adminRoleChanged", loadRole)
+    }
   }, [])
 
   return (

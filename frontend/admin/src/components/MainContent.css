@@ -97,3 +97,16 @@
 .selected-restaurant-badge i {
   color: #0d6efd;
 }
+
+.modal-backdrop {
+  display: none !important;
+}
+
+.offcanvas-backdrop {
+  display: none !important;
+}
+
+body.modal-open {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
