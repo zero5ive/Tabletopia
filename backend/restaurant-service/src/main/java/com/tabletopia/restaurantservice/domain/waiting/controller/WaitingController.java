@@ -9,8 +9,11 @@ import com.tabletopia.restaurantservice.domain.user.service.UserService;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingEvent;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingRequest;
 import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingResponse;
+import com.tabletopia.restaurantservice.domain.waiting.dto.WaitingStatusResponse;
 import com.tabletopia.restaurantservice.domain.waiting.entity.Waiting;
 import com.tabletopia.restaurantservice.domain.waiting.enums.WaitingState;
+import com.tabletopia.restaurantservice.domain.waiting.exception.InvalidRestaurantIdException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.WaitingStatusNotFoundException;
 import com.tabletopia.restaurantservice.domain.waiting.service.WaitingNotificationService;
 import com.tabletopia.restaurantservice.domain.waiting.service.WaitingService;
 import java.security.Principal;
@@ -58,7 +61,8 @@ public class WaitingController {
    * @author 성유진
    */
   @GetMapping("/api/user/waiting/status")
-  public Map<String, Object> getWaitingStatus(@RequestParam Long restaurantId) {
+  public ResponseEntity<WaitingStatusResponse> getWaitingStatus(@RequestParam Long restaurantId) {
+    // 웨이팅 오픈 상태 조회
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
 
     // 대기 중인 팀 수 조회
@@ -75,20 +79,19 @@ public class WaitingController {
     log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}, team2: {}, team4: {}",
         restaurantId, isOpen, team2, team4);
 
-    return Map.of(
-        "isOpen", isOpen,
-        "team2", team2,
-        "team4", team4
-    );
+    // 응답 생성
+    WaitingStatusResponse response = WaitingStatusResponse.of(isOpen, team2, team4);
+    return ResponseEntity.ok(response);
   }
 
+  /*사용하지 않음 추후 삭제 예정
   @GetMapping("/api/user/waitings/status")
   public Map<String, Boolean> getUserWaitingStatus(@RequestParam Long restaurantId) {
     boolean isOpen = waitingService.isWaitingOpen(restaurantId);
     log.debug("웨이팅 상태 조회 - restaurantId: {}, isOpen: {}", restaurantId, isOpen);
     return Map.of("isOpen", isOpen);
   }
-
+*/
 
 
   /**
@@ -101,19 +104,25 @@ public class WaitingController {
     Long restaurantId = payload.get("restaurantId");
     log.debug("웨이팅 오픈 요청 - restaurantId: {}", restaurantId);
 
-    // 웨이팅 오픈 상태 저장
-    waitingService.openWaiting(restaurantId);
+    try {
+      // 웨이팅 오픈 상태 저장
+      waitingService.openWaiting(restaurantId);
 
-    WaitingEvent waitingEvent = new WaitingEvent();
-    waitingEvent.setType("OPEN");
-    waitingEvent.setContent("웨이팅 등록 가능");
+      WaitingEvent waitingEvent = new WaitingEvent();
+      waitingEvent.setType("OPEN");
+      waitingEvent.setContent("웨이팅 등록 가능");
 
-    // 해당 레스토랑 채널로만 전송
-    simpMessagingTemplate.convertAndSend(
-        "/topic/restaurant/" + restaurantId + "/open",
-        waitingEvent
-    );
+      // 해당 레스토랑 채널로만 전송
+      simpMessagingTemplate.convertAndSend(
+          "/topic/restaurant/" + restaurantId + "/open",
+          waitingEvent
+      );
 
+    } catch (InvalidRestaurantIdException e) {
+      log.error("웨이팅 오픈 실패 - restaurantId: {}, error: {}", restaurantId, e.getMessage());
+    } catch (Exception e) {
+      log.error("웨이팅 오픈 중 예상치 못한 오류 발생 - restaurantId: {}", restaurantId, e);
+    }
   }
 
   /**
@@ -124,21 +133,27 @@ public class WaitingController {
   @MessageMapping("/waiting/close")
   public void close(@Payload Map<String, Long> payload) {
     Long restaurantId = payload.get("restaurantId");
-
     log.debug("웨이팅 닫기 요청 - restaurantId: {}", restaurantId);
 
-    // DB에 닫기 상태 저장
-    waitingService.closeWaiting(restaurantId);
+    try {
+      // DB에 닫기 상태 저장
+      waitingService.closeWaiting(restaurantId);
 
-    WaitingEvent waitingEvent = new WaitingEvent();
-    waitingEvent.setType("CLOSE");
-    waitingEvent.setContent("웨이팅 등록 중단");
+      WaitingEvent waitingEvent = new WaitingEvent();
+      waitingEvent.setType("CLOSE");
+      waitingEvent.setContent("웨이팅 등록 중단");
 
-    // 해당 레스토랑 채널로만 전송
-    simpMessagingTemplate.convertAndSend(
-        "/topic/restaurant/" + restaurantId + "/close",
-        waitingEvent
-    );
+      // 해당 레스토랑 채널로만 전송
+      simpMessagingTemplate.convertAndSend(
+          "/topic/restaurant/" + restaurantId + "/close",
+          waitingEvent
+      );
+
+    } catch (InvalidRestaurantIdException e) {
+      log.error("웨이팅 닫기 실패 - restaurantId: {}, error: {}", restaurantId, e.getMessage());
+    } catch (Exception e) {
+      log.error("웨이팅 닫기 중 예상치 못한 오류 발생 - restaurantId: {}", restaurantId, e);
+    }
   }
 
   /**
@@ -302,46 +317,38 @@ public class WaitingController {
    * @author 성유진
    */
   @PutMapping("/api/user/waitings/{id}/delay")
-  public ResponseEntity<?> delayWaiting(
+  public ResponseEntity<WaitingResponse> delayWaiting(
       @PathVariable Long id,
       @RequestParam Integer targetNumber,
       @RequestParam Long restaurantId,
       Principal principal) {
 
-    try {
-      // 현재 사용자 확인
-      String currentUserEmail = principal.getName();
-      User user = userService.findByEmail(currentUserEmail);
+    // 현재 사용자 확인
+    String currentUserEmail = principal.getName();
+    User user = userService.findByEmail(currentUserEmail);
 
-      log.info("웨이팅 미루기 요청 - waitingId: {}, userId: {}, targetNumber: {}",
-          id, user.getId(), targetNumber);
+    log.info("웨이팅 미루기 요청 - waitingId: {}, userId: {}, targetNumber: {}",
+        id, user.getId(), targetNumber);
 
-      // 웨이팅 미루기 실행
-      Waiting waiting = waitingService.delayWaiting(id, targetNumber, restaurantId);
+    // 웨이팅 미루기 실행
+    Waiting waiting = waitingService.delayWaiting(id, targetNumber, restaurantId);
 
-      //WebSocket으로 변경사항 브로드캐스트
-      WaitingEvent delayEvent = new WaitingEvent();
-      delayEvent.setType("DELAY");
-      delayEvent.setWaitingId(waiting.getId());
-      delayEvent.setRestaurantId(restaurantId);
-      delayEvent.setSender(user.getId());
-      delayEvent.setSenderName(user.getName());
-      delayEvent.setContent(user.getName() + "님이 순서를 " + targetNumber + "번으로 미뤘습니다.");
-      delayEvent.setTimestamp(LocalDateTime.now());
+    //WebSocket으로 변경사항 브로드캐스트
+    WaitingEvent delayEvent = new WaitingEvent();
+    delayEvent.setType("DELAY");
+    delayEvent.setWaitingId(waiting.getId());
+    delayEvent.setRestaurantId(restaurantId);
+    delayEvent.setSender(user.getId());
+    delayEvent.setSenderName(user.getName());
+    delayEvent.setContent(user.getName() + "님이 순서를 " + targetNumber + "번으로 미뤘습니다.");
+    delayEvent.setTimestamp(LocalDateTime.now());
 
-      simpMessagingTemplate.convertAndSend("/topic/delay", delayEvent);
+    simpMessagingTemplate.convertAndSend("/topic/delay", delayEvent);
 
-      // 응답 생성
-      WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
+    // 응답 생성
+    WaitingResponse response = WaitingResponse.from(waiting, restaurantId);
 
-      return ResponseEntity.ok(response);} catch (IllegalStateException | IllegalArgumentException e) {
-      log.warn("웨이팅 미루기 실패: {}", e.getMessage());
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-
-    } catch (Exception e) {
-      log.error("웨이팅 미루기 중 오류 발생", e);
-      return ResponseEntity.status(500).body(Map.of("error", "웨이팅 미루기에 실패했습니다."));
-    }
+    return ResponseEntity.ok(response);
   }
 
 
@@ -351,25 +358,19 @@ public class WaitingController {
    * @author 성유진
    */
   @GetMapping("/api/user/waitings/{id}/delay")
-  public ResponseEntity<List<WaitingResponse>> getDelayWaitings( @PathVariable Long id,
-  @RequestParam Long restaurantId,
-  Principal principal) {
-    try {
-      String currentUserEmail = principal.getName();
-      User user = userService.findByEmail(currentUserEmail);
+  public ResponseEntity<List<WaitingResponse>> getDelayWaitings(@PathVariable Long id,
+      @RequestParam Long restaurantId,
+      Principal principal) {
 
-      log.info("미루기 가능한 웨이팅 조회 - waitingId: {}, userId: {}", id, user.getId());
+    String currentUserEmail = principal.getName();
+    User user = userService.findByEmail(currentUserEmail);
 
-      // 내 웨이팅 이후의 웨이팅 목록 조회
-      List<WaitingResponse> delayOptions = waitingService.getDelayOptions(id, restaurantId);
+    log.info("미루기 가능한 웨이팅 조회 - waitingId: {}, userId: {}", id, user.getId());
 
-      return ResponseEntity.ok(delayOptions);
+    // 내 웨이팅 이후의 웨이팅 목록 조회
+    List<WaitingResponse> delayOptions = waitingService.getDelayOptions(id, restaurantId);
 
-    } catch (Exception e) {
-      log.error("미루기 옵션 조회 중 오류 발생", e);
-      return ResponseEntity.status(500).body(null);
-    }
-
+    return ResponseEntity.ok(delayOptions);
   }
 
 

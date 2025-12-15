@@ -5,6 +5,11 @@ import com.tabletopia.restaurantservice.domain.reservation.exception.InvalidRese
 import com.tabletopia.restaurantservice.domain.reservation.exception.ReservationNotFoundException;
 import com.tabletopia.restaurantservice.domain.reservation.exception.TableSelectionNotFoundException;
 import com.tabletopia.restaurantservice.domain.reservation.exception.UnauthorizedReservationAccessException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.InvalidRestaurantIdException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.InvalidWaitingStateException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.WaitingNotFoundException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.WaitingRegistException;
+import com.tabletopia.restaurantservice.domain.waiting.exception.WaitingStatusNotFoundException;
 import com.tabletopia.restaurantservice.dto.ErrorResponse;
 import com.tabletopia.restaurantservice.domain.user.exception.UserAlreadyExistsException;
 import com.tabletopia.restaurantservice.domain.user.exception.UserNotFoundException;
@@ -70,6 +75,20 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(e.getMessage(), "INVALID_INPUT"));
+  }
+
+  /**
+   * 유효하지 않은 웨이팅 상태 예외 처리
+   *
+   * @author 성유진
+   * @since 2025-12-15
+   */
+  @ExceptionHandler(InvalidWaitingStateException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidWaitingStateException(InvalidWaitingStateException e) {
+    log.warn("유효하지 않은 웨이팅 상태: {}", e.getMessage());
+
+    return ResponseEntity.badRequest()
+        .body(ErrorResponse.of(e.getMessage(), "INVALID_WAITING_STATE"));
   }
 
   /**
@@ -188,6 +207,65 @@ public class GlobalExceptionHandler {
         .body(ErrorResponse.of(e.getMessage(), "UNAUTHORIZED_RESERVATION_ACCESS"));
   }
 
+  /**
+   * ===========================================================
+   * Waiting 예외처리
+   * ===========================================================
+   */
 
+  /**
+   * 유효하지 않은 레스토랑 ID 예외 처리
+   *
+   * @author 성유진
+   * @since 2025-12-15
+   */
+  @ExceptionHandler(InvalidRestaurantIdException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidRestaurantIdException(InvalidRestaurantIdException e) {
+    log.warn("유효하지 않은 레스토랑 ID: {}", e.getMessage());
+    return ResponseEntity
+        .badRequest()
+        .body(ErrorResponse.of(e.getMessage(), "INVALID_RESTAURANT_ID"));
+  }
 
+  /**
+   * 웨이팅 상태를 찾을 수 없을 때 예외 처리
+   *
+   * @author 성유진
+   * @since 2025-12-15
+   */
+  @ExceptionHandler(WaitingStatusNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleWaitingStatusNotFoundException(WaitingStatusNotFoundException e) {
+    log.warn("웨이팅 상태 조회 실패: {}", e.getMessage());
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ErrorResponse.of(e.getMessage(), "WAITING_STATUS_NOT_FOUND"));
+  }
+
+  /**
+   * 웨이팅을 찾을 수 없을 때 예외 처리
+   *
+   * @author 성유진
+   * @since 2025-12-15
+   */
+  @ExceptionHandler(WaitingNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleWaitingNotFoundException(WaitingNotFoundException e) {
+    log.warn("웨이팅을 찾을 수 없음: {}", e.getMessage());
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ErrorResponse.of(e.getMessage(), "WAITING_NOT_FOUND"));
+  }
+
+  /**
+   * 웨이팅 등록 예외 처리
+   *
+   * @author 성유진
+   * @since 2025-12-12
+   */
+  @ExceptionHandler(WaitingRegistException.class)
+  public ResponseEntity<ErrorResponse> handleWaitingRegistException(WaitingRegistException e) {
+    log.warn("웨이팅 등록 실패: {}", e.getMessage());
+    return ResponseEntity
+        .badRequest()
+        .body(ErrorResponse.of(e.getMessage(), "WAITING_REGIST_FAILED"));
+  }
 }
