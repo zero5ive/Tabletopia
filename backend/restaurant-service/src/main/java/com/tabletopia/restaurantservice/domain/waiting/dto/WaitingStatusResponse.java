@@ -1,5 +1,6 @@
 package com.tabletopia.restaurantservice.domain.waiting.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class WaitingStatusResponse {
   /**
    * 웨이팅 오픈 여부
    */
+  @JsonProperty("isOpen")
   private boolean isOpen;
 
   /**
