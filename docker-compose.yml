@@ -26,7 +26,7 @@ services:
     image: redis:7-alpine
     container_name: restaurant-redis
     ports:
-      - "6379:6379"
+      - "6381:6379"
     restart: unless-stopped
     networks:
       - tabletopia-network
@@ -58,8 +58,8 @@ services:
   # Frontend - Admin
   frontend-admin:
     build:
-      context: ./frontend/admin
-      dockerfile: Dockerfile
+      context: ./frontend
+      dockerfile: admin/Dockerfile
     container_name: restaurant-admin
     ports:
       - "5173:80"
@@ -70,8 +70,8 @@ services:
   # Frontend - User
   frontend-user:
     build:
-      context: ./frontend/user
-      dockerfile: Dockerfile
+      context: ./frontend
+      dockerfile: user/Dockerfile
     container_name: restaurant-user
     ports:
       - "3000:80"

@@ -1,7 +1,7 @@
 import styles from './Main.module.css';
 import { Link } from 'react-router-dom';
 import Header from '../../components/header/Header';
-import HeroSection from './heroSection/HeroSection';
+import HeroSection from './herosection/HeroSection';
 import FoodCategory from './foodcategory/FoodCategory';
 import LocationCategory from './locationcategory/LocationCategory';
 import Advertisement from './advertisement/Advertisement';
