@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: restaurant-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: tabletopia
+      MYSQL_USER: user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-config:/etc/mysql/conf.d
+    restart: unless-stopped
+    networks:
+      - tabletopia-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: restaurant-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - tabletopia-network
+
+  # Backend - Restaurant Service
+  backend:
+    build:
+      context: ./backend/restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-backend
+    ports:
+      - "8002:8080"
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/tabletopia
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      PAYMENT_FRONTEND_URL: http://223.130.138.158:3000
+    volumes:
+      - upload-data:/app/uploads
+    restart: unless-stopped
+    networks:
+      - tabletopia-network
+
+  # Frontend - Admin
+  frontend-admin:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+    container_name: restaurant-admin
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+    networks:
+      - tabletopia-network
+
+  # Frontend - User
+  frontend-user:
+    build:
+      context: ./frontend/user
+      dockerfile: Dockerfile
+    container_name: restaurant-user
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - tabletopia-network
+
+networks:
+  tabletopia-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  upload-data:
